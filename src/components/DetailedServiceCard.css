@@ -1,0 +1,126 @@
+.detailed-card {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  width: 100%;
+  max-width: 420px;
+  min-height: 140px;
+  border-radius: 12px;
+  overflow: hidden;
+  background-color: #15171f; 
+  margin: 6px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.image-container-01 {
+  width: 110px;
+  height: 100%;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.detailed-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.overlay {
+  display: none; 
+}
+
+.detailed-card-info {
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex: 1;
+}
+
+.detailed-desc {
+  font-size: 14px;
+  color: #ddd;
+  margin: 0 0 6px 0;
+}
+
+.detailed-meta {
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: #ccc;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.detailed-meta .icon {
+  margin-right: 4px;
+  color: #ffc107;
+}
+
+.overlay-price {
+  font-size: 13px;
+  color: #eee;
+  display: flex;
+  gap: 8px;
+}
+
+.overlay-price .new {
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.overlay-price .old {
+  text-decoration: line-through;
+  color: #999;
+}
+
+.book-now-btn {
+  margin-top: auto;
+  padding: 6px 14px;
+  font-size: 14px;
+  background-color: #f87559;
+  border: none;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  width: fit-content;
+  transition: background-color 0.3s ease;
+}
+
+.book-now-btn:hover {
+  background-color:#f87559;
+}
+
+.btn-icon {
+  font-size: 14px;
+}
+
+.detailed-card-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 0;
+}
+
+@media (max-width: 1200px) {
+  .detailed-card {
+    max-width: 48%;
+  }
+}
+
+@media (max-width: 768px) {
+  .detailed-card {
+    flex-direction: column;
+    max-width: 100%;
+    height: auto;
+  }
+
+  .image-container-01 {
+    width: 100%;
+    height: 180px;
+  }
+}

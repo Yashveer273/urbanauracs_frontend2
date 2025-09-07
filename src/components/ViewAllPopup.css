@@ -1,0 +1,64 @@
+.viewall-popup {
+  background-color: #1c1c1c; 
+  margin-top: 20px;
+  border: 1px solid #444; 
+  padding: 16px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  color: white;
+}
+
+.viewall-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.viewall-header h3 {
+  font-size: 22px;
+  color: white;
+}
+
+.viewall-header button {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.viewall-scrollable {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  max-height: 400px; 
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.detailed-card{
+  background-color: #222; 
+  padding: 12px;
+  border-radius: 8px;
+  color: white;
+  height: 160px; 
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.viewall-scrollable::-webkit-scrollbar {
+  width: 6px;
+}
+.viewall-scrollable::-webkit-scrollbar-thumb {
+  background: #555;
+  border-radius: 4px;
+}
+
+@media (max-width: 768px) {
+  .viewall-scrollable {
+    grid-template-columns: 1fr;
+    max-height: 350px;
+  }
+}
