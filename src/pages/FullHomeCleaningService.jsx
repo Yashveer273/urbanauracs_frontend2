@@ -17,7 +17,7 @@ import AuthPopup from '../components/AuthPopup';
 import AccountMenu from '../components/AccountMenu';
 
 import fullHomeVendors from '../data/fullHomeVendors.json';
-import acRepairVendors from '../data/acRepair.json';
+import acRepairVendors from '../data/AcRepair.json';
 import commercialCleaning from '../data/CommercialCleaning.json';
 
 const services = [
