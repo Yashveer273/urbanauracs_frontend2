@@ -16,6 +16,8 @@ import CartSidebar from '../components/CartSidebar';
 import AuthPopup from '../components/AuthPopup';
 import AccountMenu from '../components/AccountMenu';
 
+
+
 import fullHomeVendors from '../data/fullHomeVendors.json';
 import acRepairVendors from '../data/AcRepair.json';
 import commercialCleaning from '../data/CommercialCleaning.json';
@@ -57,7 +59,11 @@ const FullHomeCleaningService = () => {
     'commercial-cleaning': commercialCleaning,
   };
 
+
+
   useEffect(() => {
+ 
+    
     const vendors = serviceDataMap[serviceName] || [];
     setAllVendors(vendors);
     setAppliedFilters({
@@ -70,6 +76,7 @@ const FullHomeCleaningService = () => {
   }, [serviceName]);
 
   useEffect(() => {
+       
   let vendorsToFilter = allVendors;
 
   // 🔹 Location override: filter by appliedFilters.location if set, else fallback to userLocation

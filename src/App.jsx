@@ -28,7 +28,7 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/Dashboard" element={<Dasboard />} />
         <Route path="/contact" element={<ContactUs />} />
-        <Route path="/contact" element={<ContactUs />} />
+    
         <Route path="/PaymentGateway" element={<PaymentGateway/>} />
         <Route
           path="/PaymentGateway/PaymentStatus/:id/:amount"
@@ -47,6 +47,7 @@ function App() {
           path="/services/:serviceName"
           element={<FullHomeCleaningService />}
         />
+        
       </Routes>
     </Router>
   );

@@ -1,16 +1,17 @@
 import React, { useState } from "react";
 import "./ContactUs.css";
 import Chatbot from "./Chatbot";
-
-import { collection, addDoc,serverTimestamp  } from "firebase/firestore";
+import { useSelector } from "react-redux";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { firestore } from "../firebaseCon";
+import { FaYoutube } from "react-icons/fa";
 export default function ContactUs() {
   const [name, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [message, setMessage] = useState("");
   const [successMsg, setSuccessMsg] = useState(""); // For success message
-
+  const links = useSelector((state) => state.socialLinks.links);
   // Validation rules
   const isPhoneValid = phone.replace(/\D/g, "").length === 10;
   const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -39,8 +40,8 @@ export default function ContactUs() {
           email,
           phone,
           message,
-          status: "New",              
-    createdAt: serverTimestamp() 
+          status: "New",
+          createdAt: serverTimestamp(),
         },
       });
       // Show success message on page
@@ -141,7 +142,7 @@ export default function ContactUs() {
             >
               <path d="M6.62 10.79a15.053 15.053 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24 11.72 11.72 0 003.68.59 1 1 0 011 1V20a1 1 0 01-1 1C10.07 21 3 13.93 3 5a1 1 0 011-1h3.5a1 1 0 011 1c0 1.27.21 2.5.59 3.68.09.3.03.63-.24.9l-2.23 2.21z" />
             </svg>
-            <p>418 838-6000</p>
+            <p>{links[0]?.phone}</p>
           </div>
 
           <div className="info-box">
@@ -155,7 +156,7 @@ export default function ContactUs() {
             >
               <path d="M20 4H4a2 2 0 00-2 2v12c0 1.11.89 2 2 2h16c1.1 0 2-.89 2-2V6c0-1.11-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
             </svg>
-            <p>Qlinest.services@gmail.com</p>
+            <p>{links[0]?.email}</p>
           </div>
 
           <div className="info-box">
@@ -169,16 +170,12 @@ export default function ContactUs() {
             >
               <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z" />
             </svg>
-            <p>31 Wolfe Street, Lévis</p>
+            <p>{links[0]?.address}</p>
           </div>
           {/* Social Media Icons */}
           <div className="social-icons">
             {/* Instagram */}
-            <a
-              href="https://instagram.com"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
+            <a href={links[0]?.insta} target="_blank" rel="noopener noreferrer">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="black"
@@ -191,11 +188,7 @@ export default function ContactUs() {
             </a>
 
             {/* Facebook */}
-            <a
-              href="https://facebook.com"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
+            <a href={links[0]?.fb} target="_blank" rel="noopener noreferrer">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="black"
@@ -207,22 +200,15 @@ export default function ContactUs() {
               </svg>
             </a>
 
-            {/* Twitter */}
             <a
-              href="https://twitter.com"
+              href={links[0]?.youtube} // replace with your YouTube link
               target="_blank"
               rel="noopener noreferrer"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="black"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-              >
-                <path d="M24 4.557a9.83 9.83 0 01-2.828.775 4.932 4.932 0 002.165-2.724c-.951.566-2.005.978-3.127 1.2a4.916 4.916 0 00-8.384 4.482C7.691 8.094 4.066 6.13 1.64 3.161a4.822 4.822 0 00-.666 2.475 4.916 4.916 0 002.188 4.096 4.903 4.903 0 01-2.229-.616c-.054 2.28 1.582 4.415 3.949 4.89a4.935 4.935 0 01-2.224.084 4.919 4.919 0 004.604 3.417 9.867 9.867 0 01-7.29 2.034 13.945 13.945 0 007.548 2.213c9.058 0 14.01-7.496 14.01-13.986 0-.21-.005-.423-.014-.634A10.025 10.025 0 0024 4.557z" />
-              </svg>
+              <FaYoutube size={24} color="red" />
             </a>
+
+            {/* Twitter */}
           </div>
         </section>
       </main>

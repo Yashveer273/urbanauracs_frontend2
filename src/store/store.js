@@ -2,7 +2,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import userReducer from "./userSlice";
 import cartReducer from "./CartSlice";
 import orderReducer from "./orderSlices";
-
+import socialLinksReducer from "./socialLinks"; // ✅ new
 // Load state from localStorage
 const loadState = () => {
   try {
@@ -31,7 +31,8 @@ export const store = configureStore({
   reducer: {
     user: userReducer,
     cart: cartReducer,
-    order:orderReducer
+    order:orderReducer,
+    socialLinks: socialLinksReducer,
   },
   preloadedState,
 });

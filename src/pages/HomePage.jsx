@@ -1,5 +1,5 @@
 // HomePage.jsx
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef ,useEffect} from 'react';
 import Navbar from '../components/Navbar';
 import HeroSection from '../components/HeroSectionWrapper';
 import FeatureHighlights from '../components/FeatureHighlights';
@@ -11,8 +11,14 @@ import FAQSection from '../components/FAQSection';
 import FooterWithCarousel from '../components/FooterWithCarousel';
 import ServicePopup from '../components/ServicePopup';
 import CartSidebar from '../components/CartSidebar'; 
+import { firestore } from "../firebaseCon";
+import { useDispatch } from 'react-redux';
+import { collection, getDocs } from "firebase/firestore";
+import { setLinks } from '../store/socialLinks';
+
 
 const HomePage = () => {
+     const dispatch = useDispatch(); 
   const [showServices, setShowServices] = useState(false);
   const servicesRef = useRef(null);
   const featuresRef = useRef(null);
@@ -38,7 +44,46 @@ const HomePage = () => {
     { title: 'Electrician', image: '/images/electrician.jpg', link: '/services/electrician' },
     { title: 'Balloon Decoration', image: '/images/balloon_decoration.jpg', link: '/services/balloon-decoration' },
   ];
+  
+    // ========================================================
+const fetchSocialLinks = async () => {
+  try {
+    const querySnapshot = await getDocs(collection(firestore, "socialLinks"));
+    let links = [];
 
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+
+      const createdAt = data.createdAt?.toDate 
+        ? data.createdAt.toDate().toISOString() 
+        : null;
+
+      const updatedAt = data.updatedAt?.toDate 
+        ? data.updatedAt.toDate().toISOString() 
+        : null;
+
+      links.push({ id: doc.id, ...data, createdAt, updatedAt });
+    });
+
+    return links;
+  } catch (error) {
+    console.error("Error fetching social links:", error);
+    return [];
+  }
+};
+
+
+  const getLinks = async () => {
+  
+    const data = await fetchSocialLinks();
+     dispatch(setLinks(data));
+    console.log("Social Links:", data);
+  };
+ useEffect(() => {
+ 
+    getLinks();
+    
+  }, []);
   return (
     <>
       <Navbar toggleServicePopup={toggleServicePopup} showServices={showServices} onServiceClick={scrollToServices} onAboutClick={scrollToFeatures}  />
@@ -61,7 +106,9 @@ const HomePage = () => {
       <HowItWorks />
       <PromotionSection />
       <FAQSection />
+        
       <FooterWithCarousel />
+        
     </>
   );
 };

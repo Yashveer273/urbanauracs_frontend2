@@ -1,10 +1,12 @@
 import React from 'react';
-import FullHomeCleaningService from './pages/FullHomeCleaningService';
+import FullHomeCleaningService from './src/pages/FullHomeCleaningService';
+
 
 const App = () => {
   return (
     <div>
       <FullHomeCleaningService />
+      
     </div>
   );
 };

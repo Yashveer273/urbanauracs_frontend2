@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import  SocialLinksManager from "./socialMedia";
 
 const CouponManager = () => {
   const [coupons, setCoupons] = useState([]);
@@ -102,7 +103,7 @@ const CouponManager = () => {
       )}
 
       {/* ✅ Create Coupon Card */}
-      <div className="bg-white shadow-lg rounded-xl p-6 mb-8 max-w-lg">
+      <div style={{ display: "flex" ,gap:"14px"}}><div className="bg-white shadow-lg rounded-xl p-6 mb-8 max-w-lg">
         <h2 className="text-lg font-bold mb-4">Create New Coupon</h2>
         <form className="space-y-4" onSubmit={handleSubmit}>
           <input
@@ -136,7 +137,9 @@ const CouponManager = () => {
             Create Coupon
           </button>
         </form>
-      </div>
+        
+      </div> <SocialLinksManager/></div>
+      
 
       {/* ✅ Search Bar */}
       <div className="mb-4 flex items-center gap-2">

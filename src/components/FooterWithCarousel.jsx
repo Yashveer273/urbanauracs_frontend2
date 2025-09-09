@@ -1,6 +1,7 @@
 import React from 'react';
 import { FaFacebookF, FaInstagram, FaLinkedinIn } from 'react-icons/fa';
 import './FooterWithCarousel.css';
+import Chatbot from './Chatbot';
 
 const cities = [
   'Bangalore', 'Udaipur', 'Jaipur', 'Ahmedabad',
@@ -10,6 +11,7 @@ const cities = [
 const FooterWithCarousel = () => {
   return (
     <>
+      <Chatbot />
       {/* 🔼 Moved carousel section to the top */}
       <div className="brand-carousel-wrapper">
         <div className="brand-carousel">
