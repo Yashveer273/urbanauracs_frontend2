@@ -1,10 +1,19 @@
-import React, { useMemo, useState } from "react";
-import { FaTimes, FaCalendarAlt } from "react-icons/fa";
-// Use your existing app Portal. If your Portal is elsewhere, adjust the path.
+import React, { useMemo, useState, useEffect } from "react";
+import {
+  FaTimes,
+  FaCalendarAlt,
+  FaClock,
+  FaMapMarkerAlt,
+} from "react-icons/fa";
 import Portal from "./Portal";
 
 const BookingPopup = ({ onClose, onConfirm }) => {
   const [selectedDate, setSelectedDate] = useState("");
+  const [hour, setHour] = useState("");
+  const [minute, setMinute] = useState("00");
+  const [ampm, setAmPm] = useState("AM");
+  const [address, setAddress] = useState("");
+  const [rememberAddress, setRememberAddress] = useState(false);
 
   // today in YYYY-MM-DD to prevent past-date selection
   const minDate = useMemo(() => {
@@ -15,10 +24,43 @@ const BookingPopup = ({ onClose, onConfirm }) => {
     return `${yyyy}-${mm}-${dd}`;
   }, []);
 
+  // Load saved address if rememberAddress was true
+  useEffect(() => {
+    const savedStatus = localStorage.getItem("urberaura-bookingAddressStatus");
+    if (savedStatus) {
+      try {
+        const parsed = JSON.parse(savedStatus);
+        if (parsed?.remember && parsed?.address) {
+          setRememberAddress(true);
+          setAddress(parsed.address);
+        }
+      } catch (e) {
+        console.error("Error parsing saved booking address", e);
+      }
+    }
+  }, []);
+
+
+
+  // Validate 3 hours ahead
+  // ✅ Validation using selected time + ensuring 3h gap
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!selectedDate) return;
-    onConfirm(selectedDate);
+
+    const timeFinal = `${hour}:${minute} ${ampm}`;
+
+    if (rememberAddress) {
+      localStorage.setItem(
+        "urberaura-bookingAddressStatus",
+        JSON.stringify({ remember: true, address })
+      );
+    } else {
+      localStorage.removeItem("urberaura-bookingAddressStatus");
+    }
+
+
+    onConfirm(selectedDate, timeFinal, address);
     onClose();
   };
 
@@ -30,6 +72,7 @@ const BookingPopup = ({ onClose, onConfirm }) => {
           onClick={onClose}
         />
         <div className="relative w-full max-w-md rounded-2xl overflow-hidden shadow-2xl bg-[#1b1c28] text-white p-10">
+          {/* Close button */}
           <button
             className="absolute top-4 right-4 text-gray-400 hover:text-white z-10"
             onClick={onClose}
@@ -38,15 +81,18 @@ const BookingPopup = ({ onClose, onConfirm }) => {
             <FaTimes size={22} />
           </button>
 
+          {/* Form */}
           <div className="text-center space-y-6">
-            <h2 className="text-3xl font-bold">Choose Booking Date</h2>
+            <h2 className="text-3xl font-bold">Choose Booking Details</h2>
 
             <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="relative">
-                <FaCalendarAlt className="absolute top-1/2 left-4 -translate-y-1/2 text-gray-400 h-5 w-5" />
+              {/* Date Picker */}
+              <div className="relative" onClick={() => document.getElementById("bookingDate").showPicker()}>
+                <FaCalendarAlt className="absolute top-1/2 left-4 -translate-y-1/2 text-white h-5 w-5" />
                 <input
                   type="date"
                   min={minDate}
+                  id="bookingDate"
                   value={selectedDate}
                   onChange={(e) => setSelectedDate(e.target.value)}
                   className="w-full bg-gray-700 rounded-lg pl-12 pr-4 py-3 text-white focus:outline-none"
@@ -54,11 +100,84 @@ const BookingPopup = ({ onClose, onConfirm }) => {
                 />
               </div>
 
+              {/* Time Picker (custom dropdowns) */}
+              <div className="relative flex items-center gap-2">
+                <FaClock className="absolute left-4 text-gray-400 h-5 w-5" />
+                <div className="flex w-full pl-10 gap-2">
+                  <select
+                    value={hour}
+                    onChange={(e) => setHour(e.target.value)}
+                    required
+                    className="flex-1 bg-gray-700 rounded-lg py-3 px-2 text-white focus:outline-none"
+                  >
+                    <option value="">Hour</option>
+                    {Array.from({ length: 12 }, (_, i) => i + 1).map((h) => (
+                      <option key={h} value={h}>
+                        {h}
+                      </option>
+                    ))}
+                  </select>
+
+                  <select
+                    value={minute}
+                    onChange={(e) => setMinute(e.target.value)}
+                    className="flex-1 bg-gray-700 rounded-lg py-3 px-2 text-white focus:outline-none"
+                  >
+                    <option value="00">00</option>
+                    <option value="30">30</option>
+                  </select>
+
+                  <select
+                    value={ampm}
+                    onChange={(e) => setAmPm(e.target.value)}
+                    className="flex-1 bg-gray-700 rounded-lg py-3 px-2 text-white focus:outline-none"
+                  >
+                    <option value="AM">AM</option>
+                    <option value="PM">PM</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Address Field */}
+              <div className="relative">
+                <FaMapMarkerAlt className="absolute top-1/2 left-4 -translate-y-1/2 text-gray-400 h-5 w-5" />
+                <input
+                  type="text"
+                  name="bookingAddress" 
+                  placeholder="Enter Booking Address"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  className="w-full bg-gray-700 rounded-lg pl-12 pr-4 py-3 text-white focus:outline-none"
+                  required
+                />
+              </div>
+
+              {/* Remember Address */}
+              <div className="flex items-center gap-2 text-left">
+                <input
+                  type="checkbox"
+                  id="rememberAddress"
+                  checked={rememberAddress}
+                  onChange={(e) => setRememberAddress(e.target.checked)}
+                  className="h-4 w-4"
+                />
+                <label
+                  htmlFor="rememberAddress"
+                  className="text-sm text-gray-300"
+                >
+                  Remember my address for next booking
+                </label>
+              </div>
+              <p className="text-sm text-[#fbbf24] bg-[#2c2d34] px-3 py-2 rounded-lg text-center border border-[#fbbf24]/40">
+                The team will be reaching your place within the time slot.
+              </p>
+
+              {/* Submit */}
               <button
                 type="submit"
                 className="w-full bg-[#f87559] text-white py-3 rounded-lg font-bold text-lg hover:bg-[#ff8f6e] transition-colors"
               >
-                Confirm Date
+                Confirm Booking
               </button>
             </form>
           </div>

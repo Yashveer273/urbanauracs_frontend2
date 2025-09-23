@@ -17,6 +17,8 @@ import AuthDashboard from "./authData";
 import DashboardContrller from "./DashboardController";
 import DashboardLogin from "./loginDashboard";
 import CouponManager from "./coupancord";
+import HomeCarousalAssetController from "./HomeCarousalAssetController";
+import SocialLinksManager from "./socialMedia";
 
 // Icons from Lucide React
 const HomeIcon = () => (
@@ -946,6 +948,7 @@ const Dashboard = () => {
 
           </div>
         );
+        
       case "services":
         return (
 
@@ -1162,10 +1165,17 @@ const Dashboard = () => {
                   {tagAccess.includes("Ticket") ?  <TicketDashboard /> : <LockedBox className="flex justify-center items-center h-screen" label="Ticket" />}
           </div>
         );
-      case "website-content":
+      case "Coupon-Manager":
         return (
           <div className="">
             <CouponManager/>
+          </div>
+        );
+        case "Website-Content":
+        return (
+          <div className=" flex">
+            <HomeCarousalAssetController/>
+            <SocialLinksManager/>
           </div>
         );
 
@@ -1243,9 +1253,23 @@ const Dashboard = () => {
               <li className="mb-2">
                 <a
                   href="#"
-                  onClick={() => handleTabClick("website-content")}
+                  onClick={() => handleTabClick("Coupon-Manager")}
                   className={`flex items-center p-3 rounded-lg transition-colors duration-200 ${
-                    activeTab === "website-content"
+                    activeTab === "Coupon-Manager"
+                      ? "bg-indigo-100 text-indigo-700"
+                      : "text-gray-600 hover:bg-gray-200"
+                  }`}
+                >
+                  <FileTextIcon className="w-5 h-5 mr-3" />
+                  Coupon Manager
+                </a>
+              </li>
+              <li className="mb-2">
+                <a
+                  href="#"
+                  onClick={() => handleTabClick("Website-Content")}
+                  className={`flex items-center p-3 rounded-lg transition-colors duration-200 ${
+                    activeTab === "HomeCarousalAssetController"
                       ? "bg-indigo-100 text-indigo-700"
                       : "text-gray-600 hover:bg-gray-200"
                   }`}

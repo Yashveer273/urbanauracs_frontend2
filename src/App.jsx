@@ -11,6 +11,9 @@ import PaymentGateway from "./pages/paymnetgateway";
 import PaymentStatus from "./pages/PaymentStatus";
 import PaymentSuccess from "./pages/paymentSuccess";
 import PaymentFailed from "./pages/paymentfail";
+import InvoiceApp from "./invoice";
+import PrivacyPolicy from "./pages/privacyPolicy";
+
 
 function App() {
   const dispatch = useDispatch();
@@ -25,7 +28,11 @@ function App() {
   return (
     <Router>
       <Routes>
+        
+        
         <Route path="/" element={<HomePage />} />
+        <Route path="/InvoiceApp" element={<InvoiceApp />} />
+        <Route path="/PrivacyPolicy" element={<PrivacyPolicy/>} />
         <Route path="/Dashboard" element={<Dasboard />} />
         <Route path="/contact" element={<ContactUs />} />
     

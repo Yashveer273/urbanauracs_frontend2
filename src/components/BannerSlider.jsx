@@ -24,7 +24,7 @@ const BannerSlider = () => {
 
   return (
     <div className="banner-container">
-      <div className="banner-text">
+      <div className="banner-text ">
         <h1>EXPERIENCE CLEAN POWER THAT TRANSFORMS <br />YOUR HOME<br /> INTO A HAVEN</h1>
         <p>
           Trusted by families since <strong>2010</strong>, we deliver <strong>spotless precision</strong> <br />

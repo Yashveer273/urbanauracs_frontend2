@@ -2,7 +2,7 @@
 import React, { useState, useRef ,useEffect} from 'react';
 import Navbar from '../components/Navbar';
 import HeroSection from '../components/HeroSectionWrapper';
-import FeatureHighlights from '../components/FeatureHighlights';
+import AboutUs from '../components/aboutUs';
 import Services from '../components/Services';
 import WhyChooseUs from '../components/WhyChooseUs';
 import HowItWorks from '../components/HowItWorks';
@@ -15,11 +15,15 @@ import { firestore } from "../firebaseCon";
 import { useDispatch } from 'react-redux';
 import { collection, getDocs } from "firebase/firestore";
 import { setLinks } from '../store/socialLinks';
+import CityCards from '../components/cityCard';
 
 
 const HomePage = () => {
+  
      const dispatch = useDispatch(); 
   const [showServices, setShowServices] = useState(false);
+  const [MyCity, setMyCity] = useState("");
+  
   const servicesRef = useRef(null);
   const featuresRef = useRef(null);
 
@@ -91,13 +95,15 @@ const fetchSocialLinks = async () => {
       {showServices && (
         <ServicePopup
           services={services}
+          
           onClose={toggleServicePopup}
         />
       )}
+      <CityCards setMyCity={setMyCity}/> 
       <CartSidebar /> 
-      <HeroSection />
+      <HeroSection MyCity={MyCity}/>
       <div ref={featuresRef}>
-        <FeatureHighlights />
+        <AboutUs />
       </div>
       <WhyChooseUs />
       <div ref={servicesRef}>

@@ -120,12 +120,13 @@ export default function Chatbot() {
         {isOpen ? closeIcon : chatIcon}
       </div>
 
-      {/* Chat Window */}
+     
       <div
-        className={`fixed bottom-24 right-6 w-96 max-w-[90vw] bg-white rounded-xl shadow-xl flex flex-col overflow-hidden z-40 transition-all duration-400 ${
-          isOpen ? "opacity-100 right-6" : "opacity-0 -right-full"
-        }`}
-      >
+  className={`fixed bottom-24 right-6 w-96 max-w-[90vw] bg-white rounded-xl shadow-xl flex flex-col overflow-hidden z-40 transition-all duration-400 ${
+    isOpen ? "flex" : "hidden"
+  }`}
+>
+
         <div className="flex justify-between items-center px-5 py-4 bg-gray-100 border-b border-gray-200">
           <span className="text-lg font-semibold text-gray-800">Chatbot</span>
           <button

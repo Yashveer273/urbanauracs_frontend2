@@ -8,7 +8,7 @@ import BookingPopup from './BookingPopup';
 
 const ServiceDetailPopup = ({ service, onClose,vendor }) => {
   const dispatch = useDispatch();
-
+  
   const handleAddToCart = () => {
   const userData = JSON.parse(localStorage.getItem("userData"));
   if (!userData) {
@@ -152,13 +152,13 @@ const PriceTag = ({ price, originalPrice }) => (
 
 
 
-const ServiceCard = ({ service,vendor }) => {
+const ServiceCard = ({ service,vendor,userLocation }) => {
   const dispatch = useDispatch();
   const isAuthenticated = useSelector(selectIsAuthenticated);
 
   // Existing details popup (unchanged)
   const [isPopupOpen, setIsPopupOpen] = useState(false);
-
+const [Devicelocation, setDevicelocation] = useState("");
   // New booking popup state
   const [isBookingPopupOpen, setIsBookingPopupOpen] = useState(false);
 
@@ -183,22 +183,49 @@ const ServiceCard = ({ service,vendor }) => {
   };
 
   // Confirm from booking popup → now add to cart with the selected date
-    const handleConfirmBooking = (selectedDate) => {
+    const handleConfirmBooking = (selectedDate,selectedTime,address) => {
+   
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        async (pos) => {
+          const { latitude, longitude } = pos.coords;
+          try {
+            const res = await fetch(
+              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+            );
+            const data = await res.json();
+            const city =
+              data.address.city ||
+              data.address.town ||
+              data.address.village ||
+              "";
+            const state = data.address.state || "";
+            setDevicelocation(`${city}, ${state}`);
+          } catch (err) {
+            console.error("Error fetching location details:", err);
+            setDevicelocation(userLocation);
+          }
+        },
+        (err) => {
+          console.warn("Location access denied:", err);
+          setDevicelocation("");
+        }
+      );
+    }
    dispatch(addItem({
      ...service,
       productId:service.id,
      bookingDate: selectedDate,
      vendorId: vendor.vendorId,
+     bookingAddress:address,
+     deviceLocation:Devicelocation,
+     SelectedServiceTime: selectedTime,
      vendorName: vendor.vendorName,
      vendorLocation: vendor.location,
      vendorImage: vendor.vendorImage,
    }));
     
-    console.log("✅ Added to cart with booking date:", {
-      ...service,
-      bookingDate: selectedDate,
-     vendorName: vendor.vendorName
-    });
+  
     setIsBookingPopupOpen(false);
   };
 
@@ -276,6 +303,7 @@ const ServiceCard = ({ service,vendor }) => {
         <BookingPopup
           onClose={() => setIsBookingPopupOpen(false)}
           onConfirm={handleConfirmBooking}
+          
         />
       )}
     </>

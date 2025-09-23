@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import  SocialLinksManager from "./socialMedia";
+
 
 const CouponManager = () => {
   const [coupons, setCoupons] = useState([]);
@@ -138,7 +138,7 @@ const CouponManager = () => {
           </button>
         </form>
         
-      </div> <SocialLinksManager/></div>
+      </div> </div>
       
 
       {/* ✅ Search Bar */}

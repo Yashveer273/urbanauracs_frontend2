@@ -32,6 +32,7 @@ const FullHomeCleaningService = () => {
   const { serviceName } = useParams();
   const location = useLocation();
   const userLocation = location.state?.location;
+  const BookingCity = location.state?.BookingCities;
 
   const dispatch = useDispatch(); 
   const isAuthPopupOpen = useSelector(selectIsAuthPopupOpen);
@@ -47,7 +48,7 @@ const FullHomeCleaningService = () => {
     maxPrice: 5000,
     serviceTypes: [],
     apartmentSize: [],
-    location: '',
+    BookingCity: '',
   });
 
   const toggleServicePopup = () => setShowServices(!showServices);
@@ -71,7 +72,7 @@ const FullHomeCleaningService = () => {
       maxPrice: 5000,
       serviceTypes: [],
       apartmentSize: [],
-      location: '',
+      BookingCity: '',
     });
   }, [serviceName]);
 
@@ -80,13 +81,13 @@ const FullHomeCleaningService = () => {
   let vendorsToFilter = allVendors;
 
   // 🔹 Location override: filter by appliedFilters.location if set, else fallback to userLocation
-  const activeLocation = appliedFilters.location || userLocation;
+  const activeBookingCities = appliedFilters.BookingCity || BookingCity;
 
-  if (activeLocation) {
+  if (activeBookingCities) {
     vendorsToFilter = vendorsToFilter.filter(
       (vendor) =>
         vendor.location?.toLowerCase().replace(/\s/g, '') ===
-        activeLocation.toLowerCase().replace(/\s/g, '')
+        activeBookingCities.toLowerCase().replace(/\s/g, '')
     );
   }
 
@@ -122,7 +123,7 @@ const FullHomeCleaningService = () => {
     .filter((vendor) => vendor.services.length > 0);
 
   setFilteredVendors(vendorsToFilter);
-}, [allVendors, userLocation, appliedFilters]);
+}, [allVendors, BookingCity, appliedFilters]);
 
 
   const handleApplyFilters = (filters) => {
@@ -165,7 +166,7 @@ const FullHomeCleaningService = () => {
               maxPrice={appliedFilters.maxPrice}
               serviceTypes={appliedFilters.serviceTypes}
               apartmentSize={appliedFilters.apartmentSize}
-              selectedLocation={appliedFilters.location}
+              selectedLocation={appliedFilters.BookingCity}
               allServiceTypes={uniqueServiceTitles}
               allApartmentSizes={uniqueApartmentSizes}
             />
@@ -226,7 +227,7 @@ const FullHomeCleaningService = () => {
           </div>
         ) : (
           filteredVendors.map((vendor) => (
-            <VendorSection key={vendor.vendorId} vendor={vendor} selectedLocation={userLocation} />
+            <VendorSection key={vendor.vendorId} vendor={vendor}  userLocation={userLocation} />
           ))
         )}
       </div>

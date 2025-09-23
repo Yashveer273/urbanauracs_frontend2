@@ -15,7 +15,7 @@ import {
   FaYoutube,
   FaInstagram,
   FaFacebook,
-  FaMapMarkerAlt
+  FaMapMarkerAlt,
 } from "react-icons/fa";
 import "./Navbar.css";
 
@@ -80,10 +80,10 @@ const Navbar = ({ toggleFilterSidebar, onAboutClick }) => {
               <span>Call: {links[0]?.phone}</span>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-              <span>Email: {links[0]?.email}</span>
+              <span> {links[0]?.email}</span>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-             <FaMapMarkerAlt/> <span> {links[0]?.address}</span>
+              {/* <FaMapMarkerAlt/> <span> {links[0]?.address}</span> */}
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
               <FaYoutube
@@ -104,11 +104,6 @@ const Navbar = ({ toggleFilterSidebar, onAboutClick }) => {
               />
             </div>
           </div>
-          <div className="right-top">
-            <div className="top-search-icon" onClick={toggleSearchBox}>
-              <FaSearch />
-            </div>
-          </div>
         </div>
       )}
 
@@ -116,8 +111,50 @@ const Navbar = ({ toggleFilterSidebar, onAboutClick }) => {
         className={`main-navbar ${scrolled ? "fixed scrolled" : ""}`}
         style={{ top: scrolled ? 0 : `${topBarHeight}px` }}
       >
-        <div className="navbar-header">
-          <div className="logo">Clean</div>
+        <div className="navbar-header w-full md:w-auto">
+          <div className="flex items-center justify-between w-full">
+            {/* Logo */}
+            <img
+              src="/logo.jpg"
+              alt="Clean Logo"
+              width={50}
+              height={50}
+              className="rounded-full object-cover transition-transform duration-500 hover:rotate-180"
+            />
+            {/* Right actions */}
+            <div className="flex items-center gap-4 md:hidden  ">
+              {/* Search Icon */}
+              <div
+                className="top-search-icon cursor-pointer"
+                onClick={toggleSearchBox}
+              >
+                <FaSearch />
+              </div>
+
+              {/* Filter + Cart */}
+              <div className="flex items-center gap-2  ">
+                <button
+                  className="filter-btn flex items-center gap-1 px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
+                  onClick={toggleFilterSidebar}
+                >
+                  <FaFilter /> Filter
+                </button>
+
+                <button
+                  className="cart-btn relative group p-2 rounded hover:bg-gray-200"
+                  onClick={() => dispatch(toggleCart())}
+                >
+                  <FaShoppingCart className="group-hover:text-[#fff] group-hover:bg-[#f87559]" />
+                  {cartItemCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-[#f87559] text-white text-xs rounded-full h-5 w-5 flex items-center justify-center group-hover:bg-[#fff] group-hover:text-[#f87559]">
+                      {cartItemCount}
+                    </span>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+
           <button className="hamburger" onClick={toggleMenu}>
             {menuOpen ? <FaTimes /> : <FaBars />}
           </button>

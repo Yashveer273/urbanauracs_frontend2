@@ -44,6 +44,10 @@ const cartSlice = createSlice({
           state.items.push({
           ...action.payload,
           quantity: 1,
+          bookingAddress:action.payload.bookingAddress??null,
+          deviceLocation:action.payload.deviceLocation??null,
+          SelectedServiceTime:action.payload.SelectedServiceTime??null,
+          
           productId:action.payload.id,
           vendorId: action.payload.vendorId ?? null,
           vendorName: action.payload.vendorName ?? null,

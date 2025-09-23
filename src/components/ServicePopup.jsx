@@ -4,7 +4,7 @@ import './ServicePopup.css';
 import { FaFacebookF, FaInstagram, FaLinkedinIn, FaTimes, FaArrowRight } from 'react-icons/fa'; 
 
 
-const ServicePopup = ({ services, onClose }) => {
+const ServicePopup = ({ services }) => {
   return (
     <div className="custom-service-popup-wrapper">
       <div className="custom-service-popup">
