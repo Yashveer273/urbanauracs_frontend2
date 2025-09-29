@@ -23,7 +23,7 @@ const HomePage = () => {
      const dispatch = useDispatch(); 
   const [showServices, setShowServices] = useState(false);
   const [MyCity, setMyCity] = useState("");
-  
+
   const servicesRef = useRef(null);
   const featuresRef = useRef(null);
 
@@ -84,7 +84,7 @@ const fetchSocialLinks = async () => {
     console.log("Social Links:", data);
   };
  useEffect(() => {
- 
+
     getLinks();
     
   }, []);
@@ -101,7 +101,9 @@ const fetchSocialLinks = async () => {
       )}
       <CityCards setMyCity={setMyCity}/> 
       <CartSidebar /> 
-      <HeroSection MyCity={MyCity}/>
+       
+      <HeroSection MyCity={MyCity} />
+   
       <div ref={featuresRef}>
         <AboutUs />
       </div>

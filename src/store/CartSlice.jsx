@@ -57,6 +57,15 @@ const cartSlice = createSlice({
       }
       saveState(state);
     },
+    decreaseItem: (state, action) => {
+      const existingItem = state.items.find(item => item.id === action.payload);
+      if (existingItem) 
+        if (existingItem.quantity > 1) 
+          existingItem.quantity -= 1;
+        
+      
+      saveState(state);
+    },
     removeItem: (state, action) => {
       state.items = state.items.filter(item => item.id !== action.payload);
       saveState(state);
@@ -71,6 +80,7 @@ const cartSlice = createSlice({
     closeCart: (state) => {
       state.isOpen = false;
     },
+    
     // New reducers for authentication and popup management
     setAuthenticated: (state, action) => {
       state.isAuthenticated = action.payload;
@@ -83,7 +93,7 @@ const cartSlice = createSlice({
 });
 
 // Export all actions and new selectors
-export const { addItem, removeItem, clearCart, toggleCart, closeCart, setAuthenticated, setAuthPopupOpen } = cartSlice.actions;
+export const { addItem,decreaseItem, removeItem, clearCart, toggleCart, closeCart, setAuthenticated, setAuthPopupOpen } = cartSlice.actions;
 
 export const selectCartItemCount = (state) => state.cart.items.reduce((total, item) => total + item.quantity, 0);
 export const selectCartTotal = (state) => state.cart.items.reduce((total, item) => total + item.price * item.quantity, 0);

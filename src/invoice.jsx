@@ -1,272 +1,311 @@
-// Invoice.jsx
-import React, { useState, useRef } from "react";
+import React, { useRef } from "react";
 import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
-import { saveAs } from 'file-saver'; 
-const Invoice = () => {
-  const today = new Date().toISOString().split("T")[0];
+import html2canvas from "html2canvas";
+
+export default function Invoice() {
   const invoiceRef = useRef();
 
-  const [invoiceData, setInvoiceData] = useState({
-    invoiceNo: "UAS/2025/001",
-    invoiceDate: today,
-    customerName: "Customer Name / Company Name",
-    address: "Address Line, City, State, Pincode",
-    phone: "+91-XXXXXXXXXX",
-    gstin: "XXXXXXXXXX",
-    services: [
-      { description: "House Cleaning Service", code: "998533", qty: 1, date: today, amount: 2500 },
-      { description: "Deep Sanitation", code: "998533", qty: 1, date: today, amount: 1500 },
-    ],
-    cgstRate: 9,
-    sgstRate: 9,
-  });
+  const downloadPDF = async () => {
+    const input = invoiceRef.current;
+    if (!input) return;
 
-  const [pdfUrl, setPdfUrl] = useState("");
-  const [isSaving, setIsSaving] = useState(false);
-
-  const calculateSubTotal = () =>
-    invoiceData.services.reduce((sum, item) => sum + Number(item.amount), 0);
-
-  const cgstAmount = ((calculateSubTotal() * invoiceData.cgstRate) / 100).toFixed(2);
-  const sgstAmount = ((calculateSubTotal() * invoiceData.sgstRate) / 100).toFixed(2);
-  const grandTotal = (calculateSubTotal() + Number(cgstAmount) + Number(sgstAmount)).toFixed(2);
-
-  const generatePDFBlob = () => {
-    const doc = new jsPDF();
-    doc.setFontSize(14);
-    doc.setFont("helvetica", "bold");
-    doc.text("URBAN AURA SERVICES PVT. LTD.", 14, 15);
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "normal");
-    doc.text("Address - Gurugram, Haryana - 122105", 14, 22);
-    doc.text("Phone: +91-XXXXXXXXXX | Email: info@urbanauraservices.com", 14, 28);
-
-    doc.setFontSize(11);
-    doc.text(`Invoice No: ${invoiceData.invoiceNo}`, 14, 40);
-    doc.text(`Invoice Date: ${invoiceData.invoiceDate}`, 150, 40, { align: "right" });
-
-    let y = 50;
-    doc.setFont("helvetica", "bold");
-    doc.text("Bill To (Customer Details)", 14, y);
-    doc.setFont("helvetica", "normal");
-    y += 6;
-    doc.text(invoiceData.customerName, 14, y);
-    y += 5;
-    doc.text(invoiceData.address, 14, y);
-    y += 5;
-    doc.text(`Phone: ${invoiceData.phone} | GSTIN: ${invoiceData.gstin}`, 14, y);
-
-    autoTable(doc, {
-      startY: y + 10,
-      head: [["S.No", "Description", "HSN/SAC", "Qty", "Date", "Amount (₹)"]],
-      body: invoiceData.services.map((s, i) => [
-        i + 1,
-        s.description,
-        s.code,
-        s.qty,
-        s.date,
-        Number(s.amount).toLocaleString("en-IN"),
-      ]),
-      styles: { fontSize: 10 },
-      headStyles: { fillColor: [41, 128, 185] },
-    });
-
-    const finalY = doc.lastAutoTable.finalY || y + 30;
-
-    autoTable(doc, {
-      startY: finalY + 10,
-      head: [["Tax Type", "Rate (%)", "Amount (₹)"]],
-      body: [
-        ["CGST", invoiceData.cgstRate, cgstAmount],
-        ["SGST", invoiceData.sgstRate, sgstAmount],
-        ["Grand Total", "", grandTotal],
-      ],
-      styles: { fontSize: 10 },
-      headStyles: { fillColor: [41, 128, 185] },
-    });
-
-    doc.setFontSize(9);
-    doc.setFont("helvetica", "italic");
-    doc.text(
-      "This is a computer-generated invoice and does not require a physical signature.",
-      14,
-      doc.internal.pageSize.height - 20
-    );
-
-    return doc.output("blob");
-  };
-
-  const saveToCloud = async () => {
-    setIsSaving(true);
     try {
-      const pdfBlob = generatePDFBlob();
-      const formData = new FormData();
-      formData.append("file", pdfBlob, `Invoice-${invoiceData.invoiceNo}.pdf`);
-      const res = await fetch("http://localhost:8000/upload-invoice", {
-        method: "POST",
-        body: formData,
+      const canvas = await html2canvas(input, {
+        scale: 2,
+        useCORS: true,
       });
-      const data = await res.json();
-      setPdfUrl(data.url);
-      alert("Invoice uploaded successfully!");
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF("p", "mm", "a4");
+
+      const imgWidth = 210;
+      const pageHeight = 297;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+      pdf.save("Invoice.pdf");
     } catch (err) {
-      console.error("Upload failed:", err);
-    } finally {
-      setIsSaving(false);
+      console.error("Download failed:", err);
     }
-  };
-
-
-
-// Assuming you are still using fetch for the network request
-const downloadPDF = async (pdfUrl) => {
-    // 1. Initial Check
-    if (!pdfUrl) {
-        return alert("Please save invoice to cloud first!");
-    }
-    
-    // Set a clean file name
-    const fileName = `Invoice-${invoiceData.invoiceNo}.pdf`;
-
-    try {
-        console.log(`Fetching PDF data for non-redirecting download...`);
-
-        // 2. Fetch the file data
-        const response = await fetch(pdfUrl);
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        // 3. Convert the response to a Blob
-        const blob = await response.blob(); 
-
-        // 4. Use file-saver to instantly trigger the download
-        // saveAs(blob, fileName) handles creating the temporary URL,
-        // triggering the click, and cleaning up the memory for you.
-        saveAs(blob, fileName);
-
-        console.log(`✅ Direct download of ${fileName} started using file-saver.`);
-
-    } catch (error) {
-        console.error("❌ Error during PDF download:", error);
-        alert("Failed to download invoice. Check console for details.");
-    }
-};
-
-
-  const handleServiceChange = (index, field, value) => {
-    const updatedServices = [...invoiceData.services];
-    updatedServices[index][field] = value;
-    setInvoiceData({ ...invoiceData, services: updatedServices });
-  };
-
-  const addService = () => {
-    setInvoiceData({
-      ...invoiceData,
-      services: [...invoiceData.services, { description: "", code: "", qty: 1, date: today, amount: 0 }],
-    });
-  };
-
-  const removeService = (index) => {
-    const updatedServices = invoiceData.services.filter((_, i) => i !== index);
-    setInvoiceData({ ...invoiceData, services: updatedServices });
   };
 
   return (
-    <div className="flex flex-col items-center justify-center p-6 bg-gray-100 min-h-screen font-sans">
-      <div ref={invoiceRef} className="bg-white shadow-lg p-6 rounded-xl text-gray-800 w-full max-w-[900px] border border-gray-300">
-        {/* Header */}
-        <div className="flex items-center border-b-2 border-gray-400 pb-4 mb-4">
-          <div className="flex-1">
-            <h1 className="text-2xl font-extrabold text-blue-800">URBAN AURA SERVICES PVT. LTD.</h1>
-            <p className="text-sm text-gray-600">Address - Line 1, Line 2, Gurugram, Haryana, 122105</p>
-            <p className="text-sm text-gray-600">Phone: +91-XXXXXXXXXX | Email: info@urbanauraservices.com</p>
+    <div style={{ background: "#f5f5f5", minHeight: "100vh", padding: "20px" }}>
+      <div
+        ref={invoiceRef}
+        style={{
+          width: "800px",
+          margin: "0 auto",
+          background: "#fff",
+          padding: "20px",
+          border: "1px solid #000",
+        }}
+      >
+        {/* Company Header */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            borderBottom: "2px solid #000",
+            paddingBottom: "10px",
+            marginBottom: "15px",
+          }}
+        >
+          <div
+            style={{
+              flex: 1,
+              textAlign: "center",
+              color: "blue",
+              fontWeight: "bold",
+            }}
+          >
+            <h1 style={{ margin: 0 }}>URBAN AURA SERVICES PVT. LTD.</h1>
+          </div>
+          <div
+            style={{ position: "absolute", right: "420px", bottom: "420px" }}
+          >
+            <img src="/logo.jpg" style={{ height: "150px" }} />
           </div>
         </div>
 
-        {/* Invoice Info */}
-        <div className="flex justify-between items-center border border-gray-400 mb-4 rounded-md overflow-hidden">
-          <input type="text" value={invoiceData.invoiceNo} onChange={(e) => setInvoiceData({ ...invoiceData, invoiceNo: e.target.value })} className="px-4 py-2 bg-gray-100 text-sm border-r border-gray-400 font-semibold w-1/2" />
-          <input type="date" value={invoiceData.invoiceDate} onChange={(e) => setInvoiceData({ ...invoiceData, invoiceDate: e.target.value })} className="px-4 py-2 text-sm font-semibold w-1/2 text-right" />
+        {/* Company Address & Contact */}
+        <div
+          style={{
+            marginBottom: "20px",
+            textAlign: "left",
+            fontSize: "14px",
+            lineHeight: "1.6",
+          }}
+        >
+          <p>
+            <b>Address:</b> Line 1, City - Gurugram, State - Haryana, Pincode -
+            122105
+          </p>
+          <p>
+            <b>Phone:</b> +91 - XXXXXXXXXX | <b>E-mail:</b>{" "}
+            info@urbanauraservices.com | <b>Website:</b> www.urbanauracs.com/
+          </p>
         </div>
 
-        {/* Bill To */}
-        <div className="border border-gray-400 mb-4 p-4 rounded-md">
-          <h2 className="font-bold text-lg text-gray-700">Bill To (Customer Details)</h2>
-          <input type="text" value={invoiceData.customerName} onChange={(e) => setInvoiceData({ ...invoiceData, customerName: e.target.value })} className="mt-2 border-b border-gray-300 w-full" />
-          <input type="text" value={invoiceData.address} onChange={(e) => setInvoiceData({ ...invoiceData, address: e.target.value })} className="mt-1 border-b border-gray-300 w-full" />
-          <input type="text" value={invoiceData.phone} onChange={(e) => setInvoiceData({ ...invoiceData, phone: e.target.value })} className="mt-1 border-b border-gray-300 w-full" />
-          <input type="text" value={invoiceData.gstin} onChange={(e) => setInvoiceData({ ...invoiceData, gstin: e.target.value })} className="mt-1 border-b border-gray-300 w-full" />
+        {/* Header */}
+        <div style={{ display: "flex", justifyContent: "space-between" }}>
+          <div>
+            <h2>Invoice</h2>
+            <p>Invoice No: UAS/2025/001</p>
+            <p>Date: {new Date().toLocaleDateString()}</p>
+          </div>
+        </div>
+
+        {/* Customer Info */}
+        <div style={{ marginTop: "20px" }}>
+          <h3>Bill To:</h3>
+          <p>
+            <b>Customer Name / Company Name:</b>{" "}
+            <input type="text" defaultValue="ABC Enterprises" />
+          </p>
+          <p>
+            <b>Address:</b>{" "}
+            <input
+              type="text"
+              defaultValue="123 Street, City, State, Pincode"
+            />
+          </p>
+          <p>
+            <b>Phone:</b> <input type="text" defaultValue="+91-9876543210" />
+          </p>
+          <p>
+            <b>GSTIN:</b> <input type="text" defaultValue="22AAAAA0000A1Z5" />
+          </p>
         </div>
 
         {/* Services Table */}
-        <div className="overflow-x-auto mb-4">
-          <table className="w-full border-collapse table-auto text-sm">
-            <thead>
-              <tr className="bg-blue-100 text-blue-800">
-                <th className="border border-gray-300 px-4 py-2 text-center">S. No.</th>
-                <th className="border border-gray-300 px-4 py-2 text-left">Description</th>
-                <th className="border border-gray-300 px-4 py-2 text-center">HSN/SAC</th>
-                <th className="border border-gray-300 px-4 py-2 text-center">Qty</th>
-                <th className="border border-gray-300 px-4 py-2 text-center">Date</th>
-                <th className="border border-gray-300 px-4 py-2 text-right">Amount (₹)</th>
-                <th className="border border-gray-300 px-4 py-2 text-center">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {invoiceData.services.map((item, i) => (
-                <tr key={i} className="hover:bg-gray-50">
-                  <td className="border border-gray-300 px-4 py-2 text-center">{i + 1}</td>
-                  <td className="border border-gray-300 px-4 py-2"><input type="text" value={item.description} onChange={(e) => handleServiceChange(i, "description", e.target.value)} className="w-full border-b border-gray-300" /></td>
-                  <td className="border border-gray-300 px-4 py-2 text-center"><input type="text" value={item.code} onChange={(e) => handleServiceChange(i, "code", e.target.value)} className="w-full border-b border-gray-300 text-center" /></td>
-                  <td className="border border-gray-300 px-4 py-2 text-center"><input type="number" value={item.qty} onChange={(e) => handleServiceChange(i, "qty", e.target.value)} className="w-full border-b border-gray-300 text-center" /></td>
-                  <td className="border border-gray-300 px-4 py-2 text-center"><input type="date" value={item.date} onChange={(e) => handleServiceChange(i, "date", e.target.value)} className="w-full border-b border-gray-300 text-center" /></td>
-                  <td className="border border-gray-300 px-4 py-2 text-right"><input type="number" value={item.amount} onChange={(e) => handleServiceChange(i, "amount", e.target.value)} className="w-full border-b border-gray-300 text-right" /></td>
-                  <td className="border border-gray-300 px-4 py-2 text-center"><button className="text-red-600" onClick={() => removeService(i)}>Remove</button></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          <button onClick={addService} className="mt-2 px-4 py-2 bg-green-600 text-white rounded-lg">Add Service</button>
-        </div>
-
-        {/* Tax Summary */}
-        <table className="w-full border-collapse table-auto text-sm mb-4">
+        <table
+          style={{
+            width: "100%",
+            borderCollapse: "collapse",
+            marginTop: "20px",
+          }}
+        >
+          <thead>
+            <tr>
+              <th style={{ border: "1px solid #000", padding: "8px" }}>
+                Description
+              </th>
+              <th style={{ border: "1px solid #000", padding: "8px" }}>P.Id</th>
+              <th style={{ border: "1px solid #000", padding: "8px" }}>
+                Quantity
+              </th>
+              <th style={{ border: "1px solid #000", padding: "8px" }}>Date</th>
+              <th style={{ border: "1px solid #000", padding: "8px" }}>Booking Date</th>
+              <th style={{ border: "1px solid #000", padding: "8px" }}>
+                Amount
+              </th>
+            </tr>
+          </thead>
           <tbody>
             <tr>
-              <td className="border border-gray-300 px-4 py-2">CGST (%)</td>
-              <td className="border border-gray-300 px-4 py-2 text-right">
-                <input type="number" value={invoiceData.cgstRate} onChange={(e) => setInvoiceData({ ...invoiceData, cgstRate: e.target.value })} className="w-full text-right border-b border-gray-300" />
+              <td style={{ border: "1px solid #000", padding: "8px" }}>
+                House Cleaning Service
               </td>
-              <td className="border border-gray-300 px-4 py-2 text-right">{cgstAmount}</td>
+              <td style={{ border: "1px solid #000", padding: "8px" }}>
+                998533
+              </td>
+              <td style={{ border: "1px solid #000", padding: "8px" }}>1</td>
+              <td style={{ border: "1px solid #000", padding: "8px" }}>
+                {new Date().toLocaleDateString()}
+              </td>
+                <td style={{ border: "1px solid #000", padding: "8px" }}>
+                {new Date().toLocaleDateString()}
+              </td>
+              <td style={{ border: "1px solid #000", padding: "8px" }}>
+                ₹2500
+              </td>
             </tr>
             <tr>
-              <td className="border border-gray-300 px-4 py-2">SGST (%)</td>
-              <td className="border border-gray-300 px-4 py-2 text-right">
-                <input type="number" value={invoiceData.sgstRate} onChange={(e) => setInvoiceData({ ...invoiceData, sgstRate: e.target.value })} className="w-full text-right border-b border-gray-300" />
+              <td style={{ border: "1px solid #000", padding: "8px" }}>
+                Deep Sanitation
               </td>
-              <td className="border border-gray-300 px-4 py-2 text-right">{sgstAmount}</td>
-            </tr>
-            <tr>
-              <td className="border border-gray-300 px-4 py-2 font-bold">Grand Total</td>
-              <td className="border border-gray-300 px-4 py-2 text-right font-bold" colSpan={2}>{grandTotal}</td>
+              <td style={{ border: "1px solid #000", padding: "8px" }}>
+                998533
+              </td>
+              <td style={{ border: "1px solid #000", padding: "8px" }}>1</td>
+              <td style={{ border: "1px solid #000", padding: "8px" }}>
+                {new Date().toLocaleDateString()}
+              </td>
+              <td style={{ border: "1px solid #000", padding: "8px" }}>
+                {new Date().toLocaleDateString()}
+              </td>
+              <td style={{ border: "1px solid #000", padding: "8px" }}>
+                ₹1500
+              </td>
             </tr>
           </tbody>
         </table>
+
+        {/* Totals */}
+
+        {/* Stamp & Sign */}
+        <div
+          style={{
+            border: "2px solid #000",
+            height: "120px",
+            marginTop: "30px",
+            display: "flex",
+            alignItems: "center",
+          }}
+        >
+          {/* Left side: Totals */}
+          <div
+            style={{
+              flex: 1,
+              textAlign: "left",
+              padding: "10px",
+            }}
+          >
+            <p>Sub Total: ₹4000</p>
+            <p>CGST (9%): ₹360</p>
+            <p>SGST (9%): ₹360</p>
+            <h3>Grand Total: ₹4720</h3>
+          </div>
+
+          {/* Divider in the center */}
+          <div
+            style={{
+              width: "2px",
+              background: "#000",
+              height: "100%",
+            }}
+          ></div>
+
+          {/* Right side: Logo */}
+          <div
+            style={{
+              flex: 1 / 2,
+              textAlign: "right",
+              padding: "10px",
+              marginLeft: "150px",
+            }}
+          >
+            <img src="/logo.jpg" style={{ height: "100px" }} />
+          </div>
+        </div>
+
+        {/* Bank Details */}
+        <div style={{ marginTop: "30px" }}>
+          <h3>Bank Details</h3>
+          <p>
+            <b>Bank:</b>{" "}
+            <input
+              type="text"
+              defaultValue="Urban Aura Services Pvt. Ltd."
+              style={{ width: "60%" }}
+            />
+          </p>
+          <p>
+            <b>Account Number:</b>{" "}
+            <input type="text" defaultValue="1234567890" />
+          </p>
+          <p>
+            <b>Branch:</b> <input type="text" defaultValue="Noida" />
+          </p>
+          <p>
+            <b>Account Holder:</b>{" "}
+            <input type="text" defaultValue="Urban Aura Pvt Ltd" />
+          </p>
+          <p>
+            <b>IFSC Code:</b> <input type="text" defaultValue="HDFC0001234" />
+          </p>
+          <p>
+            <b>Branch Code:</b> <input type="text" defaultValue="1234" />
+          </p>
+        </div>
+
+        {/* Notes */}
+        <div style={{ marginTop: "30px" }}>
+          <h4>Notes</h4>
+          <p>
+            1. This is a computer-generated invoice and does not require a
+            physical signature.
+          </p>
+          <p>
+            2. Please make the payment within 15 days of receiving this invoice.
+          </p>
+          <p>3. For any queries, contact us at.</p>
+        </div>
+
+        {/* Thank you */}
+        <h3 style={{ textAlign: "center", marginTop: "30px" }}>
+          Thank You for letting us brighten your space. We look forward to
+          serving you again! - Team Urban Aura Services!
+        </h3>
       </div>
 
-      {/* Buttons */}
-      <div className="text-center mt-6 flex gap-4">
-        <button onClick={saveToCloud} className="px-8 py-3 bg-green-600 text-white rounded-lg" disabled={isSaving}>
-          {isSaving ? "Saving..." : "Save to Cloud"}
-        </button>
-        <button onClick={downloadPDF} className={`px-8 py-3 bg-blue-600 text-white rounded-lg ${!pdfUrl ? "opacity-50 cursor-not-allowed" : ""}`}>
+      {/* Download Button */}
+      <div style={{ textAlign: "center", marginTop: "20px" }}>
+        <button
+          onClick={downloadPDF}
+          style={{
+            padding: "10px 20px",
+            background: "#1976d2",
+            color: "#fff",
+            border: "none",
+            borderRadius: "5px",
+            cursor: "pointer",
+          }}
+        >
           Download PDF
         </button>
       </div>
     </div>
   );
-};
-
-export default Invoice;
+}

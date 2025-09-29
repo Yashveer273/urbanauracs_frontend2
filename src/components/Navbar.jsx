@@ -76,32 +76,28 @@ const Navbar = ({ toggleFilterSidebar, onAboutClick }) => {
       {!scrolled && (
         <div className="top-bar" ref={topBarRef}>
           <div style={{ display: "flex", gap: "20px", alignItems: "center" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-              <span>Call: {links[0]?.phone}</span>
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-              <span> {links[0]?.email}</span>
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-              {/* <FaMapMarkerAlt/> <span> {links[0]?.address}</span> */}
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-              <FaYoutube
-                className="text-white transform rotate-90"
-                href={links[0]?.youtube}
-              />
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-              <FaInstagram
-                className="text-white transform rotate-90"
-                href={links[0]?.insta}
-              />
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-              <FaFacebook
-                className="text-white transform rotate-90"
-                href={links[0]?.fb}
-              />
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <a href={links[0]?.youtube} target="_blank" rel="noreferrer">
+                <FaYoutube size={23} className=" hover:scale-110 transition" />
+              </a>
+
+              <a href={links[0]?.insta} target="_blank" rel="noreferrer">
+                <FaInstagram
+                  size={23}
+                  className=" hover:scale-110 transition"
+                />
+              </a>
+
+              <a href={links[0]?.fb} target="_blank" rel="noreferrer">
+                <FaFacebook size={23} className=" hover:scale-110 transition" />
+              </a>
+              <div
+                style={{ display: "flex", alignItems: "center", gap: "5px" }}
+              >
+                <b style={{ fontSize: "15px" }}>
+                  Call Us: +91 - {links[0]?.phone}
+                </b>
+              </div>
             </div>
           </div>
         </div>
@@ -111,7 +107,7 @@ const Navbar = ({ toggleFilterSidebar, onAboutClick }) => {
         className={`main-navbar ${scrolled ? "fixed scrolled" : ""}`}
         style={{ top: scrolled ? 0 : `${topBarHeight}px` }}
       >
-        <div className="navbar-header w-full md:w-auto">
+        <div className="navbar-header w-full md:w-auto ">
           <div className="flex items-center justify-between w-full">
             {/* Logo */}
             <img
@@ -119,13 +115,13 @@ const Navbar = ({ toggleFilterSidebar, onAboutClick }) => {
               alt="Clean Logo"
               width={50}
               height={50}
-              className="rounded-full object-cover transition-transform duration-500 hover:rotate-180"
+              className="rounded-full object-cover transition-transform duration-500 "
             />
             {/* Right actions */}
-            <div className="flex items-center gap-4 md:hidden  ">
+            <div className="flex items-center gap-2 md:hidden p-5 ">
               {/* Search Icon */}
               <div
-                className="top-search-icon cursor-pointer"
+                className="top-search-icon cursor-pointer cart-btn "
                 onClick={toggleSearchBox}
               >
                 <FaSearch />
@@ -134,33 +130,38 @@ const Navbar = ({ toggleFilterSidebar, onAboutClick }) => {
               {/* Filter + Cart */}
               <div className="flex items-center gap-2  ">
                 <button
-                  className="filter-btn flex items-center gap-1 px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
+                  className="filter-btn flex items-center gap-1  py-1 bg-gray-200 rounded hover:bg-gray-300"
                   onClick={toggleFilterSidebar}
                 >
-                  <FaFilter /> Filter
+                  <FaFilter size={20} />
+                  <h1 style={{ fontSize: 19 }}>Filter</h1>
                 </button>
 
                 <button
-                  className="cart-btn relative group p-2 rounded hover:bg-gray-200"
+                  className="cart-btn relative group  rounded hover:bg-gray-200"
                   onClick={() => dispatch(toggleCart())}
                 >
-                  <FaShoppingCart className="group-hover:text-[#fff] group-hover:bg-[#f87559]" />
+                  <FaShoppingCart
+                    size={23}
+                    className="group-hover:text-[#fff] group-hover:bg-[#f87559]"
+                  />
                   {cartItemCount > 0 && (
                     <span className="absolute -top-1 -right-1 bg-[#f87559] text-white text-xs rounded-full h-5 w-5 flex items-center justify-center group-hover:bg-[#fff] group-hover:text-[#f87559]">
                       {cartItemCount}
                     </span>
                   )}
                 </button>
+                <div className="cart-btn">
+                  <button className="hamburger" onClick={toggleMenu}>
+                    {menuOpen ? <FaTimes /> : <FaBars />}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-
-          <button className="hamburger" onClick={toggleMenu}>
-            {menuOpen ? <FaTimes /> : <FaBars />}
-          </button>
         </div>
 
-        <div className={`nav-links ${menuOpen ? "show" : ""}`}>
+        <div className={`nav-links ${menuOpen ? "show" : ""} ` } style={{color:"black"}}>
           <Link to="/">Home</Link>
 
           <button

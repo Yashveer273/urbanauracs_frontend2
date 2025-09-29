@@ -1,16 +1,17 @@
 import React, { useState } from "react";
 import "./Chatbot.css";
-
-import { collection, addDoc ,serverTimestamp} from "firebase/firestore";
-
+import { useSelector, useDispatch } from "react-redux";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { toggleChatbox, selectChatbox } from "../store/chatboxSlice";
 import { firestore } from "../firebaseCon";
+
 export default function Chatbot() {
-  const [isOpen, setIsOpen] = useState(false);
+  const dispatch = useDispatch();
+  const isOpen = useSelector(selectChatbox); // ✅ from Redux
+
   const [step, setStep] = useState(1);
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-
   const [messages, setMessages] = useState([
     { from: "bot", text: "Hello! Please enter your Name." },
   ]);
@@ -44,61 +45,42 @@ export default function Chatbot() {
     if (step === 1) {
       setName(value.trim());
       if (value.trim() !== "") {
-        newMessages.push({ from: "bot", text: "Great! Now enter your Email." });
+        newMessages.push({ from: "bot", text: "Now enter your 10-digit Phone Number." });
         setStep(2);
       } else {
         newMessages.push({ from: "bot", text: "❌ Name cannot be empty." });
       }
     } else if (step === 2) {
-      setEmail(value.trim());
-      const isEmailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
-      if (isEmailValid) {
-        newMessages.push({
-          from: "bot",
-          text: "Now enter your 10-digit Phone Number.",
-        });
-        setStep(3);
-      } else {
-        newMessages.push({
-          from: "bot",
-          text: "❌ Invalid email format. Please try again.",
-        });
-      }
-    } else if (step === 3) {
       setPhone(value.trim());
       const isPhoneValid = value.replace(/\D/g, "").length === 10;
       if (isPhoneValid) {
         newMessages.push({
           from: "bot",
-          text: "Thanks! Now tell me your problem.",
+          text: "Please let us know your query",
         });
-        setStep(4);
+        setStep(3);
       } else {
         newMessages.push({
           from: "bot",
           text: "📞 Phone must be exactly 10 digits.",
         });
       }
-    } else if (step === 4) {
+    } else if (step === 3) {
+      setStep(4);
 
-  
-  // Append the final user message to the messages array
- 
-  
-  setStep(5);
+      // Save to Firestore
+      await addDoc(collection(firestore, "homeCleaningTicket"), {
+        data: {
+          name,
+          phone,
+          message: value.trim(),
+          status: "New",
+          createdAt: serverTimestamp(),
+        },
+      });
 
-  // Save to Firestore
-  await addDoc(collection(firestore, "homeCleaningTicket"), {
-    data: {
-      name,
-      email,
-      phone,
-      message:value.trim(),
-          status: "New",              
-          createdAt: serverTimestamp()
-    },
-  });
-}
+      newMessages.push({ from: "bot", text: "✅ We'll get back to you within 24 hours." });
+    }
 
     setMessages(newMessages);
   };
@@ -115,23 +97,22 @@ export default function Chatbot() {
       {/* Chat button */}
       <div
         className="fixed bottom-6 right-6 z-50 p-4 bg-teal-500 text-white rounded-full shadow-lg cursor-pointer transition-transform duration-300 hover:scale-110"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => dispatch(toggleChatbox())} // ✅ use Redux toggle
       >
         {isOpen ? closeIcon : chatIcon}
       </div>
 
-     
+      {/* Chatbox */}
       <div
-  className={`fixed bottom-24 right-6 w-96 max-w-[90vw] bg-white rounded-xl shadow-xl flex flex-col overflow-hidden z-40 transition-all duration-400 ${
-    isOpen ? "flex" : "hidden"
-  }`}
->
-
+        className={`fixed bottom-24 right-6 w-96 max-w-[90vw] bg-white rounded-xl shadow-xl flex flex-col overflow-hidden z-40 transition-all duration-400 ${
+          isOpen ? "flex" : "hidden"
+        }`}
+      >
         <div className="flex justify-between items-center px-5 py-4 bg-gray-100 border-b border-gray-200">
           <span className="text-lg font-semibold text-gray-800">Chatbot</span>
           <button
             className="text-2xl text-gray-500 hover:text-gray-800"
-            onClick={() => setIsOpen(false)}
+            onClick={() => dispatch(toggleChatbox())}
           >
             ✖
           </button>
@@ -152,7 +133,7 @@ export default function Chatbot() {
           ))}
         </div>
 
-        {step !== 5 && (
+        {step !== 4 && (
           <div className="flex p-4 border-t border-gray-200 bg-white">
             <input
               type="text"

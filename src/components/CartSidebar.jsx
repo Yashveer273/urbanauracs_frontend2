@@ -1,9 +1,15 @@
 import React from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { removeItem, closeCart, selectCartTotal } from "../store/CartSlice";
+import { removeItem, closeCart, selectCartTotal,addItem,decreaseItem } from "../store/CartSlice";
 import { addToHistory } from "../store/userSlice";
-import { FaTimes, FaTrash, FaCalendarAlt } from "react-icons/fa";
+import {
+  FaTimes,
+  FaTrash,
+  FaCalendarAlt,
+  FaPlus,
+  FaMinus,
+} from "react-icons/fa";
 
 const CartSidebar = () => {
   const dispatch = useDispatch();
@@ -22,25 +28,25 @@ const CartSidebar = () => {
   const handleCheckout = () => {
     if (cartItems.length === 0) return;
 
-    // Convert cart items into history entries (preserve bookingDate if available)
-    const newHistoryItems = cartItems.map((item) => ({
-      id: Date.now() + Math.random(),
-      title: item.title,
-      description: item.description,
-      price: item.price,
-      serviceImage:
-        item.serviceImage ||
-        "https://via.placeholder.com/80x80.png?text=Service",
-      bookingDate: item.bookingDate || "Not selected",
-      purchasedOn: new Date().toISOString().split("T")[0],
-      status: "processing",
-      statusColor: "blue",
-    }));
+    // // Convert cart items into history entries (preserve bookingDate if available)
+    // const newHistoryItems = cartItems.map((item) => ({
+    //   id: Date.now() + Math.random(),
+    //   title: item.title,
+    //   description: item.description,
+    //   price: item.price,
+    //   serviceImage:
+    //     item.serviceImage ||
+    //     "https://via.placeholder.com/80x80.png?text=Service",
+    //   bookingDate: item.bookingDate || "Not selected",
+    //   purchasedOn: new Date().toISOString().split("T")[0],
+    //   status: "processing",
+    //   statusColor: "blue",
+    // }));
 
-    // Add each cart item to purchase history
-    newHistoryItems.forEach((historyItem) => {
-      dispatch(addToHistory(historyItem));
-    });
+    // // Add each cart item to purchase history
+    // newHistoryItems.forEach((historyItem) => {
+    //   dispatch(addToHistory(historyItem));
+    // });
     let date = Date.now();
     let total_price = cartTotal.toFixed(2);
     navigate("/PaymentGateway", {
@@ -49,7 +55,13 @@ const CartSidebar = () => {
 
     // alert("✅ Checkout successful! Your services have been added to history.");
   };
+const handleDecrease = (id) => {
+  dispatch(decreaseItem(id));
+};
+  const handleIncrease = (item) => {
+  dispatch(addItem(item));
 
+  };
   return (
     <div
       className={`fixed top-0 right-0 w-80 h-full bg-white shadow-lg flex flex-col font-sans z-1002 transform transition-transform duration-300 ease-in-out ${
@@ -102,6 +114,28 @@ const CartSidebar = () => {
                   <span className="text-lg font-bold text-gray-900">
                     ₹{item.price}
                   </span>
+                  <div className="flex items-center gap-3">
+                    {/* Minus button */}
+                    <button
+                      className="p-1 bg-gray-200 rounded-full hover:bg-gray-300"
+                      onClick={() => handleDecrease(item.id)} // your logic here
+                    >
+                      <FaMinus className="text-gray-700" />
+                    </button>
+
+                    {/* Quantity */}
+                    <span className="text-lg font-bold text-gray-900">
+                      {item.quantity}
+                    </span>
+
+                    {/* Plus button */}
+                    <button
+                      className="p-1 bg-gray-200 rounded-full hover:bg-gray-300"
+                      onClick={() => handleIncrease(item)} // your logic here
+                    >
+                      <FaPlus className="text-gray-700" />
+                    </button>
+                  </div>
                   <button
                     className="text-gray-400 hover:text-[#f87559] transition-colors ml-4"
                     onClick={() => handleRemoveItem(item.id)}

@@ -26,7 +26,11 @@ const services = [
   { title: 'Full Home Cleaning', image: '/images/home_cleaning copy.jpg', link: '/services/full-home-cleaning' },
   { title: 'AC Repair Service', image: '/images/ac_repair.jpg', link: '/services/ac-repair' },
 ];
-
+  const serviceDataMap = {
+    'full-home-cleaning': fullHomeVendors,
+    'ac-repair': acRepairVendors,
+    'commercial-cleaning': commercialCleaning,
+  };
 
 const FullHomeCleaningService = () => {
   const { serviceName } = useParams();
@@ -54,11 +58,7 @@ const FullHomeCleaningService = () => {
   const toggleServicePopup = () => setShowServices(!showServices);
   const toggleFilterSidebar = () => setIsFilterOpen(!isFilterOpen);
 
-  const serviceDataMap = {
-    'full-home-cleaning': fullHomeVendors,
-    'ac-repair': acRepairVendors,
-    'commercial-cleaning': commercialCleaning,
-  };
+
 
 
 

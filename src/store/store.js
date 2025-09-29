@@ -2,7 +2,8 @@ import { configureStore } from "@reduxjs/toolkit";
 import userReducer from "./userSlice";
 import cartReducer from "./CartSlice";
 import orderReducer from "./orderSlices";
-import socialLinksReducer from "./socialLinks"; // ✅ new
+import socialLinksReducer from "./socialLinks";
+import chatboxReducer from "./chatboxSlice"; 
 // Load state from localStorage
 const loadState = () => {
   try {
@@ -33,6 +34,7 @@ export const store = configureStore({
     cart: cartReducer,
     order:orderReducer,
     socialLinks: socialLinksReducer,
+    chatbox: chatboxReducer,
   },
   preloadedState,
 });

@@ -27,15 +27,12 @@ const BannerSlider = () => {
       <div className="banner-text ">
         <h1>EXPERIENCE CLEAN POWER THAT TRANSFORMS <br />YOUR HOME<br /> INTO A HAVEN</h1>
         <p>
-          Trusted by families since <strong>2010</strong>, we deliver <strong>spotless precision</strong> <br />
+          Trusted by families since <strong>2025</strong>, we deliver <strong>spotless precision</strong> <br />
           and<strong> calming comfort</strong><br />
           to every corner of your home—because a <strong><br /> clean space</strong> is a <strong>peaceful space</strong>.
         </p>
 
-        <div className="banner-buttons">
-          <button className="ticket-btn">Get Started</button>
-          <button className="programming-btn">Book Now</button>
-        </div>
+        
       </div>
 
       <div className="banner-images">

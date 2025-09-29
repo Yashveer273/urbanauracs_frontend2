@@ -23,7 +23,7 @@ const FooterWithCarousel = () => {
       </div>
 
       {/* 🔽 Main Footer Section */}
-      <div className="bg-[#15171f] text-gray-300 font-[Inter] px-8 sm:px-12 lg:px-16 py-20 sm:py-24 lg:py-28 min-h-[400px] rounded-3xl mx-4 mb-2 shadow-md">
+      <div className="bg-black text-gray-300 font-[Inter] px-8 sm:px-12 lg:px-16 py-20 sm:py-24 lg:py-28 min-h-[400px] rounded-3xl mx-4 mb-2 shadow-md">
         <div className="container mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-12">
             
@@ -97,10 +97,8 @@ const FooterWithCarousel = () => {
         <p>©Urban Aura Services CS - All rights reserved</p>
         <p>
           <a href="/PrivacyPolicy">Privacy Policy </a>
-          &nbsp;&nbsp;|&nbsp;
-          <span>Developed By Design Orbit</span>
-           &nbsp;&nbsp;|&nbsp;
-          <span>Developer Yashveer</span>
+      
+        
         </p>
       </div>
     </>

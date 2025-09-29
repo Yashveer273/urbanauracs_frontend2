@@ -2,10 +2,19 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search, MapPin, ChevronRight } from "lucide-react";
-import { motion , AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import VendorSection from "./VendorSection";
 import HeroBannerSlider from "./HomeCarousal ";
-
+import fullHomeVendors from "../data/fullHomeVendors.json";
+import acRepairVendors from "../data/AcRepair.json";
+import commercialCleaning from "../data/CommercialCleaning.json";
+import { useDispatch } from "react-redux";
+import { openChatbox } from "../store/chatboxSlice";
+const serviceDataMap = {
+  "full-home-cleaning": fullHomeVendors,
+  "ac-repair": acRepairVendors,
+  "commercial-cleaning": commercialCleaning,
+};
 
 const services = [
   {
@@ -56,14 +65,13 @@ const services = [
   },
 ];
 
-const HeroSectionWrapper = ({MyCity}) => {
+const HeroSectionWrapper = ({ MyCity}) => {
   const [showServices, setShowServices] = useState(false);
   const [filteredVendors, setFilteredVendors] = useState([]);
   const [selectedLocation, setSelectedLocation] = useState("");
   const servicesRef = useRef(null);
 
   const handleShowServices = (vendors, location) => {
-   
     setFilteredVendors(vendors);
     setSelectedLocation(location);
     setShowServices(true);
@@ -74,7 +82,6 @@ const HeroSectionWrapper = ({MyCity}) => {
 
   return (
     <div className="bg-[#fff]  font-sans">
-      
       <main className=" px-0">
         <HeroSection onShowServices={handleShowServices} MyCity={MyCity} />
         <AnimatePresence>
@@ -92,7 +99,7 @@ const HeroSectionWrapper = ({MyCity}) => {
   );
 };
 
-const HeroSection = ({ onShowServices,MyCity }) => {
+const HeroSection = ({ onShowServices, MyCity }) => {
   const heroRef = useRef(null);
 
   return (
@@ -119,14 +126,15 @@ const HeroSection = ({ onShowServices,MyCity }) => {
             Professional, reliable, and eco-friendly cleaning solutions tailored
             to your lifestyle.
           </p>
-          <BookingForm onShowServices={onShowServices} MyCity={MyCity} />
+          <BookingForm onShowServices={onShowServices} MyCity={MyCity}  />
         </motion.div>
       </div>
     </section>
   );
 };
 
-const BookingForm = ({MyCity}) => {
+const BookingForm = ({ MyCity }) => {
+  const dispatch = useDispatch();
   const [location, setLocation] = useState("");
   const [BookingCity, setBookingCity] = useState("");
   const [isManualLocation, setIsManualLocation] = useState(false);
@@ -162,8 +170,7 @@ const BookingForm = ({MyCity}) => {
   ];
 
   useEffect(() => {
-  if (MyCity) {
-
+    if (MyCity) {
       setBookingCity(MyCity);
     }
     if ("geolocation" in navigator && !isManualLocation && !location) {
@@ -193,7 +200,7 @@ const BookingForm = ({MyCity}) => {
         }
       );
     }
-  }, [isManualLocation, location,MyCity]);
+  }, [isManualLocation, location, MyCity]);
 
   const handleLocationChange = (e) => {
     const value = e.target.value;
@@ -202,8 +209,25 @@ const BookingForm = ({MyCity}) => {
   };
 
   const handleBookNow = () => {
-    console.log(selectedService);
-    navigate(selectedService, { state: { location: location,BookingCities:BookingCity} });
+    const serviceName = selectedService.split("/").pop();
+    let vendors = serviceDataMap[serviceName];
+
+    vendors = vendors.filter(
+      (vendor) =>
+        vendor.location?.toLowerCase().replace(/\s/g, "") ===
+        BookingCity.toLowerCase().replace(/\s/g, "")
+    );
+    console.log(vendors.length);
+    if (vendors.length <= 0) {
+      alert("😔 No services available in your selected location");
+      // setchatopenStatus=true;
+         dispatch(openChatbox());
+    } else {
+      console.log(selectedService);
+      navigate(selectedService, {
+        state: { location: location, BookingCities: BookingCity },
+      });
+    }
   };
 
   return (
@@ -217,7 +241,6 @@ const BookingForm = ({MyCity}) => {
         {/* Service */}
         <div className="w-full md:flex-1 flex items-center relative">
           <div className="w-full">
-            
             <select
               id="service"
               value={selectedService}
@@ -238,12 +261,10 @@ const BookingForm = ({MyCity}) => {
         </div>
 
         {/* Divider */}
-       
 
         {/* Booking City */}
         <div className="w-full md:flex-1 flex items-center relative">
           <div className="w-full">
-            
             <select
               id="Bookinglocation"
               value={BookingCity}
@@ -263,12 +284,10 @@ const BookingForm = ({MyCity}) => {
         </div>
 
         {/* Divider */}
-     
 
         {/* Location Input */}
         <div className="w-full md:flex-1 flex items-center relative">
           <div className="w-full">
-            
             <input
               type="text"
               id="location"

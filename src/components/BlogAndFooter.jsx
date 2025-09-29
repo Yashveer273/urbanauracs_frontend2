@@ -111,6 +111,7 @@ const NewsletterFooter = () => {
       <div className="max-w-7xl mx-auto px-6">
         <div className="bg-gradient-to-r from-[#1f64f0] to-[#2668f4] rounded-xl p-6 flex flex-col md:flex-row items-center gap-6">
           <div className="flex-1">
+            
             <h4 className="text-xl font-semibold">
               Stay In The Loop With Qlinest
             </h4>

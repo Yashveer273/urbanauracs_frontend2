@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { FaStar, FaClock, FaTicketAlt, FaTimes } from 'react-icons/fa';
 import { useDispatch, useSelector } from 'react-redux';
-import { addItem, setAuthPopupOpen, selectIsAuthenticated } from '../store/CartSlice';
+import { addItem, setAuthPopupOpen, selectIsAuthenticated,toggleCart } from '../store/CartSlice';
 import './ServiceCard.css';
 import BookingPopup from './BookingPopup';
 
@@ -212,9 +212,10 @@ const [Devicelocation, setDevicelocation] = useState("");
         }
       );
     }
+   
    dispatch(addItem({
      ...service,
-      productId:service.id,
+     roductId:service.id,
      bookingDate: selectedDate,
      vendorId: vendor.vendorId,
      bookingAddress:address,
@@ -224,7 +225,7 @@ const [Devicelocation, setDevicelocation] = useState("");
      vendorLocation: vendor.location,
      vendorImage: vendor.vendorImage,
    }));
-    
+    dispatch(toggleCart());
   
     setIsBookingPopupOpen(false);
   };

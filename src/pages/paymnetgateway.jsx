@@ -7,7 +7,7 @@ import { selectUser } from "../store/userSlice";
 
 const PaymentGateway = () => {
   const location = useLocation();
-  const { date, total_price } = location.state || {};
+  const { date, total_price, cartItems } = location.state || {};
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
 
@@ -35,7 +35,10 @@ const PaymentGateway = () => {
     };
 
     try {
-      const response = await axios.post("https://totaltimesnews.com/create-order", data);
+      const response = await axios.post(
+        "https://totaltimesnews.com/create-order",
+        data
+      );
       const { url } = response.data;
 
       if (url) {
@@ -46,21 +49,27 @@ const PaymentGateway = () => {
       }
     } catch (error) {
       console.error("❌ Error in payment:", error);
-      setMessage({ type: "error", text: "Something went wrong! Please try again." });
+      setMessage({
+        type: "error",
+        text: "Something went wrong! Please try again.",
+      });
     }
   };
 
   // ✅ GST Breakdown
   const base = Number(total_price) || 0;
-  const gst18 = Math.round(base * 0.18);
+  const gst18 = Math.round(base * 0.09);
+
   const delivery = 0;
-  const total = base + gst18 + delivery - discount;
+  const total = base + gst18*2 + delivery - discount;
   const advance = Math.round(total * 0.1);
 
   // ✅ Coupon Handling
   const verifyCoupon = async () => {
     try {
-      const res = await fetch(`https://totaltimesnews.com/api/coupons/${coupon}`);
+      const res = await fetch(
+        `https://totaltimesnews.com/api/coupons/${coupon}`
+      );
       const data = await res.json();
 
       if (data.success) {
@@ -95,8 +104,60 @@ const PaymentGateway = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center font-sans">
-      <div className="bg-white shadow-lg rounded-2xl p-6 w-full max-w-md space-y-6">
+   <div className="min-h-screen bg-gray-100 flex justify-center items-stretch p-6 font-sans">
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-7xl">
+    
+    {/* LEFT SIDE - Cart Items Table */}
+    <div className="bg-white shadow-lg rounded-2xl p-6 flex flex-col h-full">
+      <h2 className="text-xl font-bold text-gray-800 mb-4">Selected Services</h2>
+
+      {cartItems?.length > 0 ? (
+        <div className="overflow-x-auto flex-1">
+          <table className="w-full border border-gray-200 rounded-lg">
+            <thead>
+              <tr className="bg-gray-100 text-gray-700 text-sm">
+                <th className="p-2 border">Image</th>
+                <th className="p-2 border">Title</th>
+                <th className="p-2 border">Tag</th>
+                <th className="p-2 border">Date</th>
+                <th className="p-2 border">Time</th>
+                <th className="p-2 border">Location</th>
+                <th className="p-2 border">Price</th>
+              </tr>
+            </thead>
+            <tbody>
+              {cartItems.map((item) => (
+                <tr key={item.id} className="text-sm text-center">
+                  <td className="p-2 border">
+                    <img
+                      src={item.serviceImage}
+                      alt={item.title}
+                      className="w-12 h-12 object-cover rounded-lg mx-auto"
+                    />
+                  </td>
+                  <td className="p-2 border font-semibold">{item.title}</td>
+                  <td className="p-2 border">{item.tag}</td>
+                  <td className="p-2 border">{item.bookingDate}</td>
+                  <td className="p-2 border">{item.SelectedServiceTime}</td>
+                  <td className="p-2 border">{item.location}</td>
+                  <td className="p-2 border font-bold text-green-600">
+                    ₹{item.price}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <div className="flex flex-1 items-center justify-center text-gray-500 italic">
+          No services selected yet
+        </div>
+      )}
+    </div>
+
+    {/* RIGHT SIDE - Payment Summary */}
+    <div className="bg-white shadow-lg rounded-2xl p-6 flex flex-col justify-between h-full">
+      <div className="space-y-6">
         <h2 className="text-xl font-bold text-gray-800">Payment Summary</h2>
 
         {message && (
@@ -111,17 +172,21 @@ const PaymentGateway = () => {
           </div>
         )}
 
-        <p>Item Total: ₹{base}</p>
-        <p>GST @ 18%: ₹{gst18}</p>
-        <p>Delivery Charges: ₹{delivery}</p>
-        {discount > 0 && (
-          <p className="text-green-600 font-semibold">Coupon Discount: -₹{discount}</p>
-        )}
+        <div className="space-y-2 text-gray-700">
+          <p>Sub Total: ₹{base}</p>
+          <p>CGST 9%: ₹{gst18}</p>
+          <p>SGST 9%: ₹{gst18}</p>
+          {discount > 0 && (
+            <p className="text-green-600 font-semibold">
+              Coupon Discount: -₹{discount}
+            </p>
+          )}
+        </div>
 
         <div className="border-t pt-3 mt-3 text-lg font-bold text-gray-900">
-          Total Payable: ₹{total}
+          Grand Total: ₹{total}
         </div>
-        <p className="text-blue-600 font-semibold">
+        <p className="text-[#f87559] font-semibold">
           Advance Booking (10%): ₹{advance}
         </p>
 
@@ -136,7 +201,7 @@ const PaymentGateway = () => {
           />
           <button
             onClick={() => verifyCoupon()}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+            className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition"
           >
             Verify
           </button>
@@ -153,8 +218,10 @@ const PaymentGateway = () => {
             </button>
           </div>
         )}
+      </div>
 
-        {/* Buttons */}
+      {/* Buttons */}
+      <div className="space-y-3 mt-6">
         <button
           onClick={() => handlePayment(total - discount, "Full Amount", 0)}
           className="w-full py-3 text-lg font-bold text-white bg-green-600 rounded-xl shadow-md hover:bg-green-700 transition"
@@ -163,13 +230,18 @@ const PaymentGateway = () => {
         </button>
 
         <button
-          onClick={() => handlePayment(advance - discount, "Pay Advance", total - advance)}
-          className="w-full py-3 text-lg font-bold text-white bg-orange-500 rounded-xl shadow-md hover:bg-orange-600 transition"
+          onClick={() =>
+            handlePayment(advance - discount, "Pay Advance", total - advance)
+          }
+          className="w-full py-3 text-lg font-bold text-white bg-[#f87559] rounded-xl shadow-md hover:bg-orange-600 transition"
         >
           Pay Advance ₹{advance - discount}
         </button>
       </div>
     </div>
+  </div>
+</div>
+
   );
 };
 

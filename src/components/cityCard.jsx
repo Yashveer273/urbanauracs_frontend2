@@ -33,7 +33,7 @@ export default function CityCards({setMyCity}) {
       {isModalOpen && (
         <div className="fixed inset-0 flex items-center justify-center z-50 mt-50 mb-20">
           {/* Modal box */}
-          <div className="bg-white rounded-lg shadow-lg p-6 w-11/12 md:w-2/3 lg:w-1/2 max-h-[80vh] flex flex-col">
+          <div className="bg-white  rounded-lg shadow-lg p-6 md:w-2/3 lg:w-1/2 max-h-[70vh] flex flex-col">
             {/* Header */}
             <div className="flex justify-between items-center mb-4">
               <h1 className="text-2xl font-bold text-gray-800">Select Booking City</h1>
@@ -59,7 +59,7 @@ export default function CityCards({setMyCity}) {
 // Modal content - city grid
 const CityModal = ({ cities, onSelectCity }) => {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
       {cities.map((city, index) => (
         <CityCard key={index} city={city} onSelectCity={onSelectCity} />
       ))}
@@ -72,7 +72,7 @@ const CityCard = ({ city, onSelectCity }) => {
   return (
     <button
       onClick={() => onSelectCity(city)}
-      className="p-4 rounded-lg shadow-md text-center transition-transform transform 
+      className="w-35 rounded-lg shadow-md text-center transition-transform transform 
                  hover:scale-105 active:scale-95 cursor-pointer select-none 
                  bg-gray-100 hover:bg-gray-200 text-black"
     >
