@@ -163,6 +163,9 @@ export default function SalesSection() {
       pincode: sale.pincode || "",
       location: sale.user_location || "",
       totalPrice: sale.total_price || "",
+      payableAmount: sale.payableAmount || "",
+      payedAmount: sale.payedAmount || "",
+         
       dateTime: sale.date_time
         ? new Date(sale.date_time).toISOString().slice(0, 16)
         : "",
@@ -182,6 +185,8 @@ export default function SalesSection() {
           pincode: rowForm.pincode,
           user_location: rowForm.location,
           total_price: Number(rowForm.totalPrice),
+          payableAmount: Number(rowForm.payableAmount),
+          payedAmount: Number(rowForm.payedAmount),
           date_time: new Date(rowForm.dateTime).toISOString(),
         },
         { merge: true }
@@ -198,6 +203,8 @@ export default function SalesSection() {
                 pincode: rowForm.pincode,
                 user_location: rowForm.location,
                 total_price: Number(rowForm.totalPrice),
+                 payableAmount: Number(rowForm.payableAmount),
+          payedAmount: Number(rowForm.payedAmount),
                 date_time: new Date(rowForm.dateTime).toISOString(),
               }
             : s
@@ -288,6 +295,8 @@ export default function SalesSection() {
     "Pincode",
     "Location",
     "Total Price",
+     "Payable Amount" ,
+    "Payed Amount",
     "Date/Time",
     "Status",
     "Responsible",
@@ -376,18 +385,23 @@ export default function SalesSection() {
           </button>
           
         </div>
-<button
+ <div className="fixed bottom-4 right-4 flex space-x-2">
+      {/* Left (scroll left) */}
+      <button
         onClick={scrollLeft}
-        className=""
+        className="p-3 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition"
       >
         <FiChevronLeft size={20} />
       </button>
+
+      {/* Right (scroll right) */}
       <button
         onClick={scrollRight}
-        className=""
+        className="p-3 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition"
       >
         <FiChevronRight size={20} />
       </button>
+    </div>
         <div className="table-container bg-white p-6 rounded-xl shadow-md overflow-x-auto"  ref={tableContainerRef}>
           
           <table className="w-full table-auto border-collapse">
@@ -397,7 +411,7 @@ export default function SalesSection() {
                   <th key={h} className="py-3 px-6">
                     {h}
                   </th>
-                ))}{" "}
+                ))}
               </tr>
             </thead>
             <tbody>
@@ -416,7 +430,7 @@ export default function SalesSection() {
                     <td className="py-4 px-6">
                       <button
                         className="bg-blue-600 cursor-pointer text-white px-3 py-1 rounded-md"
-                        onClick={() => navigate("/InvoiceApp")}
+                        onClick={() => navigate("/InvoiceApp",{state:sale})}
                       >
                         Generate
                       </button>
@@ -440,6 +454,9 @@ export default function SalesSection() {
                     <td className="py-4 px-6">{sale.pincode}</td>
                     <td className="py-4 px-6">{sale.user_location}</td>
                     <td className="py-4 px-6">₹{sale.total_price}</td>
+                    <td className="py-4 px-6">₹{sale.payableAmount}</td>
+                    <td className="py-4 px-6">₹{sale.payedAmount}</td>
+                       
                     <td className="py-4 px-6">
                       {new Date(sale.date_time).toLocaleString()}
                     </td>
@@ -727,6 +744,8 @@ export default function SalesSection() {
               "pincode",
               "location",
               "totalPrice",
+              "payableAmount",
+              "payedAmount",
               "dateTime",
             ].map((field) => (
               <div className="mb-3" key={field}>

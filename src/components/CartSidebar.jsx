@@ -9,6 +9,7 @@ import {
   FaCalendarAlt,
   FaPlus,
   FaMinus,
+  FaClock,
 } from "react-icons/fa";
 
 const CartSidebar = () => {
@@ -107,9 +108,23 @@ const handleDecrease = (id) => {
                   <div className="flex items-center text-xs text-gray-600 mt-1">
                     <FaCalendarAlt className="mr-1 text-[#f87559]" />
                     <span>Booking Date: {item.bookingDate}</span>
+           
                   </div>
                 )}
-
+ {item.SelectedServiceTime && (
+                  <div className="flex items-center text-xs text-gray-600 mt-1">
+                    <FaClock className="mr-1 text-[#f87559]" />
+                  
+                    <span>Booking Time: {item.SelectedServiceTime}</span>
+                  </div>
+                )}
+                {item.bookingDate && (
+                  <div className="flex items-center w-40 text-xs text-gray-600 mt-1">
+                    <FaCalendarAlt className="mr-1 text-[#f87559]" />
+                    <span>Booking Address: {item.bookingAddress}</span>
+           
+                  </div>
+                )}
                 <div className="flex items-center justify-between mt-2">
                   <span className="text-lg font-bold text-gray-900">
                     ₹{item.price}

@@ -21,6 +21,7 @@ import AccountMenu from '../components/AccountMenu';
 import fullHomeVendors from '../data/fullHomeVendors.json';
 import acRepairVendors from '../data/AcRepair.json';
 import commercialCleaning from '../data/CommercialCleaning.json';
+import { loginUser } from '../store/userSlice';
 
 const services = [
   { title: 'Full Home Cleaning', image: '/images/home_cleaning copy.jpg', link: '/services/full-home-cleaning' },
@@ -40,7 +41,7 @@ const FullHomeCleaningService = () => {
 
   const dispatch = useDispatch(); 
   const isAuthPopupOpen = useSelector(selectIsAuthPopupOpen);
-
+ 
   const [showServices, setShowServices] = useState(false);
   const [allVendors, setAllVendors] = useState([]);
   const [filteredVendors, setFilteredVendors] = useState([]);
@@ -205,7 +206,8 @@ const FullHomeCleaningService = () => {
 
         // Also set authenticated user for current session
         setAuthenticated(true);
-        localStorage.setItem('currentUser', JSON.stringify(userData));
+         dispatch(loginUser(userData));
+        
       }}
     />
   </Portal>

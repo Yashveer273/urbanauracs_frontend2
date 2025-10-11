@@ -12,7 +12,7 @@ export default function DashboardLogin() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("https://totaltimesnews.com/api/login-dashAuth", formData);
+      const res = await axios.post("http://localhost:8000/api/login-dashAuth", formData);
 
       if (res.data.token) {
         // Save token + role + username in localStorage

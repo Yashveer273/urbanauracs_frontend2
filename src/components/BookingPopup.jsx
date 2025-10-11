@@ -10,8 +10,7 @@ import Portal from "./Portal";
 const BookingPopup = ({ onClose, onConfirm }) => {
   const [selectedDate, setSelectedDate] = useState("");
   const [hour, setHour] = useState("");
-  const [minute, setMinute] = useState("00");
-  const [ampm, setAmPm] = useState("AM");
+
   const [address, setAddress] = useState("");
   const [rememberAddress, setRememberAddress] = useState(false);
 
@@ -48,7 +47,7 @@ const BookingPopup = ({ onClose, onConfirm }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    const timeFinal = `${hour}:${minute} ${ampm}`;
+    const timeFinal = `${hour}`;
 
     if (rememberAddress) {
       localStorage.setItem(
@@ -63,7 +62,12 @@ const BookingPopup = ({ onClose, onConfirm }) => {
     onConfirm(selectedDate, timeFinal, address);
     onClose();
   };
-
+const timeSlots = [
+  "6:00 AM", "7:00 AM", "8:00 AM", "9:00 AM", "10:00 AM", "11:00 AM",
+  "12:00 PM", "1:00 PM", "2:00 PM", "3:00 PM", "4:00 PM", "5:00 PM",
+  "6:00 PM", "7:00 PM"
+];
+ const [open, setOpen] = useState(false);
   return (
     <Portal>
       <div className="fixed inset-0 z-[1003] flex items-center justify-center p-4 font-inter">
@@ -99,44 +103,46 @@ const BookingPopup = ({ onClose, onConfirm }) => {
                   required
                 />
               </div>
+<div className="relative w-full">
+      {/* Input Box */}
+      <div
+        className="relative cursor-pointer"
+        onClick={() => setOpen(!open)}
+      >
+        <FaClock className="absolute top-1/2 left-4 -translate-y-1/2 text-white h-5 w-5" />
+        <input
+          type="text"
+          readOnly
+          value={hour || ""}
+          placeholder="Select Time"
+          className="w-full bg-gray-700 rounded-lg pl-12 pr-4 py-3 text-white focus:outline-none cursor-pointer"
+        />
+      </div>
 
-              {/* Time Picker (custom dropdowns) */}
-              <div className="relative flex items-center gap-2">
-                <FaClock className="absolute left-4 text-gray-400 h-5 w-5" />
-                <div className="flex w-full pl-10 gap-2">
-                  <select
-                    value={hour}
-                    onChange={(e) => setHour(e.target.value)}
-                    required
-                    className="flex-1 bg-gray-700 rounded-lg py-3 px-2 text-white focus:outline-none"
-                  >
-                    <option value="">Hour</option>
-                    {Array.from({ length: 12 }, (_, i) => i + 1).map((h) => (
-                      <option key={h} value={h}>
-                        {h}
-                      </option>
-                    ))}
-                  </select>
-
-                  <select
-                    value={minute}
-                    onChange={(e) => setMinute(e.target.value)}
-                    className="flex-1 bg-gray-700 rounded-lg py-3 px-2 text-white focus:outline-none"
-                  >
-                    <option value="00">00</option>
-                    <option value="30">30</option>
-                  </select>
-
-                  <select
-                    value={ampm}
-                    onChange={(e) => setAmPm(e.target.value)}
-                    className="flex-1 bg-gray-700 rounded-lg py-3 px-2 text-white focus:outline-none"
-                  >
-                    <option value="AM">AM</option>
-                    <option value="PM">PM</option>
-                  </select>
-                </div>
-              </div>
+      {/* Dropdown Menu */}
+      {open && (
+        <div className="absolute z-50 mt-2 w-full bg-gray-800 rounded-lg shadow-lg p-3 max-h-48 overflow-y-auto">
+          <div className="grid grid-cols-3 gap-2">
+            {timeSlots.map((slot, index) => (
+              <button
+                key={index}
+                onClick={() => {
+                  setHour(slot);
+                  setOpen(false);
+                }}
+                className={`py-2 rounded-md text-sm font-medium transition ${
+                  hour === slot
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-700 text-gray-200 hover:bg-gray-600"
+                }`}
+              >
+                {slot}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
 
               {/* Address Field */}
               <div className="relative">

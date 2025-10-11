@@ -1306,18 +1306,23 @@ const Dashboard = () => {
                   Dashboard Controller
                 </a>
               </li>
+              <li className="mb-2">
+                <a
+                  href="#"
+                  onClick={() => handleLogout}
+                   className="w-full flex items-center justify-center p-3 rounded-lg text-red-500 hover:bg-red-100 transition-colors duration-200"
+         
+                >
+                  
+            <LogOutIcon className="w-5 h-5 mr-2" />
+            Logout
+        
+                </a>
+              </li>
             </ul>
           </nav>
         </div>
-        <div className="mt-8">
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center justify-center p-3 rounded-lg text-red-500 hover:bg-red-100 transition-colors duration-200"
-          >
-            <LogOutIcon className="w-5 h-5 mr-2" />
-            Logout
-          </button>
-        </div>
+        
       </aside>
 
       {/* Main Content Area */}

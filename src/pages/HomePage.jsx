@@ -16,10 +16,13 @@ import { useDispatch } from 'react-redux';
 import { collection, getDocs } from "firebase/firestore";
 import { setLinks } from '../store/socialLinks';
 import CityCards from '../components/cityCard';
+import {  useSelector } from "react-redux";
 
+import { logoutUser, selectUser } from "../store/userSlice";
+import axios from 'axios';
 
 const HomePage = () => {
-  
+   const user = useSelector(selectUser);
      const dispatch = useDispatch(); 
   const [showServices, setShowServices] = useState(false);
   const [MyCity, setMyCity] = useState("");
@@ -83,10 +86,39 @@ const fetchSocialLinks = async () => {
      dispatch(setLinks(data));
     console.log("Social Links:", data);
   };
+  const ValidateUse = async () => {
+  try {
+    if (!user?.token) {
+      console.warn("No token found for validation.");
+      dispatch(logoutUser());
+      return;
+    }
+
+    const res = await axios.post("http://localhost:8000/verify-token", {
+      token: user.token,
+    });
+
+    if (res.data.success) {
+      console.log("✅ Token is valid:", res.data.data);
+    } else {
+      console.warn("❌ Token invalid, logging out...");
+      dispatch(logoutUser());
+    }
+  } catch (err) {
+    // If token expired or invalid response
+    if (err.response && err.response.status === 401) {
+      console.warn("⚠️ Token expired — forcing logout.");
+    } else {
+      console.error("Token verification failed:", err.message);
+    }
+    dispatch(logoutUser());
+  }
+};
+
  useEffect(() => {
 
     getLinks();
-    
+    ValidateUse()
   }, []);
   return (
     <>

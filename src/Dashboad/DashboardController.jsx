@@ -30,7 +30,7 @@ const DashboardContrller = () => {
 
   const fetchUsers = async () => {
     try {
-      const res = await axios.get('https://totaltimesnews.com/api/get-dashAuth');
+      const res = await axios.get('http://localhost:8000/api/get-dashAuth');
       setUsers(res.data);
     } catch (error) {
       console.error(error);
@@ -68,12 +68,12 @@ const DashboardContrller = () => {
 
     try {
       if (isEditing) {
-        await axios.put(`https://totaltimesnews.com/api/update-dashAuth/${userId}`, {
+        await axios.put(`http://localhost:8000/api/update-dashAuth/${userId}`, {
           tags: selectedTags.join(","),
         });
         showMessage(`Permissions for ${userId} updated successfully!`, 'success');
       } else {
-        await axios.post('https://totaltimesnews.com/api/create-dashAuth', {
+        await axios.post('http://localhost:8000/api/create-dashAuth', {
           id: userId,
           pass: password,
           tagAccess: selectedTags.join(","),
@@ -98,7 +98,7 @@ const DashboardContrller = () => {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`https://totaltimesnews.com/api/delete-dashAuth/${id}`);
+      await axios.delete(`http://localhost:8000/api/delete-dashAuth/${id}`);
       showMessage(`Permissions for ${id} deleted successfully!`, 'success');
       fetchUsers();
     } catch (error) {

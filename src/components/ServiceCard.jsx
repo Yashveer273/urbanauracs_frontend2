@@ -5,13 +5,15 @@ import { addItem, setAuthPopupOpen, selectIsAuthenticated,toggleCart } from '../
 import './ServiceCard.css';
 import BookingPopup from './BookingPopup';
 
+import { selectUser, } from "../store/userSlice";
 
 const ServiceDetailPopup = ({ service, onClose,vendor }) => {
-  const dispatch = useDispatch();
   
+    const dispatch = useDispatch();
+  const user = useSelector(selectUser); // ✅ gets current user state
   const handleAddToCart = () => {
-  const userData = JSON.parse(localStorage.getItem("userData"));
-  if (!userData) {
+
+  if (!user) {
     dispatch(setAuthPopupOpen(true));
   } else {
    dispatch(addItem({
@@ -156,6 +158,8 @@ const ServiceCard = ({ service,vendor,userLocation }) => {
   const dispatch = useDispatch();
   const isAuthenticated = useSelector(selectIsAuthenticated);
 
+  const user = useSelector(selectUser); 
+
   // Existing details popup (unchanged)
   const [isPopupOpen, setIsPopupOpen] = useState(false);
 const [Devicelocation, setDevicelocation] = useState("");
@@ -165,11 +169,9 @@ const [Devicelocation, setDevicelocation] = useState("");
   // Show login if not authenticated; otherwise open booking calendar
   const handleAddToCart = () => {
     // Be robust to either key your app might set
-    const currentUser =
-      JSON.parse(localStorage.getItem("currentUser") || "null") ||
-      JSON.parse(localStorage.getItem("userData") || "null");
 
-    if (!currentUser && !isAuthenticated) {
+      console.log(user.length<1);
+    if (user.length<1 &&!isAuthenticated) {
       // Not logged in → open auth popup
       dispatch(setAuthPopupOpen(true));
 

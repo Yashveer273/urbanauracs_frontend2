@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-  user: null,
+  user: [],
   history: [],
 };
 
@@ -10,14 +10,24 @@ const userSlice = createSlice({
   initialState,
   reducers: {
   loginUser: (state, action) => {
-    state.user = { username: action.payload.username };
+   const data = action.payload;
+      state.user = {
+        username: data.username,
+        email: data.email,
+        mobileNumber: data.mobileNumber,
+        token: data.token,
+        location: data.location,
+        countryCode: data.countryCode,
+        pincode: data.pincode,
+      };
   },
   setUser: (state, action) => {
     state.user = action.payload;  // direct overwrite
   },
   logoutUser: (state) => {
-    state.user = null;
+    state.user = [];
     state.history = [];
+    
   },
   addToHistory: (state, action) => {
     state.history.push(action.payload);

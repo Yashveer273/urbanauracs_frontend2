@@ -1,124 +1,187 @@
 import React, { useState } from "react";
-import { useSelector } from "react-redux";
-import { selectUser, selectUserHistory } from "../store/userSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { selectUser, selectUserHistory,logoutUser } from "../store/userSlice";
+import {
+  FaUserCircle,
+  FaEnvelope,
+  FaMapMarkerAlt,
+  FaMobileAlt,
+  FaSignOutAlt,
+  FaGlobe,
+  FaCalendarAlt,
+  FaCheckCircle,
+  FaClock,
+  FaTimesCircle,
+} from "react-icons/fa";
+import { clearCart } from "../store/CartSlice";
 
 const AccountMenu = () => {
   const [open, setOpen] = useState(false);
-  const [coords, setCoords] = useState({ top: 0, left: 0 });
 
   const user = useSelector(selectUser);
   const history = useSelector(selectUserHistory);
-
-  // First letter for account icon
+const dispatch = useDispatch();
   const firstLetter = user?.username
     ? user.username.charAt(0).toUpperCase()
     : user?.email
     ? user.email.charAt(0).toUpperCase()
     : "U";
 
-  // Save position of the icon so dropdown can be rendered outside navbar
-  const handleClick = (e) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    setCoords({
-      top: rect.bottom + window.scrollY + 8, // just below icon
-      left: rect.right - 384, // popup aligns with icon's right edge (w-96 = 384px)
-    });
-    setOpen(!open);
-  };
-
   return (
     <>
-      {/* Account Icon inside navbar */}
+      {/* Avatar Button */}
       <div
-        onClick={handleClick}
-        className="w-10 h-10 flex items-center justify-center rounded-full bg-[#f87559] text-white font-bold cursor-pointer"
+        onClick={() => setOpen(true)}
+        className="w-10 h-10 flex items-center justify-center rounded-full bg-[#f87559] text-white font-bold cursor-pointer hover:scale-105 transition"
       >
-        {firstLetter}
+        {user?.avatar ? (
+          <img
+            src={user.avatar}
+            alt="avatar"
+            className="w-full h-full rounded-full object-cover"
+          />
+        ) : (
+          firstLetter
+        )}
       </div>
 
-      {/* Pop-up menu rendered outside navbar */}
+      {/* Centered Modal */}
       {open && (
-        <div
-          className="fixed z-20 w-96 max-h-[500px] bg-white rounded-lg shadow-lg border overflow-y-auto"
-          style={{ top: coords.top, left: coords.left }}
-        >
-          {/* Header */}
-          <div className="flex items-center justify-between p-3 border-b bg-gray-100 sticky top-0">
-            <div>
-              <p className="font-semibold text-gray-900">
-                {user?.username || "Guest"}
-              </p>
-              <p className="text-xs text-gray-500">Purchase History</p>
-            </div>
-            {/* Close button */}
-            <button
-              onClick={() => setOpen(false)}
-              className="text-gray-500 hover:text-gray-800 text-xl font-bold"
-            >
-              ×
-            </button>
-          </div>
-
-          {/* History Items */}
-          <div className="px-4 py-2">
-            {history && history.length > 0 ? (
-              history.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex items-start py-4 border-b border-gray-200 last:border-b-0"
-                >
-                  {/* Thumbnail */}
-                  <div className="flex-shrink-0 w-16 h-16 overflow-hidden rounded-md mr-4">
-                    <img
-                      src={item.serviceImage}
-                      alt={item.title}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-
-                  {/* Content */}
-<div className="flex-grow space-y-1">
-  <h3 className="font-semibold text-gray-800">{item.title}</h3>
-  <p className="text-sm text-gray-500">{item.description}</p>
-
-  {/* Dates row (moved below title/desc) */}
-  <div className="flex flex-wrap gap-2 mt-1">
-    <span className="inline-block text-xs font-medium px-2 py-1 rounded-md bg-gray-100 text-gray-700">
-      Booked On: <span className="font-semibold">{item.purchasedOn}</span>
-    </span>
-    <span className="inline-block text-xs font-medium px-2 py-1 rounded-md bg-orange-100 text-orange-700">
-      Booking For:{" "}
-      <span className="font-semibold">
-        {item.bookingDate || "Not selected"}
-      </span>
-    </span>
-  </div>
-
-  {/* Status + Price in same line */}
-  <div className="flex justify-between items-center mt-2">
-    <span
-      className={`inline-block text-xs font-semibold px-2 py-1 rounded-full ${
-        item.statusColor === "blue"
-          ? "bg-blue-100 text-blue-700"
-          : item.statusColor === "green"
-          ? "bg-green-100 text-green-700"
-          : "bg-gray-100 text-gray-600"
-      }`}
-    >
-      Status: {item.status}
-    </span>
-    <div className="text-sm font-bold text-gray-900">₹{item.price}</div>
-  </div>
-</div>
-
-
-</div>
-              ))
-            ) : (
-              <div className="text-center text-gray-500 py-6">
-                No purchase history found.
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="relative w-[400px] max-h-[85vh] bg-white rounded-2xl shadow-2xl overflow-hidden animate-fadeIn flex flex-col">
+            {/* Header */}
+            <div className="relative bg-gradient-to-r from-[#f87559] to-orange-500 text-white p-6 flex flex-col items-center">
+              {/* Avatar */}
+              <div className="w-20 h-20 rounded-full bg-white flex items-center justify-center text-[#f87559] text-4xl font-bold shadow-md mb-3 border-4 border-white">
+                {user?.avatar ? (
+                  <img
+                    src={user.avatar}
+                    alt="avatar"
+                    className="w-full h-full object-cover rounded-full"
+                  />
+                ) : (
+                  <FaUserCircle className="text-[#f87559] text-5xl" />
+                )}
               </div>
-            )}
+
+              <h2 className="text-xl font-semibold">
+                {user?.username || "Guest"}
+              </h2>
+              <p className="text-sm text-orange-100 flex items-center gap-1">
+                <FaEnvelope className="text-orange-200" />
+                {user?.email || "No email provided"}
+              </p>
+
+              {/* Close Button */}
+              <button
+                onClick={() => setOpen(false)}
+                className="absolute top-3 right-4 text-white text-2xl hover:text-gray-200 font-bold"
+              >
+                ×
+              </button>
+            </div>
+
+            {/* User Info */}
+            <div className="px-6 py-4 bg-gray-50 border-b space-y-2 text-sm text-gray-700">
+              <p className="flex items-center gap-2">
+                <FaMobileAlt className="text-[#f87559]" />
+                <span className="font-semibold">Mobile:</span>{" "}
+                {user?.mobileNumber || "N/A"}
+              </p>
+              <p className="flex items-center gap-2">
+                <FaMapMarkerAlt className="text-[#f87559]" />
+                <span className="font-semibold">Location:</span>{" "}
+                {user?.location || "N/A"}
+              </p>
+              <p className="flex items-center gap-2">
+                <FaMapMarkerAlt className="text-[#f87559]" />
+                <span className="font-semibold">Pincode:</span>{" "}
+                {user?.pincode || "N/A"}
+              </p>
+              <p className="flex items-center gap-2">
+                <FaGlobe className="text-[#f87559]" />
+                <span className="font-semibold">Country Code:</span>{" "}
+                {user?.countryCode || "N/A"}
+              </p>
+            </div>
+
+            {/* Purchase History */}
+            <div className="flex-1 overflow-y-auto px-5 py-3">
+              <h3 className="text-gray-800 font-semibold text-sm mb-2 flex items-center gap-2">
+                <FaClock className="text-[#f87559]" /> Purchase History
+              </h3>
+
+              {history && history.length > 0 ? (
+                history.map((item) => (
+                  <div
+                    key={item.id}
+                    className="p-3 mb-3 bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition"
+                  >
+                    <div className="flex items-start gap-3">
+                      <img
+                        src={item.serviceImage}
+                        alt={item.title}
+                        className="w-16 h-16 rounded-md object-cover border"
+                      />
+                      <div className="flex-1">
+                        <h4 className="font-semibold text-gray-800 text-sm">
+                          {item.title}
+                        </h4>
+                        <p className="text-xs text-gray-500 line-clamp-2">
+                          {item.description}
+                        </p>
+
+                        <div className="flex justify-between items-center mt-2 text-xs">
+                          <span className="bg-gray-100 px-2 py-1 rounded-md text-gray-700 flex items-center gap-1">
+                            <FaCalendarAlt className="text-gray-500" />
+                            {item.bookingDate || "Not selected"}
+                          </span>
+                          <span
+                            className={`px-2 py-1 rounded-full font-semibold flex items-center gap-1 ${
+                              item.statusColor === "blue"
+                                ? "bg-blue-100 text-blue-700"
+                                : item.statusColor === "green"
+                                ? "bg-green-100 text-green-700"
+                                : "bg-gray-100 text-gray-600"
+                            }`}
+                          >
+                            {item.statusColor === "green" ? (
+                              <FaCheckCircle />
+                            ) : item.statusColor === "blue" ? (
+                              <FaClock />
+                            ) : (
+                              <FaTimesCircle />
+                            )}
+                            {item.status}
+                          </span>
+                        </div>
+                        <div className="text-right font-bold text-gray-900 mt-1">
+                          ₹{item.price}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center text-gray-400 py-8 text-sm">
+                  No purchase history found.
+                </div>
+              )}
+            </div>
+
+            {/* Footer */
+        user?.username?   ( <div className="p-4 border-t bg-gray-100 text-center">
+              <button
+                onClick={() => {
+                     dispatch(logoutUser())
+                     dispatch(clearCart())
+                  setOpen(false);
+                }}
+                className="w-full flex items-center justify-center gap-2 bg-[#f87559] hover:bg-[#e65a3f] text-white py-2 rounded-lg font-semibold transition"
+              >
+                <FaSignOutAlt /> Logout
+              </button>
+            </div>):(<></>)}
           </div>
         </div>
       )}

@@ -22,7 +22,7 @@ const CouponManager = () => {
   // ✅ Fetch All Coupons
   const fetchCoupons = async () => {
     try {
-      const res = await axios.get("https://totaltimesnews.com/api/Allcoupons");
+      const res = await axios.get("http://localhost:8000/api/Allcoupons");
       setCoupons(res.data.coupons || []);
     } catch (error) {
       console.error("Error fetching coupons:", error);
@@ -35,7 +35,7 @@ const CouponManager = () => {
     e.preventDefault();
     try {
       const res = await axios.post(
-        "https://totaltimesnews.com/Create/discountCoupen",
+        "http://localhost:8000/Create/discountCoupen",
         form
       );
       if (res.data.success) {
@@ -55,7 +55,7 @@ const CouponManager = () => {
   const handleDelete = async (id) => {
     try {
       const res = await axios.delete(
-        `https://totaltimesnews.com/api/deleteCoupon/${id}`
+        `http://localhost:8000/api/deleteCoupon/${id}`
       );
       if (res.data.success) {
         setMessage({ type: "success", text: "Coupon deleted successfully!" });
