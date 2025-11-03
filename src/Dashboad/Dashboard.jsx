@@ -19,6 +19,9 @@ import DashboardLogin from "./loginDashboard";
 import CouponManager from "./coupancord";
 import HomeCarousalAssetController from "./HomeCarousalAssetController";
 import SocialLinksManager from "./socialMedia";
+import VandersSection from "./VandersSection";
+import { User } from "lucide-react";
+import { GetVenderData } from "./getVenderData";
 
 // Icons from Lucide React
 const HomeIcon = () => (
@@ -266,7 +269,7 @@ const Dashboard = () => {
     if (token) {
       setIsAuthenticated(true);
       setTagAccess(dashtagAccess ? dashtagAccess.split(",") : []);
-      
+
       fetchServices();
     } else {
       setIsAuthenticated(false);
@@ -306,6 +309,7 @@ const Dashboard = () => {
     localStorage.removeItem("id");
     setIsAuthenticated(false);
   };
+  // ---------------------------------------------------------------
   const SaveSubmit = async (FDBservices, newService) => {
     console.log(newService);
     try {
@@ -427,6 +431,8 @@ const Dashboard = () => {
     rating: "",
     reviews: "",
     location: "",
+     vendorlocation: "",
+    vendor_id:""
   });
   const [editingVendorId, setEditingVendorId] = useState(null);
 
@@ -447,7 +453,7 @@ const Dashboard = () => {
     inclusions: "",
     exclusions: "",
   });
-
+  
   const [editingServiceIdInVendor, setEditingServiceIdInVendor] =
     useState(null);
 
@@ -929,7 +935,22 @@ const Dashboard = () => {
   services.filter((service) =>
     service.ServiceName.toLowerCase().includes(searchTerm.toLowerCase())
   );
+ 
 
+  const passVender = (selectedVendor) => {
+    console.log(selectedVendor);
+   
+       setVendorFormData({
+    vendorName: selectedVendor.vendorName,
+    vendorImage: selectedVendor.vendorImage,
+    rating: selectedVendor.rating,
+    reviews: selectedVendor.reviews,
+    vendorlocation: selectedVendor.vendorLocation,
+    vendor_id:selectedVendor._id,
+    location:vendorFormData.location
+  });
+  };
+  // --------------------------------------------------------------------------------------
   const handleTabClick = (tabName) => {
     setActiveTab(tabName);
     setSelectedService(null);
@@ -943,250 +964,291 @@ const Dashboard = () => {
       case "auth":
         return (
           <div className="flex flex-col items-center justify-center h-full p-8">
-            <AuthDashboard />
-      {tagAccess.includes("Users") ? <AuthDashboard /> : <LockedBox className="flex justify-center items-center h-screen" label="Users" />}
-
+            {/* <AuthDashboard /> */}
+            {tagAccess.includes("Users") ? (
+              <AuthDashboard />
+            ) : (
+              <LockedBox
+                className="flex justify-center items-center h-screen"
+                label="Users"
+              />
+            )}
           </div>
         );
-        
+
       case "services":
         return (
-
           <>
-                  {tagAccess.includes("Services") ?    <>{!selectedService && (
-              <div className="max-w-4xl mx-auto transition-opacity duration-500 ease-in-out">
-                <h2 className="text-3xl font-bold text-gray-800 mb-6">
-                  Service Categories
-                </h2>
-                <p className="text-gray-500 mb-6">
-                  Select a category from the side menu to view and manage
-                  vendors.
-                </p>
-                <div className="bg-white p-6 rounded-xl shadow-lg mb-8">
-                  <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4">
-                    <input
-                      type="text"
-                      className="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                      placeholder="Enter new service name..."
-                      value={newServiceName}
-                      onChange={(e) => setNewServiceName(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          handleCreateService();
-                        }
-                      }}
-                    />
-                    <button
-                      onClick={handleCreateService}
-                      className="w-full sm:w-auto px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 transition-colors duration-200"
-                    >
-                      <PlusIcon className="inline-block mr-2" />
-                      Add New Service
-                    </button>
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {services.map((service) => (
-                    <div
-                      key={service.id}
-                      className="bg-white p-6 rounded-xl shadow-md flex flex-col justify-between cursor-pointer transform hover:scale-105 transition-transform duration-200"
-                      onClick={() => handleSelectService(service)}
-                    >
-                      {editingServiceId === service.id ? (
+            {tagAccess.includes("Services") ? (
+              <>
+                {!selectedService && (
+                  <div className="max-w-4xl mx-auto transition-opacity duration-500 ease-in-out">
+                    <h2 className="text-3xl font-bold text-gray-800 mb-6">
+                      Service Categories
+                    </h2>
+                    <p className="text-gray-500 mb-6">
+                      Select a category from the side menu to view and manage
+                      vendors.
+                    </p>
+                    <div className="bg-white p-6 rounded-xl shadow-lg mb-8">
+                      <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4">
                         <input
                           type="text"
+                          className="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                          placeholder="Enter new service name..."
                           value={newServiceName}
                           onChange={(e) => setNewServiceName(e.target.value)}
-                          onClick={(e) => e.stopPropagation()}
                           onKeyDown={(e) => {
                             if (e.key === "Enter") {
-                              handleSaveEdit(service.id, newServiceName);
+                              handleCreateService();
                             }
                           }}
-                          className="w-full p-2 border rounded mb-4"
-                          autoFocus
                         />
-                      ) : (
-                        <h3 className="text-xl font-semibold text-gray-700 mb-4 truncate">
-                          {service.ServiceName}
-                          {service.data.length === 0 && (
-                            <span className="ml-2 text-xs bg-red-300 text-red-800 px-2 py-1 rounded-full">
-                              Draft
-                            </span>
-                          )}
-                        </h3>
-                      )}
-
-                      <div className="flex space-x-2 mt-auto">
-                        {editingServiceId === service.id ? (
-                          <>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleSaveEdit(service.id, newServiceName);
-                              }}
-                              className="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg shadow-sm hover:bg-green-600 transition-colors duration-200 flex items-center justify-center"
-                            >
-                              Save
-                            </button>
-
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setEditingServiceId(null); // Cancel edit mode
-                                setNewServiceName(""); // Clear input
-                              }}
-                              className="flex-1 px-4 py-2 bg-gray-400 text-white rounded-lg shadow-sm hover:bg-gray-500 transition-colors duration-200 flex items-center justify-center"
-                            >
-                              Cancel
-                            </button>
-                          </>
-                        ) : (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setEditingServiceId(service.id);
-                              setNewServiceName(service.ServiceName);
-                            }}
-                            className="flex-1 px-4 py-2 bg-yellow-400 text-gray-800 rounded-lg shadow-sm hover:bg-yellow-500 transition-colors duration-200 flex items-center justify-center"
-                          >
-                            <EditIcon className="mr-1" />
-                            Edit
-                          </button>
-                        )}
-
                         <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteService(service.id);
-                          }}
-                          className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg shadow-sm hover:bg-red-600 transition-colors duration-200 flex items-center justify-center"
+                          onClick={handleCreateService}
+                          className="w-full sm:w-auto px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 transition-colors duration-200"
                         >
-                          <TrashIcon className="mr-1" />
-                          Delete
+                          <PlusIcon className="inline-block mr-2" />
+                          Add New Service
                         </button>
                       </div>
                     </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {selectedService && (
-              <div className="max-w-4xl mx-auto transition-opacity duration-500 ease-in-out">
-                <button
-                  onClick={handleClosePanel} // this sets selectedService back to null
-                  className="mb-4 px-4 py-2 bg-gray-300 text-gray-800 rounded-lg shadow hover:bg-gray-400 transition"
-                >
-                  ← Back
-                </button>
-                <h2 className="text-3xl font-bold text-gray-800 mb-6">
-                  Vendors for {selectedService.ServiceName}
-                </h2>
-                {selectedService.data.length > 0 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                    {selectedService.data.map((vendor) => (
-                      <div
-                        key={vendor.vendorId}
-                        className="bg-white p-6 rounded-xl shadow-md flex flex-col cursor-pointer transform hover:scale-105 transition-transform duration-200"
-                        onClick={() => handleSelectVendor(vendor)}
-                      >
-                        <img
-                          src={vendor.vendorImage}
-                          alt={vendor.vendorName}
-                          className="w-full h-40 object-cover rounded-lg mb-4"
-                        />
-                        <h3 className="text-xl font-semibold text-gray-700 truncate">
-                          {vendor.vendorName}
-                          {vendor.services.length === 0 && (
-                            <span className="ml-2 text-xs bg-red-300 text-red-800 px-2 py-1 rounded-full">
-                              Draft
-                            </span>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {services.map((service) => (
+                        <div
+                          key={service.id}
+                          className="bg-white p-6 rounded-xl shadow-md flex flex-col justify-between cursor-pointer transform hover:scale-105 transition-transform duration-200"
+                          onClick={() => handleSelectService(service)}
+                        >
+                          {editingServiceId === service.id ? (
+                            <input
+                              type="text"
+                              value={newServiceName}
+                              onChange={(e) =>
+                                setNewServiceName(e.target.value)
+                              }
+                              onClick={(e) => e.stopPropagation()}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                  handleSaveEdit(service.id, newServiceName);
+                                }
+                              }}
+                              className="w-full p-2 border rounded mb-4"
+                              autoFocus
+                            />
+                          ) : (
+                            <h3 className="text-xl font-semibold text-gray-700 mb-4 truncate">
+                              {service.ServiceName}
+                              {service.data.length === 0 && (
+                                <span className="ml-2 text-xs bg-red-300 text-red-800 px-2 py-1 rounded-full">
+                                  Draft
+                                </span>
+                              )}
+                            </h3>
                           )}
-                        </h3>
-                        <p className="text-sm text-gray-500 truncate">
-                          {vendor.location}
-                        </p>
-                        <div className="flex items-center space-x-2 mt-2">
-                          <span className="text-yellow-500 text-lg">★</span>
-                          <span className="font-bold text-gray-700">
-                            {vendor.rating}
-                          </span>
-                          <span className="text-gray-500">
-                            ({vendor.reviews} reviews)
-                          </span>
+
+                          <div className="flex space-x-2 mt-auto">
+                            {editingServiceId === service.id ? (
+                              <>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleSaveEdit(service.id, newServiceName);
+                                  }}
+                                  className="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg shadow-sm hover:bg-green-600 transition-colors duration-200 flex items-center justify-center"
+                                >
+                                  Save
+                                </button>
+
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setEditingServiceId(null); // Cancel edit mode
+                                    setNewServiceName(""); // Clear input
+                                  }}
+                                  className="flex-1 px-4 py-2 bg-gray-400 text-white rounded-lg shadow-sm hover:bg-gray-500 transition-colors duration-200 flex items-center justify-center"
+                                >
+                                  Cancel
+                                </button>
+                              </>
+                            ) : (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setEditingServiceId(service.id);
+                                  setNewServiceName(service.ServiceName);
+                                }}
+                                className="flex-1 px-4 py-2 bg-yellow-400 text-gray-800 rounded-lg shadow-sm hover:bg-yellow-500 transition-colors duration-200 flex items-center justify-center"
+                              >
+                                <EditIcon className="mr-1" />
+                                Edit
+                              </button>
+                            )}
+
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteService(service.id);
+                              }}
+                              className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg shadow-sm hover:bg-red-600 transition-colors duration-200 flex items-center justify-center"
+                            >
+                              <TrashIcon className="mr-1" />
+                              Delete
+                            </button>
+                          </div>
                         </div>
-                        <div className="flex space-x-2 mt-4">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleEditVendor(vendor);
-                            }}
-                            className="flex-1 px-4 py-2 bg-yellow-400 text-gray-800 rounded-lg shadow-sm hover:bg-yellow-500 transition-colors duration-200 flex items-center justify-center"
-                          >
-                            <EditIcon className="mr-1" />
-                            Edit
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteVendor(vendor.vendorId);
-                            }}
-                            className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg shadow-sm hover:bg-red-600 transition-colors duration-200 flex items-center justify-center"
-                          >
-                            <TrashIcon className="mr-1" />
-                            Delete
-                          </button>
-                        </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                ) : (
-                  <p className="text-gray-500 text-center mt-10">
-                    No vendors available for this service. Click the add button
-                    below to get started!
-                  </p>
                 )}
-              </div>
-            )}</> : <LockedBox className="flex justify-center items-center h-screen" label="Services" />}
-            
+
+                {selectedService && (
+                  <div className="max-w-4xl mx-auto transition-opacity duration-500 ease-in-out">
+                    <button
+                      onClick={handleClosePanel} // this sets selectedService back to null
+                      className="mb-4 px-4 py-2 bg-gray-300 text-gray-800 rounded-lg shadow hover:bg-gray-400 transition"
+                    >
+                      ← Back
+                    </button>
+                    <h2 className="text-3xl font-bold text-gray-800 mb-6">
+                      Vendors for {selectedService.ServiceName}
+                    </h2>
+                    {selectedService.data.length > 0 ? (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                        {selectedService.data.map((vendor) => (
+                          <div
+                            key={vendor.vendorId}
+                            className="bg-white p-6 rounded-xl shadow-md flex flex-col cursor-pointer transform hover:scale-105 transition-transform duration-200"
+                            onClick={() => handleSelectVendor(vendor)}
+                          >
+                            <img
+                              src={
+                                vendor.vendorImage &&
+                                vendor.vendorImage.trim() !== ""
+                                  ? vendor.vendorImage
+                                  : "https://via.placeholder.com/400x200?text=No+Image"
+                              }
+                              alt={vendor.vendorName || "Vendor"}
+                              className="w-full h-40 object-cover rounded-lg mb-4"
+                            />
+
+                            <h3 className="text-xl font-semibold text-gray-700 truncate">
+                              {vendor.vendorName}
+                              {vendor.services.length === 0 && (
+                                <span className="ml-2 text-xs bg-red-300 text-red-800 px-2 py-1 rounded-full">
+                                  Draft
+                                </span>
+                              )}
+                            </h3>
+                            <p className="text-sm text-gray-500 truncate">
+                              {vendor.location}
+                            </p>
+                            <div className="flex items-center space-x-2 mt-2">
+                              <span className="text-yellow-500 text-lg">★</span>
+                              <span className="font-bold text-gray-700">
+                                {vendor.rating}
+                              </span>
+                              <span className="text-gray-500">
+                                ({vendor.reviews} reviews)
+                              </span>
+                            </div>
+                            <div className="flex space-x-2 mt-4">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleEditVendor(vendor);
+                                }}
+                                className="flex-1 px-4 py-2 bg-yellow-400 text-gray-800 rounded-lg shadow-sm hover:bg-yellow-500 transition-colors duration-200 flex items-center justify-center"
+                              >
+                                <EditIcon className="mr-1" />
+                                Edit
+                              </button>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteVendor(vendor.vendorId);
+                                }}
+                                className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg shadow-sm hover:bg-red-600 transition-colors duration-200 flex items-center justify-center"
+                              >
+                                <TrashIcon className="mr-1" />
+                                Delete
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-gray-500 text-center mt-10">
+                        No vendors available for this service. Click the add
+                        button below to get started!
+                      </p>
+                    )}
+                  </div>
+                )}
+              </>
+            ) : (
+              <LockedBox
+                className="flex justify-center items-center h-screen"
+                label="Services"
+              />
+            )}
           </>
         );
       case "sales":
         return (
           <div className="flex flex-col items-center justify-center h-full p-8">
-      {tagAccess.includes("Sales") ? <SalesSection /> : <LockedBox className="flex justify-center items-center h-screen" label="Sales" />}
-    </div>
+            {tagAccess.includes("Sales") ? (
+              <SalesSection />
+            ) : (
+              <LockedBox
+                className="flex justify-center items-center h-screen"
+                label="Sales"
+              />
+            )}
+          </div>
         );
       case "Ticket":
         return (
           <div className="">
-           
-                  {tagAccess.includes("Ticket") ?  <TicketDashboard /> : <LockedBox className="flex justify-center items-center h-screen" label="Ticket" />}
+            {tagAccess.includes("Ticket") ? (
+              <TicketDashboard />
+            ) : (
+              <LockedBox
+                className="flex justify-center items-center h-screen"
+                label="Ticket"
+              />
+            )}
           </div>
         );
       case "Coupon-Manager":
         return (
           <div className="">
-            <CouponManager/>
+            <CouponManager />
           </div>
         );
-        case "Website-Content":
+      case "Website-Content":
         return (
           <div className=" flex">
-            <HomeCarousalAssetController/>
-            <SocialLinksManager/>
+            <HomeCarousalAssetController />
+            <SocialLinksManager />
           </div>
         );
-
+      case "VandersSection":
+        return (
+          <div className=" flex">
+            <VandersSection />
+          </div>
+        );
       case "dashboard-controller":
         return (
           <div className="">
-          
-            
-                  {tagAccess.includes("Admin") ?    <DashboardContrller /> : <div className="flex justify-center items-center h-screen">
-        <LockedBox label="Dashboard Controller" />
-      </div>}
+            {tagAccess.includes("Admin") ? (
+              <DashboardContrller />
+            ) : (
+              <div className="flex justify-center items-center h-screen">
+                <LockedBox label="Dashboard Controller" />
+              </div>
+            )}
           </div>
         );
       default:
@@ -1234,6 +1296,20 @@ const Dashboard = () => {
                 >
                   <Package2Icon className="w-5 h-5 mr-3" />
                   Services
+                </a>
+              </li>
+              <li className="mb-2">
+                <a
+                  href="#"
+                  onClick={() => handleTabClick("VandersSection")}
+                  className={`flex items-center p-3 rounded-lg transition-colors duration-200 ${
+                    activeTab === "VandersSection"
+                      ? "bg-indigo-100 text-indigo-700"
+                      : "text-gray-600 hover:bg-gray-200"
+                  }`}
+                >
+                  <User className="w-5 h-5 mr-3" />
+                  Vanders Section
                 </a>
               </li>
               <li className="mb-2">
@@ -1310,560 +1386,554 @@ const Dashboard = () => {
                 <a
                   href="#"
                   onClick={() => handleLogout}
-                   className="w-full flex items-center justify-center p-3 rounded-lg text-red-500 hover:bg-red-100 transition-colors duration-200"
-         
+                  className="w-full flex items-center justify-center p-3 rounded-lg text-red-500 hover:bg-red-100 transition-colors duration-200"
                 >
-                  
-            <LogOutIcon className="w-5 h-5 mr-2" />
-            Logout
-        
+                  <LogOutIcon className="w-5 h-5 mr-2" />
+                  Logout
                 </a>
               </li>
             </ul>
           </nav>
         </div>
-        
       </aside>
+      {/* --------------------------------------------------------------------------------------------------- */}
+      <>
+        {/* Main Content Area */}
+        <main className="flex-1 p-8 overflow-y-auto">{renderContent()}</main>
 
-      {/* Main Content Area */}
-      <main className="flex-1 p-8 overflow-y-auto">{renderContent()}</main>
+        {/* Floating Action Button for adding a vendor */}
 
-      {/* Floating Action Button for adding a vendor */}
-      {activeTab === "services" &&
-        selectedService &&
-        !showVendorServicesPanel && (
-          <button
-            onClick={() => {
-              setShowVendorForm(true);
-              setEditingVendorId(null);
-              setVendorFormData({
-                vendorName: "",
-                vendorImage: "",
-                rating: "",
-                reviews: "",
-                location: "",
-              });
-            }}
-            className="fixed bottom-8 right-8 w-14 h-14 bg-green-500 text-white text-3xl font-bold rounded-full shadow-lg flex items-center justify-center hover:bg-green-600 transition-colors duration-200 z-50"
-          >
-            <PlusIcon className="w-6 h-6" />
-          </button>
-        )}
+        {activeTab === "services" &&
+          selectedService &&
+          !showVendorServicesPanel && (
+            <button
+              onClick={() => {
+                setShowVendorForm(true);
+                setEditingVendorId(null);
+                setVendorFormData({
+                  vendorName: "",
+                  vendorImage: "",
+                  rating: "",
+                  reviews: "",
+                  location: "",
+                });
+              }}
+              className="fixed bottom-8 right-8 w-14 h-14 bg-green-500 text-white text-3xl font-bold rounded-full shadow-lg flex items-center justify-center hover:bg-green-600 transition-colors duration-200 z-50"
+            >
+              <PlusIcon className="w-6 h-6" />
+            </button>
+          )}
 
-      {/* Modal Form for adding/editing a vendor */}
-      {showVendorForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <form
-            onSubmit={editingVendorId ? handleUpdateVendor : handleAddVendor}
-            className="bg-white p-6 rounded-xl shadow-lg w-full max-w-lg"
-          >
-            <h3 className="text-xl font-semibold mb-4">
-              {editingVendorId ? "Edit Vendor" : "Add New Vendor"}
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <input
-                type="text"
-                placeholder="Vendor Name"
-                value={vendorFormData.vendorName}
-                onChange={(e) =>
-                  setVendorFormData({
-                    ...vendorFormData,
-                    vendorName: e.target.value,
-                  })
-                }
-                className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-              <input
-                type="text"
-                placeholder="Image URL"
-                value={vendorFormData.vendorImage}
-                onChange={(e) =>
-                  setVendorFormData({
-                    ...vendorFormData,
-                    vendorImage: e.target.value,
-                  })
-                }
-                className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-              <input
-                type="number"
-                step="0.1"
-                placeholder="Rating (e.g., 4.9)"
-                value={vendorFormData.rating}
-                onChange={(e) =>
-                  setVendorFormData({
-                    ...vendorFormData,
-                    rating: e.target.value,
-                  })
-                }
-                className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-              <input
-                type="text"
-                placeholder="Reviews (e.g., 245+)"
-                value={vendorFormData.reviews}
-                onChange={(e) =>
-                  setVendorFormData({
-                    ...vendorFormData,
-                    reviews: e.target.value,
-                  })
-                }
-                className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-              <input
-                type="text"
-                placeholder="Location (e.g., Bengaluru, Karnataka)"
-                value={vendorFormData.location}
-                onChange={(e) =>
-                  setVendorFormData({
-                    ...vendorFormData,
-                    location: e.target.value,
-                  })
-                }
-                className="p-3 border rounded-lg col-span-1 sm:col-span-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-            </div>
-            <div className="flex space-x-2 mt-4">
-              <button
-                type="submit"
-                className="flex-1 px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 transition-colors duration-200"
-              >
-                {editingVendorId ? "Save Vendor" : "Create Vendor"}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setShowVendorForm(false);
-                  setEditingVendorId(null);
-                  setVendorFormData({
-                    vendorName: "",
-                    vendorImage: "",
-                    rating: "",
-                    reviews: "",
-                    location: "",
-                  });
-                }}
-                className="flex-1 px-6 py-3 bg-gray-400 text-white font-semibold rounded-lg shadow-md hover:bg-gray-500 transition-colors duration-200"
-              >
-                Cancel
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
-
-      {/* Vendor Services Panel (Slide-in) */}
-      <div
-        className={`fixed inset-0 bg-gray-100 shadow-2xl p-8 transform transition-transform duration-500 ease-in-out z-50 overflow-y-auto ${
-          showVendorServicesPanel ? "translate-x-0" : "translate-x-full"
-        }`}
-      >
-        <div className="flex justify-between items-center mb-6">
-          <button
-            onClick={handleCloseVendorServicesPanel}
-            className="text-gray-500 hover:text-gray-800 text-2xl font-bold p-2 rounded-full hover:bg-gray-200 transition-colors duration-200 flex items-center"
-          >
-            <ChevronLeftIcon className="w-6 h-6 mr-2" />
-            <span className="hidden sm:inline">Back</span>
-          </button>
-          <h2 className="text-2xl font-bold text-gray-800 ml-auto">
-            Services by {selectedVendor?.vendorName}
-          </h2>
-          <button
-            onClick={() => {
-              setShowServiceForm(true);
-              setEditingServiceIdInVendor(null);
-              setServiceFormData({
-                title: "",
-                location: "",
-                price: "",
-                discount: "",
-                originalPrice: "",
-                description: "",
-                serviceImage: "",
-                rating: "",
-                reviews: "",
-                duration: "",
-                inclusions: "",
-                exclusions: "",
-              });
-            }}
-            className="w-14 h-14 bg-green-500 text-white text-3xl font-bold rounded-full shadow-lg flex items-center justify-center hover:bg-green-600 transition-colors duration-200 ml-4"
-          >
-            <PlusIcon className="w-6 h-6" />
-          </button>
-        </div>
-
-        {selectedVendor && selectedVendor.services.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-            {selectedVendor.services.map((service) => (
-              <div
-                key={service.id}
-                className="bg-white p-6 rounded-xl shadow-md flex flex-col cursor-pointer transform hover:scale-105 transition-transform duration-200"
-                onClick={() => handleShowServiceDetails(service)}
-              >
-                <img
-                  src={service.serviceImage}
-                  alt={service.title}
-                  className="w-full h-40 object-cover rounded-lg mb-4"
+        {/* Modal Form for adding/editing a vendor */}
+        {showVendorForm && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <form
+              onSubmit={editingVendorId ? handleUpdateVendor : handleAddVendor}
+              className="bg-white p-6 rounded-xl shadow-lg w-full max-w-lg"
+            >
+              <h3 className="text-xl font-semibold mb-4">
+                {editingVendorId ? "Edit Vendor" : "Add New Vendor"}
+              </h3>
+              <GetVenderData passVender={passVender} />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <input
+                  type="text"
+                  placeholder="Vendor Name"
+                  value={vendorFormData.vendorName}
+                  onChange={(e) =>
+                    setVendorFormData({
+                      ...vendorFormData,
+                      vendorName: e.target.value,
+                    })
+                  }
+                  disabled={true}
+                  className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
-                <h3 className="text-xl font-semibold text-gray-700 truncate">
-                  {service.title}
-                </h3>
-                <p className="text-sm text-gray-500 truncate">
-                  {service.location}
-                </p>
-                <div className="flex items-center space-x-2 mt-2">
-                  <span className="text-yellow-500 text-lg">★</span>
-                  <span className="font-bold text-gray-700">
-                    {service.rating}
-                  </span>
-                  <span className="text-gray-500">({service.reviews})</span>
-                </div>
-                <div className="flex space-x-2 mt-4">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleEditVendorService(service);
-                    }}
-                    className="flex-1 px-4 py-2 bg-yellow-400 text-gray-800 rounded-lg shadow-sm hover:bg-yellow-500 transition-colors duration-200 flex items-center justify-center"
-                  >
-                    <EditIcon className="mr-1" />
-                    Edit
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeleteVendorService(service.id);
-                    }}
-                    className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg shadow-sm hover:bg-red-600 transition-colors duration-200 flex items-center justify-center"
-                  >
-                    <TrashIcon className="mr-1" />
-                    Delete
-                  </button>
-                </div>
+                <input
+                  type="text"
+                  placeholder="Vendor Image URL"
+                  disabled={true}
+                 
+                  value={vendorFormData.vendorImage}
+                  onChange={(e) =>
+                    setVendorFormData({
+                      ...vendorFormData,
+                      vendorImage: e.target.value,
+                    })
+                  }
+                  className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+                
+                <input
+                  type="number"
+                  step="0.1"
+                  placeholder="Rating (e.g., 4.9)"
+                  value={vendorFormData.rating}
+                  disabled={true}
+                  onChange={(e) =>
+                    setVendorFormData({
+                      ...vendorFormData,
+                      rating: e.target.value,
+                    })
+                  }
+                  className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+                <input
+                  type="text"
+                  placeholder="Reviews (e.g., 245+)"
+                  disabled={true}
+                  value={vendorFormData.reviews}
+                  onChange={(e) =>
+                    setVendorFormData({
+                      ...vendorFormData,
+                      reviews: e.target.value,
+                    })
+                  }
+                  className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+                <input
+                  type="text"
+                  placeholder="Service available Location (e.g., Bengaluru, Karnataka)"
+                  value={vendorFormData.location}
+                  onChange={(e) =>
+                    setVendorFormData({
+                      ...vendorFormData,
+                      location: e.target.value,
+                    })
+                  }
+                  className="p-3 border rounded-lg col-span-1 sm:col-span-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
               </div>
-            ))}
+              <div className="flex space-x-2 mt-4">
+                <button
+                  type="submit"
+                  className="flex-1 px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 transition-colors duration-200"
+                >
+                  {editingVendorId ? "Save Vendor" : "Create Vendor"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowVendorForm(false);
+                    setEditingVendorId(null);
+                    setVendorFormData({
+                      vendorName: "",
+                      vendorImage: "",
+                      rating: "",
+                      reviews: "",
+                      location: "",
+                    });
+                  }}
+                  className="flex-1 px-6 py-3 bg-gray-400 text-white font-semibold rounded-lg shadow-md hover:bg-gray-500 transition-colors duration-200"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
           </div>
-        ) : (
-          <p className="text-gray-500 text-center mt-10">
-            No services available for this vendor. Click the add button to get
-            started!
-          </p>
         )}
-      </div>
 
-      {/* Modal Form for adding/editing a vendor's service */}
-      {showServiceForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <form
-            onSubmit={
-              editingServiceIdInVendor
-                ? handleUpdateVendorService
-                : handleAddServiceToVendor
-            }
-            className="bg-white p-6 rounded-xl shadow-lg w-full max-w-lg overflow-y-auto max-h-[90vh]"
-          >
-            <h3 className="text-xl font-semibold mb-4">
-              {editingServiceIdInVendor ? "Edit Service" : "Add New Service"}
-            </h3>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Title */}
-              <input
-                type="text"
-                placeholder="Title"
-                value={serviceFormData.title}
-                onChange={(e) =>
-                  setServiceFormData({
-                    ...serviceFormData,
-                    title: e.target.value,
-                  })
-                }
-                className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-
-              {/* Location */}
-              <input
-                type="text"
-                placeholder="Location"
-                value={serviceFormData.location}
-                onChange={(e) =>
-                  setServiceFormData({
-                    ...serviceFormData,
-                    location: e.target.value,
-                  })
-                }
-                className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-
-              {/* Original Price */}
-              <input
-                type="number"
-                step="1"
-                placeholder="Original Price"
-                value={serviceFormData.originalPrice}
-                onChange={(e) => {
-                  const originalPrice = parseFloat(e.target.value) || 0;
-                  const discount = parseFloat(serviceFormData.discount) || 0;
-                  const price =
-                    originalPrice - (originalPrice * discount) / 100;
-                  setServiceFormData({
-                    ...serviceFormData,
-                    originalPrice,
-                    price,
-                  });
-                }}
-                className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-
-              {/* Discount (%) */}
-              <input
-                type="number"
-                step="1"
-                placeholder="Discount %"
-                value={serviceFormData.discount}
-                onChange={(e) => {
-                  const discount = parseFloat(e.target.value) || 0;
-                  const originalPrice =
-                    parseFloat(serviceFormData.originalPrice) || 0;
-                  const price =
-                    originalPrice - (originalPrice * discount) / 100;
-                  setServiceFormData({ ...serviceFormData, discount, price });
-                }}
-                className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-
-              {/* Auto-calculated Price (Read-only) */}
-              <input
-                type="number"
-                placeholder="Price"
-                value={serviceFormData.price}
-                readOnly
-                className="p-3 border rounded-lg bg-gray-100 text-gray-500 focus:outline-none"
-              />
-
-              {/* Description */}
-              <textarea
-                placeholder="Description"
-                value={serviceFormData.description}
-                onChange={(e) =>
-                  setServiceFormData({
-                    ...serviceFormData,
-                    description: e.target.value,
-                  })
-                }
-                className="p-3 border rounded-lg col-span-1 sm:col-span-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                rows="3"
-              ></textarea>
-
-              {/* Image URL */}
-              <input
-                type="text"
-                placeholder="Image URL"
-                value={serviceFormData.serviceImage}
-                onChange={(e) =>
-                  setServiceFormData({
-                    ...serviceFormData,
-                    serviceImage: e.target.value,
-                  })
-                }
-                className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-
-              {/* Rating */}
-              <input
-                type="number"
-                step="0.1"
-                placeholder="Rating"
-                value={serviceFormData.rating}
-                onChange={(e) =>
-                  setServiceFormData({
-                    ...serviceFormData,
-                    rating: e.target.value,
-                  })
-                }
-                className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-
-              {/* Reviews */}
-              <input
-                type="text"
-                placeholder="Reviews"
-                value={serviceFormData.reviews}
-                onChange={(e) =>
-                  setServiceFormData({
-                    ...serviceFormData,
-                    reviews: e.target.value,
-                  })
-                }
-                className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-
-              {/* Duration */}
-              <input
-                type="text"
-                placeholder="Duration (e.g., 45 mins)"
-                value={serviceFormData.duration}
-                onChange={(e) =>
-                  setServiceFormData({
-                    ...serviceFormData,
-                    duration: e.target.value,
-                  })
-                }
-                className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-
-              {/* Inclusions */}
-              <textarea
-                placeholder="Inclusions (comma separated)"
-                value={serviceFormData.inclusions}
-                onChange={(e) =>
-                  setServiceFormData({
-                    ...serviceFormData,
-                    inclusions: e.target.value,
-                  })
-                }
-                className="p-3 border rounded-lg col-span-1 sm:col-span-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                rows="2"
-              ></textarea>
-
-              {/* Exclusions */}
-              <textarea
-                placeholder="Exclusions (comma separated)"
-                value={serviceFormData.exclusions}
-                onChange={(e) =>
-                  setServiceFormData({
-                    ...serviceFormData,
-                    exclusions: e.target.value,
-                  })
-                }
-                className="p-3 border rounded-lg col-span-1 sm:col-span-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                rows="2"
-              ></textarea>
-            </div>
-
-            {/* Buttons */}
-            <div className="flex space-x-2 mt-4">
-              <button
-                type="submit"
-                className="flex-1 px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 transition-colors duration-200"
-              >
-                {editingServiceIdInVendor ? "Save Service" : "Create Service"}
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setShowServiceForm(false);
-                  setEditingServiceIdInVendor(null);
-                }}
-                className="flex-1 px-6 py-3 bg-gray-400 text-white font-semibold rounded-lg shadow-md hover:bg-gray-500 transition-colors duration-200"
-              >
-                Cancel
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
-
-      {/* Service Details Panel (Slide-in) */}
-      {selectedVendorService && (
+        {/* Vendor Services Panel (Slide-in) */}
         <div
           className={`fixed inset-0 bg-gray-100 shadow-2xl p-8 transform transition-transform duration-500 ease-in-out z-50 overflow-y-auto ${
-            showServiceDetailsPanel ? "translate-x-0" : "translate-x-full"
+            showVendorServicesPanel ? "translate-x-0" : "translate-x-full"
           }`}
         >
-          <div className="max-w-4xl mx-auto">
-            <div className="flex justify-between items-center mb-6">
-              <button
-                onClick={handleCloseServiceDetailsPanel}
-                className="text-gray-500 hover:text-gray-800 text-3xl font-bold p-2 rounded-full hover:bg-gray-200 transition-colors duration-200 flex items-center"
-              >
-                <ChevronLeftIcon className="w-6 h-6 mr-2" />
-                <span className="hidden sm:inline">Back</span>
-              </button>
-              <h2 className="text-3xl font-bold text-gray-800 ml-auto">
-                Service Details
-              </h2>
-            </div>
+          <div className="flex justify-between items-center mb-6">
+            <button
+              onClick={handleCloseVendorServicesPanel}
+              className="text-gray-500 hover:text-gray-800 text-2xl font-bold p-2 rounded-full hover:bg-gray-200 transition-colors duration-200 flex items-center"
+            >
+              <ChevronLeftIcon className="w-6 h-6 mr-2" />
+              <span className="hidden sm:inline">Back</span>
+            </button>
+            <h2 className="text-2xl font-bold text-gray-800 ml-auto">
+              Services by {selectedVendor?.vendorName}
+            </h2>
+            <button
+              onClick={() => {
+                setShowServiceForm(true);
+                setEditingServiceIdInVendor(null);
+                setServiceFormData({
+                  title: "",
+                  location: "",
+                  price: "",
+                  discount: "",
+                  originalPrice: "",
+                  description: "",
+                  serviceImage: "",
+                  rating: "",
+                  reviews: "",
+                  duration: "",
+                  inclusions: "",
+                  exclusions: "",
+                });
+              }}
+              className="w-14 h-14 bg-green-500 text-white text-3xl font-bold rounded-full shadow-lg flex items-center justify-center hover:bg-green-600 transition-colors duration-200 ml-4"
+            >
+              <PlusIcon className="w-6 h-6" />
+            </button>
+          </div>
 
-            <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-              <img
-                src={selectedVendorService.serviceImage}
-                alt={selectedVendorService.title}
-                className="w-full h-80 object-cover"
-              />
-              <div className="p-8">
-                <h1 className="text-4xl font-extrabold text-gray-900 mb-2">
-                  {selectedVendorService.title}
-                </h1>
-                <p className="text-gray-600 mb-4">
-                  {selectedVendorService.location}
-                </p>
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-baseline space-x-2">
-                    <span className="text-3xl font-bold text-indigo-600">
-                      ₹{selectedVendorService.price}
+          {selectedVendor && selectedVendor.services.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+              {selectedVendor.services.map((service) => (
+                <div
+                  key={service.id}
+                  className="bg-white p-6 rounded-xl shadow-md flex flex-col cursor-pointer transform hover:scale-105 transition-transform duration-200"
+                  onClick={() => handleShowServiceDetails(service)}
+                >
+                  <img
+                    src={service.serviceImage}
+                    alt={service.title}
+                    className="w-full h-40 object-cover rounded-lg mb-4"
+                  />
+                  <h3 className="text-xl font-semibold text-gray-700 truncate">
+                    {service.title}
+                  </h3>
+                  <p className="text-sm text-gray-500 truncate">
+                    {selectedVendor.location}
+                  </p>
+                  <div className="flex items-center space-x-2 mt-2">
+                    <span className="text-yellow-500 text-lg">★</span>
+                    <span className="font-bold text-gray-700">
+                      {service.rating}
                     </span>
-                    <span className="text-lg text-gray-400 line-through">
-                      ₹{selectedVendorService.originalPrice}
-                    </span>
+                    <span className="text-gray-500">({service.reviews})</span>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <span className="text-yellow-500 text-2xl">★</span>
-                    <span className="font-bold text-gray-700 text-lg">
-                      {selectedVendorService.rating}
-                    </span>
-                    <span className="text-gray-500">
-                      ({selectedVendorService.reviews})
-                    </span>
+                  <div className="flex space-x-2 mt-4">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEditVendorService(service);
+                      }}
+                      className="flex-1 px-4 py-2 bg-yellow-400 text-gray-800 rounded-lg shadow-sm hover:bg-yellow-500 transition-colors duration-200 flex items-center justify-center"
+                    >
+                      <EditIcon className="mr-1" />
+                      Edit
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteVendorService(service.id);
+                      }}
+                      className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg shadow-sm hover:bg-red-600 transition-colors duration-200 flex items-center justify-center"
+                    >
+                      <TrashIcon className="mr-1" />
+                      Delete
+                    </button>
                   </div>
                 </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-500 text-center mt-10">
+              No services available for this vendor. Click the add button to get
+              started!
+            </p>
+          )}
+        </div>
 
-                <p className="text-gray-700 leading-relaxed mb-6">
-                  {selectedVendorService.description}
-                </p>
+        {/* Modal Form for adding/editing a vendor's service */}
+        {showServiceForm && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <form
+              onSubmit={
+                editingServiceIdInVendor
+                  ? handleUpdateVendorService
+                  : handleAddServiceToVendor
+              }
+              className="bg-white p-6 rounded-xl shadow-lg w-full max-w-lg overflow-y-auto max-h-[90vh]"
+            >
+              <h3 className="text-xl font-semibold mb-4">
+                {editingServiceIdInVendor ? "Edit Service" : "Add New Service"}
+              </h3>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                      Duration
-                    </h3>
-                    <p className="text-gray-600">
-                      {selectedVendorService.duration}
-                    </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Title */}
+                <input
+                  type="text"
+                  placeholder="Title"
+                  value={serviceFormData.title}
+                  onChange={(e) =>
+                    setServiceFormData({
+                      ...serviceFormData,
+                      title: e.target.value,
+                    })
+                  }
+                  className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+
+                {/* Location */}
+
+                {/* Original Price */}
+                <input
+                  type="number"
+                  step="1"
+                  placeholder="Original Price"
+                  value={serviceFormData.originalPrice}
+                  onChange={(e) => {
+                    const originalPrice = parseFloat(e.target.value) || 0;
+                    const discount = parseFloat(serviceFormData.discount) || 0;
+                    const price =
+                      originalPrice - (originalPrice * discount) / 100;
+                    setServiceFormData({
+                      ...serviceFormData,
+                      originalPrice,
+                      price,
+                    });
+                  }}
+                  className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+
+                {/* Discount (%) */}
+                <input
+                  type="number"
+                  step="1"
+                  placeholder="Discount %"
+                  value={serviceFormData.discount}
+                  onChange={(e) => {
+                    const discount = parseFloat(e.target.value) || 0;
+                    const originalPrice =
+                      parseFloat(serviceFormData.originalPrice) || 0;
+                    const price =
+                      originalPrice - (originalPrice * discount) / 100;
+                    setServiceFormData({ ...serviceFormData, discount, price });
+                  }}
+                  className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+
+                {/* Auto-calculated Price (Read-only) */}
+                <input
+                  type="number"
+                  placeholder="Price"
+                  value={serviceFormData.price}
+                  readOnly
+                  className="p-3 border rounded-lg bg-gray-100 text-gray-500 focus:outline-none"
+                />
+
+                {/* Description */}
+                <textarea
+                  placeholder="Description"
+                  value={serviceFormData.description}
+                  onChange={(e) =>
+                    setServiceFormData({
+                      ...serviceFormData,
+                      description: e.target.value,
+                    })
+                  }
+                  className="p-3 border rounded-lg col-span-1 sm:col-span-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  rows="3"
+                ></textarea>
+
+                {/* Image URL */}
+                <input
+                  type="text"
+                  placeholder="Image URL"
+                  value={serviceFormData.serviceImage}
+                  onChange={(e) =>
+                    setServiceFormData({
+                      ...serviceFormData,
+                      serviceImage: e.target.value,
+                    })
+                  }
+                  className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+
+                {/* Rating */}
+                <input
+                  type="number"
+                  step="0.1"
+                  placeholder="Rating"
+                  value={serviceFormData.rating}
+                  onChange={(e) =>
+                    setServiceFormData({
+                      ...serviceFormData,
+                      rating: e.target.value,
+                    })
+                  }
+                  className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+
+                {/* Reviews */}
+                <input
+                  type="text"
+                  placeholder="Reviews"
+                  value={serviceFormData.reviews}
+                  onChange={(e) =>
+                    setServiceFormData({
+                      ...serviceFormData,
+                      reviews: e.target.value,
+                    })
+                  }
+                  className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+
+                {/* Duration */}
+                <input
+                  type="text"
+                  placeholder="Duration (e.g., 45 mins)"
+                  value={serviceFormData.duration}
+                  onChange={(e) =>
+                    setServiceFormData({
+                      ...serviceFormData,
+                      duration: e.target.value,
+                    })
+                  }
+                  className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+
+                {/* Inclusions */}
+                <textarea
+                  placeholder="Inclusions (comma separated)"
+                  value={serviceFormData.inclusions}
+                  onChange={(e) =>
+                    setServiceFormData({
+                      ...serviceFormData,
+                      inclusions: e.target.value,
+                    })
+                  }
+                  className="p-3 border rounded-lg col-span-1 sm:col-span-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  rows="2"
+                ></textarea>
+
+                {/* Exclusions */}
+                <textarea
+                  placeholder="Exclusions (comma separated)"
+                  value={serviceFormData.exclusions}
+                  onChange={(e) =>
+                    setServiceFormData({
+                      ...serviceFormData,
+                      exclusions: e.target.value,
+                    })
+                  }
+                  className="p-3 border rounded-lg col-span-1 sm:col-span-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  rows="2"
+                ></textarea>
+              </div>
+
+              {/* Buttons */}
+              <div className="flex space-x-2 mt-4">
+                <button
+                  type="submit"
+                  className="flex-1 px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 transition-colors duration-200"
+                >
+                  {editingServiceIdInVendor ? "Save Service" : "Create Service"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowServiceForm(false);
+                    setEditingServiceIdInVendor(null);
+                  }}
+                  className="flex-1 px-6 py-3 bg-gray-400 text-white font-semibold rounded-lg shadow-md hover:bg-gray-500 transition-colors duration-200"
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+
+        {/* Service Details Panel (Slide-in) */}
+        {selectedVendorService && (
+          <div
+            className={`fixed inset-0 bg-gray-100 shadow-2xl p-8 transform transition-transform duration-500 ease-in-out z-50 overflow-y-auto ${
+              showServiceDetailsPanel ? "translate-x-0" : "translate-x-full"
+            }`}
+          >
+            <div className="max-w-4xl mx-auto">
+              <div className="flex justify-between items-center mb-6">
+                <button
+                  onClick={handleCloseServiceDetailsPanel}
+                  className="text-gray-500 hover:text-gray-800 text-3xl font-bold p-2 rounded-full hover:bg-gray-200 transition-colors duration-200 flex items-center"
+                >
+                  <ChevronLeftIcon className="w-6 h-6 mr-2" />
+                  <span className="hidden sm:inline">Back</span>
+                </button>
+                <h2 className="text-3xl font-bold text-gray-800 ml-auto">
+                  Service Details
+                </h2>
+              </div>
+
+              <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+                <img
+                  src={selectedVendorService.serviceImage}
+                  alt={selectedVendorService.title}
+                  className="w-full h-80 object-cover"
+                />
+                <div className="p-8">
+                  <h1 className="text-4xl font-extrabold text-gray-900 mb-2">
+                    {selectedVendorService.title}
+                  </h1>
+                  <p className="text-gray-600 mb-4">
+                    {selectedVendorService.location}
+                  </p>
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-baseline space-x-2">
+                      <span className="text-3xl font-bold text-indigo-600">
+                        ₹{selectedVendorService.price}
+                      </span>
+                      <span className="text-lg text-gray-400 line-through">
+                        ₹{selectedVendorService.originalPrice}
+                      </span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-yellow-500 text-2xl">★</span>
+                      <span className="font-bold text-gray-700 text-lg">
+                        {selectedVendorService.rating}
+                      </span>
+                      <span className="text-gray-500">
+                        ({selectedVendorService.reviews})
+                      </span>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                      Inclusions
-                    </h3>
-                    <ul className="list-disc list-inside space-y-1 text-gray-600">
-                      {selectedVendorService.inclusions.map((item, index) => (
-                        <li key={index}>{item}</li>
-                      ))}
-                    </ul>
+
+                  <p className="text-gray-700 leading-relaxed mb-6">
+                    {selectedVendorService.description}
+                  </p>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                        Duration
+                      </h3>
+                      <p className="text-gray-600">
+                        {selectedVendorService.duration}
+                      </p>
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                        Inclusions
+                      </h3>
+                      <ul className="list-disc list-inside space-y-1 text-gray-600">
+                        {selectedVendorService.inclusions.map((item, index) => (
+                          <li key={index}>{item}</li>
+                        ))}
+                      </ul>
+                    </div>
+                    {selectedVendorService.exclusions &&
+                      selectedVendorService.exclusions.length > 0 && (
+                        <div>
+                          <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                            Exclusions
+                          </h3>
+                          <ul className="list-disc list-inside space-y-1 text-gray-600">
+                            {selectedVendorService.exclusions.map(
+                              (item, index) => (
+                                <li key={index}>{item}</li>
+                              )
+                            )}
+                          </ul>
+                        </div>
+                      )}
                   </div>
-                  {selectedVendorService.exclusions &&
-                    selectedVendorService.exclusions.length > 0 && (
-                      <div>
-                        <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                          Exclusions
-                        </h3>
-                        <ul className="list-disc list-inside space-y-1 text-gray-600">
-                          {selectedVendorService.exclusions.map(
-                            (item, index) => (
-                              <li key={index}>{item}</li>
-                            )
-                          )}
-                        </ul>
-                      </div>
-                    )}
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </>
     </div>
   );
 };

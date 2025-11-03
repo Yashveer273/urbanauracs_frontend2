@@ -2,7 +2,7 @@
   {
     "vendorId": 1,
     "vendorName": "MagicCool Aircon",
-    "vendorImage": "images/ac_repair.jpg",
+ 
     "rating": 4.9,
     "reviews":"245+",
     "location":"Bengaluru, Karnataka",
@@ -10,7 +10,7 @@
       {
         "id": 101,
         "title": "AC Service Repair",
-        "location":"Bengaluru, Karnataka",
+        
         "price": 749,
         "originalPrice": 999, 
         "description": "Power Jet AC Service (1 AC)",
@@ -30,7 +30,7 @@
       {
         "id": 102,
         "title": "AC Service Repair",
-        "location":"Bengaluru, Karnataka",
+      
         "price": 1274,
         "originalPrice": 1699, 
         "description": "Power Jet AC Service (2 AC's)",
@@ -50,7 +50,7 @@
       {
         "id": 103,
         "title": "AC Service Repair",
-        "location":"Bengaluru, Karnataka",
+   
         "price": 1999,
         "originalPrice": 1499, 
         "description": "Split AC Installation",
@@ -70,7 +70,7 @@
       {
         "id": 104,
         "title": "AC Service Repair",
-        "location":"Bengaluru, Karnataka",
+       
         "price": 2474,
         "originalPrice": 3299, 
         "description": "AC Gas Refilling",
@@ -90,7 +90,7 @@
       {
         "id": 105,
         "title": "AC Service Repair",
-        "location":"Bengaluru, Karnataka",
+      
         "price": 1499,
         "originalPrice": 1999, 
         "description": "Power Jet AC Service (3 AC's)",
@@ -112,7 +112,7 @@
   {
     "vendorId": 2,
     "vendorName": "Hi Tech Air Conditioner",
-    "vendorImage": "/images/ac_repair01.jpg",
+  "vendorImage":"",
     "rating": 4.9,
     "reviews":"781+",
     "location":"Delhi",
@@ -120,7 +120,7 @@
       {
         "id": 201,
         "title": "AC Service Repair",
-        "price": 863,
+        "price": 863000,
         "originalPrice": 1199, 
         "description": "Power Jet AC Service (1 AC)",
         "serviceImage": "/images/ac06.jpg",
@@ -142,7 +142,7 @@
   {
     "vendorId": 3,
     "vendorName": "Indian Air Cool",
-    "vendorImage": "vendor3.jpg",
+  
     "rating": 4.9,
     "reviews":"453+",
     "location":"Delhi",
@@ -172,7 +172,7 @@
   {
     "vendorId": 4,
     "vendorName": "Mama Bhanja Aircon",
-    "vendorImage": "vendor4.jpg",
+
     "rating": 4.9,
     "reviews":"532+",
     "location":"Bengaluru, Karnataka",
@@ -322,7 +322,7 @@
   {
     "vendorId": 5,
     "vendorName": "Chilfix Air Conditioner",
-    "vendorImage": "vendor5.jpg",
+   
     "rating": 4.9,
     "reviews":"2786+",
     "location":"Delhi",
@@ -452,7 +452,7 @@
   {
     "vendorId": 6,
     "vendorName": "Chilfix Air Conditioner",
-    "vendorImage": "vendor5.jpg",
+
     "rating": 4.9,
     "reviews":"2786+",
     "location":"Ahmedabad",
@@ -582,7 +582,7 @@
   {
     "vendorId": 7,
     "vendorName": "KK Services",
-    "vendorImage": "vendor5.jpg",
+
     "rating": 4.3,
     "reviews":"234+",
     "location":"Delhi",
@@ -732,7 +732,7 @@
   {
     "vendorId": 8,
     "vendorName": "FASTON SERVICES",
-    "vendorImage": "vendor5.jpg",
+ 
     "rating": 4.3,
     "reviews":"254+",
     "location":"Noida",

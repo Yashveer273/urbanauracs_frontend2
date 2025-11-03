@@ -2,6 +2,8 @@ import axios from "axios";
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { loginUser } from "../store/userSlice";
+import { FaPhone } from "react-icons/fa";
+import { login } from "../API";
 // A mock portal component for demonstration purposes
 const Portal = ({ children }) => <>{children}</>;
 
@@ -118,6 +120,7 @@ const AuthPopup = ({ onClose }) => {
     pincode: "",
     location: "",
     otp: "",
+    phoneType:""
   });
  
 
@@ -129,16 +132,25 @@ const AuthPopup = ({ onClose }) => {
 const dispatch = useDispatch();
   const handleChange = (e) => {
     const { name, value } = e.target;
+     if (e.target.name === "mobileNumber"){
+      let value2 = value.replace(/\D/g, ""); // सिर्फ अंक रखें
+    if (value2.length > 10){ 
+      value2 = value2.slice(1, 11);
+        setFormData((prev) => ({ ...prev, [name]: value2 }));
+        return;
+    }
+     }
     setFormData((prev) => ({ ...prev, [name]: value }));
     if (e.target.name === "mobileNumber") setIsVerified(false); // reset verification on change
   };
 
   const handleAuthSuccess = (data) => {
+   
     // Store user data in local storage
     try {
   
     dispatch(loginUser(data));
-      console.log("User data saved to local storage:", data);
+     
     } catch (e) {
       console.error("Error saving to local storage", e);
     }
@@ -148,7 +160,7 @@ const dispatch = useDispatch();
   };
   const otpsend = async (mobileNumber, msg, type) => {
     try {
-      const res = await axios.post("http://localhost:8000/send-whatsapp", {
+      const res = await axios.post("http://localhost:8000/send-Opt-On-Number", {
         mobileNumber,
         msg,
         type,
@@ -214,20 +226,20 @@ const dispatch = useDispatch();
     } else {
       // Second step: Verify OTP and log in
       const { otp } = formData;
-      if (otp == MyOtp || otp === "123456") {
+      if (otp == MyOtp) {
         // Mock OTP verification
         const { mobileNumber } = formData;
-        console.log(logtoken);
+       
         try {
-          const res = await axios.post("http://localhost:8000/login", {
-            mobileNumber,
-           token: logtoken,
-          });
+          const res = await login(mobileNumber,logtoken);
+          
           if (res.status == 200) {
             handleAuthSuccess({
               token: res.token,
+                userId:res?.data?.user?._id,
               ...res.data.user,
             });
+          
           }
         } catch (error) {
           console.log(error.response?.data);
@@ -274,9 +286,9 @@ const dispatch = useDispatch();
       }
       setLoading(false);
     } catch (err) {
-      console.error(err);
+      console.error(err?.response?.data?.message);
       setLoading(false);
-      setError("Failed to send OTP. Please try again.");
+      setError(err?.response?.data?.message||"Failed to send OTP. Please try again.");
     }
   };
   const verifyOtp = () => {
@@ -293,8 +305,8 @@ const dispatch = useDispatch();
     if (!isVerified) return;
 
     // First step: Validate and simulate sending OTP
-    const { email, username, mobileNumber, pincode, location } = formData;
-    if (!email || !username || !mobileNumber || !pincode || !location) {
+    const { email, username, mobileNumber, pincode, location,phoneType } = formData;
+    if (!email || !username || !mobileNumber || !pincode || !location || !phoneType) {
       setError("All fields are required to sign up.");
       return;
     }
@@ -310,6 +322,7 @@ const dispatch = useDispatch();
         mobileNumber,
         pincode,
         location,
+        phoneType
       }),
     });
     const data = await response.json();
@@ -317,6 +330,7 @@ const dispatch = useDispatch();
     if (response.ok) {
       handleAuthSuccess({
         token: data.token,
+             userId:data?.data?._id,
         ...formData,
       });
     } else {
@@ -486,6 +500,7 @@ const dispatch = useDispatch();
                       </button>
                     )}
                   </div>
+
                   {isOtpSent && !isVerified && (
                     <div className="relative flex items-center space-x-2">
                       <input
@@ -506,6 +521,22 @@ const dispatch = useDispatch();
                       </button>
                     </div>
                   )}
+                  <div className="relative">
+  <select
+    name="phoneType"
+    value={formData.phoneType}
+    onChange={handleChange}
+    disabled={!isVerified}
+    className="w-full bg-gray-700 rounded-lg pl-12 pr-4 py-3 text-white focus:outline-none appearance-none"
+    required
+  >
+    <option value="">Phone Number Type</option>
+    <option value="whatsapp">WhatsApp Number</option>
+    <option value="non-whatsapp">Not WhatsApp Number</option>
+  </select>
+
+  <FaPhone className="absolute top-1/2 left-4 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+</div>
                   <div className="relative">
                     <FaMapPin className="absolute top-1/2 left-4 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
                     <input

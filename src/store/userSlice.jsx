@@ -12,6 +12,8 @@ const userSlice = createSlice({
   loginUser: (state, action) => {
    const data = action.payload;
       state.user = {
+        ConfurmWhatsAppMobileNumber: data.ConfurmWhatsAppMobileNumber,
+        userId:data.userId,
         username: data.username,
         email: data.email,
         mobileNumber: data.mobileNumber,

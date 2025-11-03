@@ -176,6 +176,7 @@ const dispatch = useDispatch();
                      dispatch(logoutUser())
                      dispatch(clearCart())
                   setOpen(false);
+                    localStorage.removeItem("urberaura-bookingAddressStatus");
                 }}
                 className="w-full flex items-center justify-center gap-2 bg-[#f87559] hover:bg-[#e65a3f] text-white py-2 rounded-lg font-semibold transition"
               >
