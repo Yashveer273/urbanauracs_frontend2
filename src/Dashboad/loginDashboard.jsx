@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { API_BASE_URL } from "../API";
 
 export default function DashboardLogin() {
   const [formData, setFormData] = useState({ id: "", pass: "" });
@@ -12,7 +13,7 @@ export default function DashboardLogin() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("http://localhost:8000/api/login-dashAuth", formData);
+      const res = await axios.post(`${API_BASE_URL}/api/login-dashAuth`, formData);
 
       if (res.data.token) {
         // Save token + role + username in localStorage

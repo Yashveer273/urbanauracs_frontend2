@@ -4,6 +4,7 @@ import { useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { setOrder } from "../store/orderSlices";
 import { selectUser } from "../store/userSlice";
+import { API_BASE_URL } from "../API";
 
 
 const PaymentGateway = () => {
@@ -45,7 +46,7 @@ const PaymentGateway = () => {
       
       if ( status !== "CoD") {
       const response = await axios.post(
-        "http://localhost:8000/create-order",
+        `${API_BASE_URL}/create-order`,
         data
       );
       const { url } = response.data;
@@ -60,7 +61,7 @@ const PaymentGateway = () => {
         });
       }
     }else{const response = await axios.post(
-        "http://localhost:8000/create-case-on-delivery",
+        `${API_BASE_URL}/create-case-on-delivery`,
         data
       );
       const { url } = response.data;
@@ -104,7 +105,7 @@ const PaymentGateway = () => {
     }
 
     try {
-      const res = await fetch(`http://localhost:8000/api/coupons/${code}`);
+      const res = await fetch(`${API_BASE_URL}/api/coupons/${code}`);
       const data = await res.json();
 
       if (data.success) {
@@ -154,7 +155,7 @@ const PaymentGateway = () => {
     const [coupons, setCoupons] = useState([]);
   const fetchCoupons = async () => {
     try {
-      const res = await axios.get("http://localhost:8000/api/Allcoupons");
+      const res = await axios.get(`${API_BASE_URL}/api/Allcoupons`);
       setCoupons(res.data.coupons || []);
     } catch (error) {
       console.error("Error fetching coupons:", error);

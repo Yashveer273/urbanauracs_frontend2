@@ -3,6 +3,7 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { useLocation } from "react-router-dom";
 import "./invoice.css"
+import { API_BASE_URL } from "./API";
 export default function Invoice() {
   const invoiceRef = useRef();
   const location = useLocation();
@@ -42,7 +43,7 @@ const pdfBlob = pdf.output("blob");
 const formData = new FormData();
 
   formData.append("file", pdfBlob, fileName);
-  const response = await fetch(`http://localhost:8000/upload-invoice?userId=${state.phone_number}`, {
+  const response = await fetch(`${API_BASE_URL}/upload-invoice?userId=${state.phone_number}`, {
     method: "POST",
     body: formData,
   });

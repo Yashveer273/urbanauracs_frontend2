@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { loginUser } from "../store/userSlice";
 import { FaPhone } from "react-icons/fa";
-import { login } from "../API";
+import { API_BASE_URL, login } from "../API";
 // A mock portal component for demonstration purposes
 const Portal = ({ children }) => <>{children}</>;
 
@@ -160,7 +160,7 @@ const dispatch = useDispatch();
   };
   const otpsend = async (mobileNumber, msg, type) => {
     try {
-      const res = await axios.post("http://localhost:8000/send-Opt-On-Number", {
+      const res = await axios.post(`${API_BASE_URL}/send-Opt-On-Number`, {
         mobileNumber,
         msg,
         type,
@@ -311,7 +311,7 @@ const dispatch = useDispatch();
       return;
     }
     console.log(formData);
-    const response = await fetch("http://localhost:8000/register", {
+    const response = await fetch(`${API_BASE_URL}/register`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

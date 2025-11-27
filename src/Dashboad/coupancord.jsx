@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { API_BASE_URL } from "../API";
 
 
 const CouponManager = () => {
@@ -22,7 +23,7 @@ const CouponManager = () => {
   // ✅ Fetch All Coupons
   const fetchCoupons = async () => {
     try {
-      const res = await axios.get("http://localhost:8000/api/Allcoupons");
+      const res = await axios.get(`${API_BASE_URL}/api/Allcoupons`);
       setCoupons(res.data.coupons || []);
     } catch (error) {
       console.error("Error fetching coupons:", error);
@@ -35,7 +36,7 @@ const CouponManager = () => {
     e.preventDefault();
     try {
       const res = await axios.post(
-        "http://localhost:8000/Create/discountCoupen",
+        `${API_BASE_URL}/Create/discountCoupen`,
         form
       );
       if (res.data.success) {
@@ -55,7 +56,7 @@ const CouponManager = () => {
   const handleDelete = async (id) => {
     try {
       const res = await axios.delete(
-        `http://localhost:8000/api/deleteCoupon/${id}`
+        `${API_BASE_URL}/api/deleteCoupon/${id}`
       );
       if (res.data.success) {
         setMessage({ type: "success", text: "Coupon deleted successfully!" });

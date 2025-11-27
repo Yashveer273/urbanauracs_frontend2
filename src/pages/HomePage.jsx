@@ -20,6 +20,7 @@ import {  useSelector } from "react-redux";
 
 import { logoutUser, selectUser } from "../store/userSlice";
 import axios from 'axios';
+import { API_BASE_URL } from '../API';
 
 const HomePage = () => {
    const user = useSelector(selectUser);
@@ -95,7 +96,7 @@ const fetchSocialLinks = async () => {
       return;
     }
 
-    const res = await axios.post("http://localhost:8000/verify-token", {
+    const res = await axios.post(`${API_BASE_URL}/verify-token`, {
       token: user.token,
     });
 

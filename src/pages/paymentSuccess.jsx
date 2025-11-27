@@ -14,6 +14,7 @@ import {
 import { clearOrder } from "../store/orderSlices";
 import { closeCart, clearCart, selectCartTotal } from "../store/CartSlice"; //jj
 import OrderSuccess from "./thankyou";
+import { API_BASE_URL } from "../API";
 
 const PaymentSuccess = () => {
   const { id, amount } = useParams();
@@ -85,7 +86,7 @@ const PaymentSuccess = () => {
         };
 
         const response = await axios.post(
-          `http://localhost:8000/api/sales/${id}`,
+          `${API_BASE_URL}/api/sales/${id}`,
           payload,
           {
             headers: {
