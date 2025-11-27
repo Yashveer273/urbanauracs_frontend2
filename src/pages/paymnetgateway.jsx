@@ -22,7 +22,7 @@ const PaymentGateway = () => {
   
 
   // ✅ Handle Payment
-  const handlePayment = async (amount, status, left_amount) => {
+  const handlePayment = async (advance, status, left_amount,oGtotal_price,total_price) => {
     if (!user?.username || !user?.mobileNumber) {
       setMessage({ type: "error", text: "❌ Missing user details or amount!" });
       return;
@@ -32,8 +32,10 @@ const PaymentGateway = () => {
     const data = {
       name: user.username,
       mobileNumber: user.mobileNumber,
-      amount,
+      advance,
       left_amount,
+      oGtotal_price,
+      total_price,
       status,
       date,
       orderId,
@@ -58,7 +60,7 @@ const PaymentGateway = () => {
         });
       }
     }else{const response = await axios.post(
-        "http://localhost:8000/create-advance-order",
+        "http://localhost:8000/create-case-on-delivery",
         data
       );
       const { url } = response.data;
@@ -314,7 +316,9 @@ fetchCoupons();
                 handlePayment(
                   advance - discount,
                   "Pay Advance",
-                  total - advance
+                  total - advance,
+                  total,
+                  total-discount
                 )
               }
               className="w-full sm:w-auto px-6 sm:px-12 py-3 sm:py-4 text-base sm:text-lg font-bold text-white bg-gradient-to-r from-[#4caf50] to-[#43a047] rounded-lg shadow-lg hover:from-[#43a047] hover:to-[#4caf50] transition-all duration-300"
@@ -333,7 +337,7 @@ fetchCoupons();
 
             <button
               onClick={() =>
-                handlePayment(total - discount, "CoD", total - discount)
+                handlePayment(0, "CoD", total - discount, total,total - discount)
               }
               className="w-full sm:w-auto px-6 sm:px-12 py-3 sm:py-4 text-sm sm:text-base font-bold text-white bg-gradient-to-r from-[#f87559] to-[#f8594b] rounded-lg shadow-md hover:from-[#f8594b] hover:to-[#f87559] transition-all duration-300"
             >

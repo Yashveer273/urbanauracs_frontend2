@@ -389,7 +389,6 @@ product_info.cart.map((item) =>
     "Email",
     "Phone",
     "WhatsApp Number",
-    
     "Details",
     "Pincode",
     "Location",

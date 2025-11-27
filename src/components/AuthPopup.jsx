@@ -145,7 +145,7 @@ const dispatch = useDispatch();
   };
 
   const handleAuthSuccess = (data) => {
-   
+   console.log(data);
     // Store user data in local storage
     try {
   
@@ -235,7 +235,7 @@ const dispatch = useDispatch();
           
           if (res.status == 200) {
             handleAuthSuccess({
-              token: res.token,
+              token: res.data.token,
                 userId:res?.data?.user?._id,
               ...res.data.user,
             });

@@ -1,7 +1,6 @@
 // App.jsx
-import React, { useEffect } from "react";
-import { useDispatch } from "react-redux";
-import { setUser } from "./store/userSlice";
+import React from "react";
+
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import HomePage from "./pages/HomePage";
 import FullHomeCleaningService from "./pages/FullHomeCleaningService";
@@ -16,14 +15,7 @@ import PrivacyPolicy from "./pages/privacyPolicy";
 
 
 function App() {
-  const dispatch = useDispatch();
 
-  useEffect(() => {
-    const storedUser = localStorage.getItem("userData");
-    if (storedUser) {
-      dispatch(setUser(JSON.parse(storedUser))); // works now
-    }
-  }, [dispatch]);
 
   return (
     <Router>

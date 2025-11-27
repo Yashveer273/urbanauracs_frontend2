@@ -39,3 +39,16 @@ export const getVendersData=async()=>{
  const res= await axios.get(`${API_BASE_URL}/api/vendors`);
 return res;
 }
+export const getMyOrderHistory = async (userId, page = 1, limit = 10) => {
+  try {
+    const response = await axios.get(
+      `${API_BASE_URL}/order-history/${userId}?page=${page}&limit=${limit}`
+    );
+
+    console.log("✅ Order History:", response.data);
+    return response;
+  } catch (error) {
+    console.error("❌ Failed to fetch order history:", error);
+    return error.response;
+  }
+};

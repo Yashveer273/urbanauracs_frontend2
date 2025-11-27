@@ -33,11 +33,12 @@ const PaymentSuccess = () => {
     hasRun.current = true;
 
     const saveOrder = async () => {
+      console.log(order);
       try {
         if (
           !order ||
           order.orderId !== id ||
-          Math.round(Number(order.amount) * 100) !==
+          Math.round(Number(order.advance) * 100) !==
             Math.round(Number(amount) * 100)
         ) {
           console.error("Order mismatch!");
@@ -48,19 +49,21 @@ const PaymentSuccess = () => {
         const payload = {
           email: user?.email,
           name: user?.name || "Guest",
-          userId:user?.userId,
+          userId: user?.userId,
           phone_number: user?.mobileNumber,
-          total_price: order.amount,
           oGtotal_price: total_price,
+          total_price: order.total_price,
+          advance: order.advance,
+          left_amount: order.left_amount,
           pincode: user?.pincode,
           user_location: user?.location || "Unknown",
           status: "",
           date_time: new Date().toISOString(),
-          ConfurmWhatsAppMobileNumber:user?.ConfurmWhatsAppMobileNumber,
+          ConfurmWhatsAppMobileNumber: user?.ConfurmWhatsAppMobileNumber,
           product_info: {
             cart: cart.map((item) => ({
               location_booking_time: item.bookingDate,
-              SelectedServiceTime:item.SelectedServiceTime,
+              SelectedServiceTime: item.SelectedServiceTime,
               item_price: item.price,
               originalPrice: item.originalPrice,
               description: item.description,

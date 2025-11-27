@@ -1,9 +1,15 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-  name: "",
-  mobileNumber: "",
-  amount: 0,
+name: "",
+      mobileNumber: "",
+      advance:0,
+      left_amount:0,
+      oGtotal_price:0,
+      total_price:0,
+      status:"",
+      date:"",
+      orderId:"",
 };
 
 const orderSlice = createSlice({

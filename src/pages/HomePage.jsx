@@ -89,7 +89,8 @@ const fetchSocialLinks = async () => {
   const ValidateUse = async () => {
   try {
     if (!user?.token) {
-      console.warn("No token found for validation.");
+
+      console.log("No token found for validation.",user);
       dispatch(logoutUser());
       return;
     }
@@ -108,10 +109,11 @@ const fetchSocialLinks = async () => {
     // If token expired or invalid response
     if (err.response && err.response.status === 401) {
       console.warn("⚠️ Token expired — forcing logout.");
+      dispatch(logoutUser());
     } else {
       console.error("Token verification failed:", err.message);
     }
-    dispatch(logoutUser());
+    
   }
 };
 
