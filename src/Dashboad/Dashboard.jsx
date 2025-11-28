@@ -23,7 +23,7 @@ import VandersSection from "./VandersSection";
 import { User } from "lucide-react";
 import { GetVenderData } from "./getVenderData";
 
-// Icons from Lucide React
+// Icons from Lucide React....
 const HomeIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
