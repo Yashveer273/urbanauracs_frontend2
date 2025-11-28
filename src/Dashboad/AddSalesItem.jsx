@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { PlusCircle, X } from "lucide-react";
-import { GetVenderData } from "./getVenderData";
+import { GetVenderData } from "./GetVenderData";
 import axios from "axios";
 import { API_BASE_URL } from "../API";
 

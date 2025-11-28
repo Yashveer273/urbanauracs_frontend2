@@ -21,7 +21,7 @@ import HomeCarousalAssetController from "./HomeCarousalAssetController";
 import SocialLinksManager from "./socialMedia";
 import VandersSection from "./VandersSection";
 import { User } from "lucide-react";
-import { GetVenderData } from "./getVenderData";
+import { GetVenderData } from "./GetVenderData";
 
 // Icons from Lucide React....
 const HomeIcon = () => (
