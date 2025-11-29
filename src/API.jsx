@@ -1,6 +1,6 @@
 import axios from "axios";
 
-export const API_BASE_URL = "http://urbanaurabzcs.xyz";
+export const API_BASE_URL = "https://urbanaurabzcs.xyz";
 // export const API_BASE_URL = "http://localhost:8000"; 
 
 export const updateUser = async (userId, updateData) => {
