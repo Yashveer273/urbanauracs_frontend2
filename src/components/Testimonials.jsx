@@ -5,7 +5,7 @@ const testimonials = [
     name: "Sandra Yerick",
     avatar: "/avatars/sandra.jpg", 
     rating: 5,
-    text: `Our apartment has never looked this clean! Qlinest is now a must in our monthly routine. The team is polite, efficient, and always pays attention to the smallest details.`,
+    text: `Our apartment has never looked this clean! Urban Aura Services is now a must in our monthly routine. The team is polite, efficient, and always pays attention to the smallest details.`,
   },
   {
     name: "Jerome Freud",
@@ -17,7 +17,7 @@ const testimonials = [
     name: "Laila Tassel",
     avatar: "/avatars/laila.jpg",
     rating: 5,
-    text: `Love their eco products and how great my house smells after each visit. Qlinest is professional, always on time, and my home has never felt more peaceful and organized.`,
+    text: `Love their eco products and how great my house smells after each visit. Urban Aura Services is professional, always on time, and my home has never felt more peaceful and organized.`,
   },
 ];
 

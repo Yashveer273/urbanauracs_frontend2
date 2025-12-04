@@ -97,7 +97,7 @@ const formData = new FormData();
           >
             
             <img src="/logo.jpg" style={{ height: "50px" }} />
-            <h1 style={{ margin: 0 }}>URBAN AURA SERVICES PVT. LTD.</h1>
+            <h1 style={{ margin: 0 }}>Urban Aura SERVICES PVT. LTD.</h1>
           </div>
         </div>
 

@@ -125,7 +125,7 @@
 //               Ready For A Cleaner, <br /> Happier Home?
 //             </div>
 //             <p className="mt-2 text-base max-w-md mx-auto lg:mx-0">
-//               Book today and discover why families trust Qlinest for spotless living.
+//               Book today and discover why families trust Urban Aura for spotless living.
 //             </p>
 //             <div className="mt-6">
 //               <button className="bg-yellow-400 text-[#1f2d3a] font-semibold px-6 py-3 rounded-full shadow hover:brightness-105 transition">

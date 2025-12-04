@@ -100,7 +100,7 @@ const WhyChoose = () => {
             </div>
              
             <h2 className="text-3xl sm:text-4xl font-bold leading-tight text-white">
-              Why Urban Aura Is The Right <br /> Choice For Quality
+              Why Urban Aura Services Is The Right <br /> Choice For Quality
             </h2>
             <p className="text-gray-300 mt-2 max-w-md">
               Discover a range of services designed to bring comfort.
