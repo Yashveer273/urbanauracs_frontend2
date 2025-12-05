@@ -1,7 +1,11 @@
 import React from 'react';
-import { ChevronDown, Mail, Phone, MapPin, AtSign, ChevronLeft } from 'lucide-react';
+import { ChevronDown, ChevronLeft } from 'lucide-react';
+import { selectSocialLinks } from '../store/socialLinks';
+import { useSelector } from "react-redux";
 
 const PrivacyPolicy = () => {
+    const links = useSelector(selectSocialLinks); // <-- Get data here
+  
   const handleGoBack = () => {
     window.history.back();
   };
@@ -128,7 +132,7 @@ const PrivacyPolicy = () => {
 
             <h2 className="text-2xl font-bold text-gray-900">Grievance</h2>
             <p className="flex items-center">
-              If you have any questions about this Policy, how we process or handle your personal data, or otherwise, you may reach out to us, with your queries, grievances, feedback, and comments at <a href="mailto:auraservicesurban@gmail.com" className="text-blue-600 underline ml-2 flex items-center">auraservicesurban@gmail.com <Mail size={16} className="ml-1" /></a>
+              If you have any questions about this Policy, how we process or handle your personal data, or otherwise, you may reach out to us, with your queries, grievances, feedback, and comments at.<br/> {links[0]?.email}
             </p>
           </div>
 

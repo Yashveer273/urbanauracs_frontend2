@@ -173,41 +173,10 @@ const BookingForm = ({ MyCity }) => {
     if (MyCity) {
       setBookingCity(MyCity);
     }
-    if ("geolocation" in navigator && !isManualLocation && !location) {
-      navigator.geolocation.getCurrentPosition(
-        async (pos) => {
-          const { latitude, longitude } = pos.coords;
-          try {
-            const res = await fetch(
-              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
-            );
-            const data = await res.json();
-            const city =
-              data.address.city ||
-              data.address.town ||
-              data.address.village ||
-              "";
-            const state = data.address.state || "";
-            setLocation(`${city}, ${state}`);
-          } catch (err) {
-            console.error("Error fetching location details:", err);
-            setLocation("");
-          }
-        },
-        (err) => {
-          console.warn("Location access denied:", err);
-          setLocation("");
-        }
-      );
-    }
+    
   }, [isManualLocation, location, MyCity]);
 
-  const handleLocationChange = (e) => {
-    const value = e.target.value;
-    setLocation(value);
-    setIsManualLocation(!!value);
-  };
-
+ 
   const handleBookNow = () => {
     const serviceName = selectedService.split("/").pop();
     let vendors = serviceDataMap[serviceName];
@@ -285,19 +254,7 @@ const BookingForm = ({ MyCity }) => {
 
         {/* Divider */}
 
-        {/* Location Input */}
-        <div className="w-full md:flex-1 flex items-center relative">
-          <div className="w-full">
-            <input
-              type="text"
-              id="location"
-              placeholder="City, State"
-              value={location}
-              onChange={handleLocationChange}
-              className="w-full bg-transparent focus:outline-none font-semibold text-white placeholder-gray-500 relative z-10"
-            />
-          </div>
-        </div>
+        
       </div>
 
       {/* Book Now Button */}

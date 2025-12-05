@@ -51,6 +51,7 @@ const FooterWithCarousel = () => {
                 <li><a href="#" className="hover:text-white transition-colors duration-200">Home</a></li>
 
                 <li><a href="#" className="hover:text-white transition-colors duration-200">Privacy Policy</a></li>
+                <li><a href="/RefundCancellationPolicy" className="hover:text-white transition-colors duration-200">Refund Cancellation Policy</a></li>
                 <li><a href="/contact" className="hover:text-white transition-colors duration-200">Contact</a></li>
               </ul>
             </div>
@@ -94,10 +95,13 @@ const FooterWithCarousel = () => {
 
       {/* Bottom Bar */}
       <div className="footer-bottom-bar">
-        <p>©Urban Aura Services CS - All rights reserved</p>
+        <p>©Urban Aura Services Pvt Ltd - All rights reserved</p>
         <p>
           <a href="/PrivacyPolicy">Privacy Policy </a>
-      
+              
+        </p>
+        <p>
+                 <a href="/RefundCancellationPolicy" className="hover:text-white transition-colors duration-200">Refund Cancellation Policy</a>
         
         </p>
       </div>

@@ -57,10 +57,20 @@ const formData = new FormData();
     }
   };
  
-    const base = Number(state.oGtotal_price) || 0;
-  const gst18 = Math.round(base * 0.09);
-  const gst25 = Math.round(base * 0.25);
-  
+const base = Number(state.oGtotal_price) || 0;
+
+// Step 1: Commission (don't round)
+const commissionFee = base * 0.25;   // 225
+
+// Step 2: GST and Platform fee (don't round)
+const gst18 = commissionFee * 0.18;  // 40.5
+const platformFee = commissionFee * 0.02; // 4.5
+
+// Step 3: Round only final convenience fee
+const convenienceFee = Math.round(gst18 + platformFee); // = 45
+const discountAmount = (base + commissionFee + convenienceFee) - state.payableAmount
+const discountPercent = (discountAmount / (base + commissionFee + convenienceFee)) * 100
+
   return (
     <div style={{ background: "#f5f5f5", minHeight: "100vh", padding: "20px" }}>
       <div
@@ -244,24 +254,32 @@ const formData = new FormData();
   <strong>Sub Total:</strong> ₹
 {base}
 </p>
-
 <p>
-  Taxes and Fee (9%): ₹
+  Commission Amount (25%): ₹
+  {commissionFee}
+</p>
+<p>
+  GST (18%): ₹
   {gst18}
 </p>
-
 <p>
-  Service Charge (25%): ₹
-  {gst25}
+  Platform Fee (2%): ₹
+  {platformFee}
 </p>
- <p>
-Discount: ₹
-  {base+gst18+gst25-state.payableAmount}
+<p>
+  Total Convenience: ₹
+  {convenienceFee}
 </p>
-<h3>
-  <strong>Grand Total:</strong> ₹{state.payableAmount}
-</h3>
 
+ <p>
+Discount: ₹{discountAmount} ({discountPercent}%)
+
+</p>
+
+<h3>
+  <strong>Grand Total:</strong> ₹{base+commissionFee+convenienceFee-discountAmount}
+</h3>
+ 
           </div>
 
           {/* Divider in the center */}

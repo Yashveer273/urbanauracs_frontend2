@@ -12,6 +12,7 @@ import PaymentSuccess from "./pages/paymentSuccess";
 import PaymentFailed from "./pages/paymentfail";
 import InvoiceApp from "./invoice";
 import PrivacyPolicy from "./pages/privacyPolicy";
+import RefundCancellationPolicy from "./pages/refundPolicy";
 
 
 function App() {
@@ -25,6 +26,7 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/InvoiceApp" element={<InvoiceApp />} />
         <Route path="/PrivacyPolicy" element={<PrivacyPolicy/>} />
+        <Route path="/RefundCancellationPolicy" element={<RefundCancellationPolicy/>} />
         <Route path="/Dashboard" element={<Dasboard />} />
         <Route path="/contact" element={<ContactUs />} />
     

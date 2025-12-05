@@ -88,14 +88,23 @@ const PaymentGateway = () => {
     }
   };
 
-  // ✅ GST Breakdown
+ // ✅ GST Breakdown
   const base = Number(total_price) || 0;
-  const gst18 = Math.round(base * 0.09);
-  const gst25 = Math.round(base * 0.25);
-  const delivery = 0;
-  const total = base + gst18 +gst25 + delivery - discount;
+// Step 1: Commission (don't round)
+const commissionFee = base * 0.25;   // 225
+
+
+const gst18 = commissionFee * 0.18;  // 40.5
+const platformFee = commissionFee * 0.02; // 4.5
+
+const convenienceFee = Math.round(gst18 + platformFee); // = 45
+  const total = base +commissionFee + convenienceFee - discount;
   const advance = Math.round(total * 0.1);
 
+
+
+
+  
   // ✅ Coupon Handling
   const verifyCoupon = async (selectedCoupon) => {
     const code = selectedCoupon || coupon;
@@ -209,9 +218,25 @@ fetchCoupons();
         )}
 
         <div className="mt-6 sm:mt-10 mb-6 sm:mb-10 space-y-3 sm:space-y-5 text-gray-700 text-base sm:text-lg">
-          <p>Item Total: ₹{base}</p>
-          <p>Taxes and Fee 9%: ₹{gst18}</p>
-          <p>Service Charge 25%: ₹{gst25}</p>
+          <p>
+  Commission Amount (25%): ₹
+  {commissionFee}
+</p>
+<p>
+  GST (18%): ₹
+  {gst18}
+</p>
+<p>
+  Platform Fee (2%): ₹
+  {platformFee}
+</p>
+<p>
+  Total Convenience: ₹
+  {convenienceFee}
+</p>
+<h3>
+  <strong>Grand Total:</strong> ₹{total}
+</h3>
 
           {discount > 0 && (
             <p className="text-green-600 font-semibold">
