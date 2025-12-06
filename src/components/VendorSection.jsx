@@ -35,10 +35,10 @@ const VendorSection = ({ vendor,userLocation }) => {
       <div className="vendor-header-container">
         <div className="vendor-header">
           <div className="vendor-header-left">
-            <h2 className="vendor-title">{vendor.vendorName}</h2>
+            <h2 className="vendor-title">{vendor.vendorName=="self"?"Urban Aura Services":vendor.vendorName}</h2>
             <p className="vendor-description">
               Discover top-rated services offered by{' '}
-              <strong>{vendor.vendorName}</strong>. Rated by thousands of users!
+              <strong>{vendor.vendorName=="self"?"Urban Aura Services":vendor.vendorName}</strong>. Rated by thousands of users!
             </p>
           </div>
 

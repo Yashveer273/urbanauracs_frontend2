@@ -14,7 +14,7 @@ import FilterSidebar from '../components/FilterSidebar';
 import Portal from '../components/Portal';
 import CartSidebar from '../components/CartSidebar'; 
 import AuthPopup from '../components/AuthPopup';
-import AccountMenu from '../components/AccountMenu';
+
 
 
 
@@ -22,22 +22,15 @@ import fullHomeVendors from '../data/fullHomeVendors.json';
 import acRepairVendors from '../data/AcRepair.json';
 import commercialCleaning from '../data/CommercialCleaning.json';
 import { loginUser } from '../store/userSlice';
+import { services } from '../data/ProductData';
+import { fetchProdDataDESC } from '../API';
 
-const services = [
-  { title: 'Full Home Cleaning', image: '/images/home_cleaning copy.jpg', link: '/services/full-home-cleaning' },
-  { title: 'AC Repair Service', image: '/images/ac_repair.jpg', link: '/services/ac-repair' },
-];
-  const serviceDataMap = {
-    'full-home-cleaning': fullHomeVendors,
-    'ac-repair': acRepairVendors,
-    'commercial-cleaning': commercialCleaning,
-  };
 
-const FullHomeCleaningService = () => {
-  const { serviceName } = useParams();
-  const location = useLocation();
-  const userLocation = location.state?.location;
-  const BookingCity = location.state?.BookingCities;
+
+const CleaningService = () => {
+  const { parameter } = useParams();
+const [serviceName, BookingCity] = parameter.split("-");
+ 
 
   const dispatch = useDispatch(); 
   const isAuthPopupOpen = useSelector(selectIsAuthPopupOpen);
@@ -62,12 +55,35 @@ const FullHomeCleaningService = () => {
 
 
 
+const callProductData=async()=>{
+  if( services.length<=0){
+const data2= await fetchProdDataDESC();
+     services.length = 0;
+  if(data2.length>0){services.push(...data2[0].data); 
+ let serviceData = services.find(s => s.ServiceName == serviceName);
+        const Data = serviceData.data.filter(
+          (Product) =>
+      Product.location?.trim().toLowerCase().replace(/\s+/g, "") ===
+      BookingCity.trim().toLowerCase().replace(/\s+/g, "")
+        );
+    setAllVendors(Data);
+  }
+     
+  }else{
+     let serviceData = services.find(s => s.ServiceName == serviceName);
+        const Data = serviceData.data.filter(
+          (Product) =>
+      Product.location?.trim().toLowerCase().replace(/\s+/g, "") ===
+      BookingCity.trim().toLowerCase().replace(/\s+/g, "")
+        );
+    setAllVendors(Data);
+  }
 
+  }
+     
   useEffect(() => {
- 
+callProductData();
     
-    const vendors = serviceDataMap[serviceName] || [];
-    setAllVendors(vendors);
     setAppliedFilters({
       minPrice: 400,
       maxPrice: 5000,
@@ -229,7 +245,7 @@ const FullHomeCleaningService = () => {
           </div>
         ) : (
           filteredVendors.map((vendor) => (
-            <VendorSection key={vendor.vendorId} vendor={vendor}  userLocation={userLocation} />
+            <VendorSection key={vendor.vendorId} vendor={vendor}  userLocation={BookingCity} />
           ))
         )}
       </div>
@@ -239,4 +255,4 @@ const FullHomeCleaningService = () => {
   );
 };
 
-export default FullHomeCleaningService;
+export default CleaningService;

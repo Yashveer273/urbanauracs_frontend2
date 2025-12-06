@@ -11,9 +11,8 @@ import FAQSection from '../components/FAQSection';
 import FooterWithCarousel from '../components/FooterWithCarousel';
 import ServicePopup from '../components/ServicePopup';
 import CartSidebar from '../components/CartSidebar'; 
-import { firestore } from "../firebaseCon";
 import { useDispatch } from 'react-redux';
-import { collection, getDocs } from "firebase/firestore";
+import { fetchSocialLinks,fetchProdDataDESC } from '../API';
 import { setLinks } from '../store/socialLinks';
 import CityCards from '../components/cityCard';
 import {  useSelector } from "react-redux";
@@ -21,11 +20,13 @@ import {  useSelector } from "react-redux";
 import { logoutUser, selectUser } from "../store/userSlice";
 import axios from 'axios';
 import { API_BASE_URL } from '../API';
+import { services } from '../data/ProductData';
 
 const HomePage = () => {
    const user = useSelector(selectUser);
      const dispatch = useDispatch(); 
   const [showServices, setShowServices] = useState(false);
+ 
   const [MyCity, setMyCity] = useState("");
 
   const servicesRef = useRef(null);
@@ -40,49 +41,13 @@ const HomePage = () => {
     servicesRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const services = [
-    { title: 'Full Home Cleaning', image: '/images/home_cleaning copy.jpg', link: '/services/full-home-cleaning' },
-    { title: 'AC Repair Service', image: '/images/ac_repair.jpg', link: '/services/ac-repair' },
-    { title: 'Cleaning Service', image: '/images/cleaning_service.jpg', link: '/services/cleaning' },
-    { title: 'Commercial Cleaning', image: '/images/commercial.jpg', link: '/services/commercial-cleaning' },
-    { title: 'Pest Control', image: '/images/pest_control.jpg', link: '/services/pest-control' },
-    { title: 'Carpenter', image: '/images/carpenter.jpg', link: '/services/carpenter' },
-    { title: 'Home Painting', image: '/images/home_painting.jpg', link: '/services/home-painting' },
-    { title: 'Plumber', image: '/images/plumber.jpg', link: '/services/plumber' },
-    { title: 'Electrician', image: '/images/electrician.jpg', link: '/services/electrician' },
-    { title: 'Balloon Decoration', image: '/images/balloon_decoration.jpg', link: '/services/balloon-decoration' },
-  ];
-  
-    // ========================================================
-const fetchSocialLinks = async () => {
-  try {
-    const querySnapshot = await getDocs(collection(firestore, "socialLinks"));
-    let links = [];
-
-    querySnapshot.forEach((doc) => {
-      const data = doc.data();
-
-      const createdAt = data.createdAt?.toDate 
-        ? data.createdAt.toDate().toISOString() 
-        : null;
-
-      const updatedAt = data.updatedAt?.toDate 
-        ? data.updatedAt.toDate().toISOString() 
-        : null;
-
-      links.push({ id: doc.id, ...data, createdAt, updatedAt });
-    });
-
-    return links;
-  } catch (error) {
-    console.error("Error fetching social links:", error);
-    return [];
-  }
-};
-
 
   const getLinks = async () => {
-  
+  const data2= await fetchProdDataDESC();
+  console.log(data2);
+services.length = 0;
+  if(data2.length>0)services.push(...data2[0].data); 
+
     const data = await fetchSocialLinks();
      dispatch(setLinks(data));
     console.log("Social Links:", data);
@@ -137,7 +102,7 @@ const fetchSocialLinks = async () => {
       <CityCards setMyCity={setMyCity}/> 
       <CartSidebar /> 
        
-      <HeroSection MyCity={MyCity} />
+      <HeroSection MyCity={MyCity}/>
    
       <div ref={featuresRef}>
         <AboutUs />

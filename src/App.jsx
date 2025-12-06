@@ -3,7 +3,7 @@ import React from "react";
 
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import HomePage from "./pages/HomePage";
-import FullHomeCleaningService from "./pages/FullHomeCleaningService";
+import CleaningService from "./pages/CleaningServices";
 import ContactUs from "./components/ContactUs";
 import Dasboard from "./Dashboad/Dashboard";
 import PaymentGateway from "./pages/paymnetgateway";
@@ -13,6 +13,7 @@ import PaymentFailed from "./pages/paymentfail";
 import InvoiceApp from "./invoice";
 import PrivacyPolicy from "./pages/privacyPolicy";
 import RefundCancellationPolicy from "./pages/refundPolicy";
+import AccountMenu from "./components/AccountMenu";
 
 
 function App() {
@@ -45,9 +46,14 @@ function App() {
         />
 
         <Route
-          path="/services/:serviceName"
-          element={<FullHomeCleaningService />}
+          path="/services/:parameter"
+          element={<CleaningService />}
         />
+         <Route
+          path="/AccountMenu"
+          element={<AccountMenu />}
+        />
+        
         
       </Routes>
     </Router>

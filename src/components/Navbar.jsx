@@ -1,8 +1,9 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { selectCartItemCount, toggleCart } from "../store/CartSlice";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
+import { selectUser } from "../store/userSlice";
 import AccountMenu from "./AccountMenu";
 import {
   FaPhone,
@@ -20,14 +21,21 @@ import {
 import "./Navbar.css";
 
 const Navbar = ({ toggleFilterSidebar, onAboutClick }) => {
+    const user = useSelector(selectUser);
+  const navigator=useNavigate();
+    const dispatch = useDispatch();
+    const firstLetter = user?.username
+      ? user.username.charAt(0).toUpperCase()
+      : user?.email
+      ? user.email.charAt(0).toUpperCase()
+      : "U";
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [showSearchBox, setShowSearchBox] = useState(false);
   const topBarRef = useRef(null);
   const [topBarHeight, setTopBarHeight] = useState(28);
 
-  // Redux hooks for state management
-  const dispatch = useDispatch();
+
   const links = useSelector((state) => state.socialLinks.links);
   // Replace 'socialLinks' with the slice name you used
 
@@ -174,7 +182,14 @@ const Navbar = ({ toggleFilterSidebar, onAboutClick }) => {
         </div>
 
         <div className={`nav-actions ${menuOpen ? "show" : ""}`}>
-          <AccountMenu />
+          <div
+        onClick={() => navigator("/AccountMenu")}
+        className="w-10 h-10 flex items-center justify-center rounded-full bg-[#f87559] text-white font-bold cursor-pointer hover:scale-105 transition"
+      >
+        {
+          firstLetter
+        }
+      </div>
           {scrolled && (
             <div
               className="main-search-icon"

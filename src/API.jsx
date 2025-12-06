@@ -1,7 +1,9 @@
 import axios from "axios";
+import { firestore } from "./firebaseCon";
 
-export const API_BASE_URL = "https://urbanaurabzcs.xyz";
-// export const API_BASE_URL = "http://localhost:8000"; 
+import { collection, getDocs,  } from "firebase/firestore";
+// export const API_BASE_URL = "https://urbanaurabzcs.xyz";
+export const API_BASE_URL = "http://localhost:8000"; 
 
 export const updateUser = async (userId, updateData) => {
   try {
@@ -12,6 +14,60 @@ export const updateUser = async (userId, updateData) => {
     throw error;
   }
 };
+ export const fetchSocialLinks = async () => {
+  try {
+    const querySnapshot = await getDocs(collection(firestore, "socialLinks"));
+    let links = [];
+
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+
+      const createdAt = data.createdAt?.toDate 
+        ? data.createdAt.toDate().toISOString() 
+        : null;
+
+      const updatedAt = data.updatedAt?.toDate 
+        ? data.updatedAt.toDate().toISOString() 
+        : null;
+
+      links.push({ id: doc.id, ...data, createdAt, updatedAt });
+    });
+
+    return links;
+  } catch (error) {
+    console.error("Error fetching social links:", error);
+    return [];
+  }
+};
+
+export const fetchProdDataDESC = async () => {
+  try {
+    const snapshot = await getDocs(collection(firestore, "homeCleaningServiceDB"));
+
+    // Step 1: get raw data
+    let result = snapshot.docs.map(doc => doc.data());
+
+    // Step 2: reverse order of main list by ID
+    result.sort((a, b) => (b.id || 0) - (a.id || 0));
+
+    // Step 3: reverse order inside each "data" array
+    result = result.map(item => ({
+      ...item,
+      data: Array.isArray(item.data)
+        ? [...item.data].sort((a, b) => (b.id || 0) - (a.id || 0))
+        : [] // fallback
+    }));
+
+    console.log("FINAL REVERSED DATA:", result);
+
+    return result;
+
+  } catch (error) {
+    console.error("Error fetching services:", error);
+    return [];
+  }
+};
+
 export const login = async (mobileNumber, logtoken) => {
   try {
     const res = await axios.post(`${API_BASE_URL}/login`, {

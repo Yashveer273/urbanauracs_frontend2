@@ -101,8 +101,7 @@ const FooterWithCarousel = () => {
               
         </p>
         <p>
-                 <a href="/RefundCancellationPolicy" className="hover:text-white transition-colors duration-200">Refund Cancellation Policy</a>
-        
+        <a href="/RefundCancellationPolicy" className="hover:text-white transition-colors duration-200">Refund Cancellation Policy</a>
         </p>
       </div>
     </>

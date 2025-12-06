@@ -10,67 +10,22 @@ import acRepairVendors from "../data/AcRepair.json";
 import commercialCleaning from "../data/CommercialCleaning.json";
 import { useDispatch } from "react-redux";
 import { openChatbox } from "../store/chatboxSlice";
+import { fetchProdDataDESC } from "../API";
+import { services } from "../data/ProductData";
 const serviceDataMap = {
-  "full-home-cleaning": fullHomeVendors,
+  "home-cleaning": fullHomeVendors,
   "ac-repair": acRepairVendors,
   "commercial-cleaning": commercialCleaning,
 };
 
-const services = [
-  {
-    title: "Full Home Cleaning",
-    image: "/images/home_cleaning copy.jpg",
-    link: "/services/full-home-cleaning",
-  },
-  {
-    title: "AC Repair Service",
-    image: "/images/ac_repair.jpg",
-    link: "/services/ac-repair",
-  },
-  {
-    title: "Cleaning Service",
-    image: "/images/cleaning_service.jpg",
-    link: "/services/cleaning",
-  },
-  {
-    title: "Commercial Cleaning",
-    image: "/images/commercial.jpg",
-    link: "/services/commercial-cleaning",
-  },
-  {
-    title: "Pest Control",
-    image: "/images/pest_control.jpg",
-    link: "/services/pest-control",
-  },
-  {
-    title: "Carpenter",
-    image: "/images/carpenter.jpg",
-    link: "/services/carpenter",
-  },
-  {
-    title: "Home Painting",
-    image: "/images/home_painting.jpg",
-    link: "/services/home-painting",
-  },
-  { title: "Plumber", image: "/images/plumber.jpg", link: "/services/plumber" },
-  {
-    title: "Electrician",
-    image: "/images/electrician.jpg",
-    link: "/services/electrician",
-  },
-  {
-    title: "Balloon Decoration",
-    image: "/images/balloon_decoration.jpg",
-    link: "/services/balloon-decoration",
-  },
-];
+
 
 const HeroSectionWrapper = ({ MyCity}) => {
   const [showServices, setShowServices] = useState(false);
   const [filteredVendors, setFilteredVendors] = useState([]);
   const [selectedLocation, setSelectedLocation] = useState("");
   const servicesRef = useRef(null);
-
+ 
   const handleShowServices = (vendors, location) => {
     setFilteredVendors(vendors);
     setSelectedLocation(location);
@@ -135,10 +90,10 @@ const HeroSection = ({ onShowServices, MyCity }) => {
 
 const BookingForm = ({ MyCity }) => {
   const dispatch = useDispatch();
-  const [location, setLocation] = useState("");
+ 
   const [BookingCity, setBookingCity] = useState("");
   const [isManualLocation, setIsManualLocation] = useState(false);
-  const [selectedService, setSelectedService] = useState(services[0].link);
+  const [selectedService, setSelectedService] = useState("");
   const navigate = useNavigate();
   const BookingCities = [
     "Delhi",
@@ -168,34 +123,40 @@ const BookingForm = ({ MyCity }) => {
     "Mysore",
     "Allahabad",
   ];
+ 
 
+  
   useEffect(() => {
+   
     if (MyCity) {
       setBookingCity(MyCity);
     }
+
     
-  }, [isManualLocation, location, MyCity]);
+  }, [isManualLocation,MyCity]);
 
  
   const handleBookNow = () => {
-    const serviceName = selectedService.split("/").pop();
-    let vendors = serviceDataMap[serviceName];
+   
+    console.log(services);
+    let serviceData = services.find(s => s.ServiceName == selectedService);
+    
 
-    vendors = vendors.filter(
-      (vendor) =>
-        vendor.location?.toLowerCase().replace(/\s/g, "") ===
-        BookingCity.toLowerCase().replace(/\s/g, "")
+    const Data = serviceData.data.filter(
+      (Product) =>
+    
+  Product.location?.trim().toLowerCase().replace(/\s+/g, "") ===
+  BookingCity.trim().toLowerCase().replace(/\s+/g, "")
+
     );
-    console.log(vendors.length);
-    if (vendors.length <= 0) {
+    console.log(Data.length);
+    if (Data.length <= 0) {
       alert("😔 No services available in your selected location");
       // setchatopenStatus=true;
          dispatch(openChatbox());
     } else {
-      console.log(selectedService);
-      navigate(selectedService, {
-        state: { location: location, BookingCities: BookingCity },
-      });
+ 
+      navigate(`services/${selectedService}-${BookingCity}`);
     }
   };
 
@@ -213,16 +174,20 @@ const BookingForm = ({ MyCity }) => {
             <select
               id="service"
               value={selectedService}
+              required
               onChange={(e) => setSelectedService(e.target.value)}
               className="w-full bg-transparent focus:outline-none font-semibold text-white placeholder-gray-500 border-b border-gray-600 pb-1 cursor-pointer relative z-10"
             >
+               <option value="" disabled hidden>
+    Select Service
+  </option>
               {services.map((service, idx) => (
                 <option
                   key={idx}
-                  value={service.link}
+                  value={service.ServiceName}
                   className="bg-[#2c2d34] text-white"
                 >
-                  {service.title}
+                  {service.ServiceName}
                 </option>
               ))}
             </select>

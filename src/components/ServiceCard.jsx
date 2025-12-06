@@ -110,8 +110,8 @@ const ServiceDetailPopup = ({ service, onClose,vendor }) => {
 
           {/* Vendor */}
           <div className="mb-4">
-            <h3 className="text-lg font-semibold text-white mb-1">Vendor:</h3>
-            <p className="text-gray-300 text-sm">Perfect Urban Services</p>
+            <h3 className="text-lg font-semibold text-white mb-1">Vendor: {vendor.vendorName=="self"?"Urban Aura Services":vendor.vendorName}</h3>
+            
           </div>
         </div>
 

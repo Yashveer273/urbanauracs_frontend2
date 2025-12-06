@@ -178,7 +178,7 @@
 
   .banner-text h1 {
     font-size: 2.2rem;
-    margin: 20px 0;
+    margin: 2px 0;
   }
 
   .banner-text p {
@@ -212,11 +212,12 @@
     flex-direction: row;
     flex: none;
     height: 200px;
-    margin-top: 30px;
+    margin-top: 5px;
     gap: 5px;
   }
 
   .image-column {
+    overflow: hidden;
     margin-right: 0;
   }
 
@@ -228,11 +229,12 @@
 @media (max-width: 480px) {
   .banner-text h1 {
     font-size: 1.6rem;
-    margin: 15px 0;
+    margin: 1px 0;
   }
 
   .banner-text p {
     font-size: 0.85rem;
+    display:none;
   }
 
   .ticket-btn,

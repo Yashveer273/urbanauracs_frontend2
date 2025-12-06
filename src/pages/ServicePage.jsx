@@ -26,7 +26,7 @@ const ServicePage = () => {
 
   // Map service names to vendor data
   const serviceDataMap = {
-    'full-home-cleaning': { vendors: fullHomeVendors },
+    'home-cleaning': { vendors: fullHomeVendors },
     'ac-repair': { vendors: acRepairVendors },
     'cleaning': { vendors: cleaningVendors },
     'commercial-cleaning': { vendors: commercialVendors },
@@ -40,19 +40,19 @@ const ServicePage = () => {
 
   // Default to full home cleaning if no match
   const vendors =
-    serviceDataMap[serviceName]?.vendors || serviceDataMap['full-home-cleaning'].vendors;
+    serviceDataMap[serviceName]?.vendors || serviceDataMap['home-cleaning'].vendors;
 
   const services = [
-    { title: 'Full Home Cleaning', image: '/images/home_cleaning copy.jpg', link: '/services/full-home-cleaning' },
-    { title: 'AC Repair Service', image: '/images/ac_repair.jpg', link: '/services/ac-repair' },
-    { title: 'Cleaning Service', image: '/images/cleaning_service.jpg', link: '/services/cleaning' },
-    { title: 'Commercial Cleaning', image: '/images/commercial.jpg', link: '/services/commercial-cleaning' },
-    { title: 'Pest Control', image: '/images/pest_control.jpg', link: '/services/pest-control' },
-    { title: 'Carpenter', image: '/images/carpenter.jpg', link: '/services/carpenter' },
-    { title: 'Home Painting', image: '/images/home_painting.jpg', link: '/services/home-painting' },
-    { title: 'Plumber', image: '/images/plumber.jpg', link: '/services/plumber' },
-    { title: 'Electrician', image: '/images/electrician.jpg', link: '/services/electrician' },
-    { title: 'Balloon Decoration', image: '/images/balloon_decoration.jpg', link: '/services/balloon-decoration' },
+    { title: 'Home Cleaning',  link: '/services/home-cleaning' },
+    { title: 'AC Repair Service',  link: '/services/ac-repair' },
+    { title: 'Cleaning Service',  link: '/services/cleaning' },
+    { title: 'Commercial Cleaning',  link: '/services/commercial-cleaning' },
+    { title: 'Pest Control',  link: '/services/pest-control' },
+    { title: 'Carpenter',  link: '/services/carpenter' },
+    { title: 'Home Painting',  link: '/services/home-painting' },
+    { title: 'Plumber',  link: '/services/plumber' },
+    { title: 'Electrician',  link: '/services/electrician' },
+    { title: 'Balloon Decoration',  link: '/services/balloon-decoration' },
   ];
 
   return (
