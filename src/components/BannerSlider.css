@@ -1,6 +1,6 @@
 
 .banner-container {
-  height: 600px;
+  height: 450px;
   display: flex;
   position: relative;
   overflow: hidden;
@@ -168,7 +168,12 @@
   .banner-container {
     flex-direction: column;
     height: auto;
-    padding: 20px;
+     padding-bottom: 5px ;
+     padding-top: 25px;
+     padding-left: 15px;
+     padding-right: 15px;
+   
+
   }
 
   .banner-text {
@@ -228,10 +233,17 @@
 
 @media (max-width: 480px) {
   .banner-text h1 {
-    font-size: 1.6rem;
-    margin: 1px 0;
+    display: none;
   }
-
+ .banner-container {
+  display: none;
+    /* flex-direction: column;
+    height: auto;
+   padding-bottom: 5px ;
+     padding-top: 25px;
+     padding-left: 15px;
+     padding-right: 15px; */
+  }
   .banner-text p {
     font-size: 0.85rem;
     display:none;

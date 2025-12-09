@@ -19,6 +19,7 @@ import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import { API_BASE_URL, updateSale } from "../API";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { CalculateConveniencetotalFee } from "../components/TexFee";
 
 export default function SalesSection() {
   const [salesData, setSalesData] = useState([]);
@@ -708,7 +709,8 @@ product_info.cart.map((item) =>
                       "Booking Address",
                       "Duration",
                       "Item Price",
-                      "Tag",
+                      "After Convenience Fee",
+                     
                       "Status",
                       "Comment",
                       "Edit", // 👈 New column header
@@ -743,7 +745,8 @@ product_info.cart.map((item) =>
 </td>
 
                       <td className="py-4 px-6">₹{item.item_price}</td>
-                      <td className="py-4 px-6">{item.tag}</td>
+                      <td className="py-4 px-6">₹{CalculateConveniencetotalFee(item.item_price)  }</td>
+                    
 
                       {/* Status Button */}
                       <td className="py-4 px-6">
@@ -1033,22 +1036,9 @@ product_info.cart.map((item) =>
         className="w-full border px-3 py-2 mb-3 rounded"
       />
 
-      {/* Tag */}
-      <label className="block text-sm font-medium mb-1">Tag</label>
-      <input
-        type="text"
-        value={editingCartProduct?.productData?.tag || ""}
-        onChange={(e) =>
-          setEditingCartProduct((prev) => ({
-            ...prev,
-            productData: {
-              ...prev.productData,
-              tag: e.target.value,
-            },
-          }))
-        }
-        className="w-full border px-3 py-2 mb-3 rounded"
-      />
+
+     
+      
 
       {/* Duration */}
       <label className="block text-sm font-medium mb-1">Duration</label>

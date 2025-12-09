@@ -2,7 +2,7 @@ import React from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { removeItem, closeCart, selectCartTotal,addItem,decreaseItem } from "../store/CartSlice";
-import { addToHistory } from "../store/userSlice";
+
 import {
   FaTimes,
   FaTrash,
@@ -11,6 +11,7 @@ import {
   FaMinus,
   FaClock,
 } from "react-icons/fa";
+import CartProductSummery from "../pages/CartProductSummery";
 
 const CartSidebar = () => {
   const dispatch = useDispatch();
@@ -71,7 +72,7 @@ const handleDecrease = (id) => {
     >
       {/* Header */}
       <div className="flex justify-between items-center border-b border-gray-200 pb-4 p-6">
-        <h2 className="text-xl font-bold text-gray-900">Your Cart</h2>
+        <h2 className="text-xl font-bold text-gray-900">Your Cart  </h2>
         <button
           className="text-lg text-gray-500 hover:text-gray-700 ml-4"
           onClick={handleClose}

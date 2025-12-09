@@ -1,26 +1,28 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { selectCartItemCount, toggleCart } from "../store/CartSlice";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import { selectUser } from "../store/userSlice";
 import AccountMenu from "./AccountMenu";
 import {
-  FaPhone,
+  
   FaShoppingCart,
-  FaSearch,
+
   FaBars,
   FaTimes,
   FaFilter,
-  FaEnvelope,
+
   FaYoutube,
   FaInstagram,
   FaFacebook,
-  FaMapMarkerAlt,
+ 
 } from "react-icons/fa";
 import "./Navbar.css";
 
 const Navbar = ({ toggleFilterSidebar, onAboutClick }) => {
+  const location = useLocation();
+
     const user = useSelector(selectUser);
   const navigator=useNavigate();
     const dispatch = useDispatch();
@@ -33,7 +35,7 @@ const Navbar = ({ toggleFilterSidebar, onAboutClick }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [showSearchBox, setShowSearchBox] = useState(false);
   const topBarRef = useRef(null);
-  const [topBarHeight, setTopBarHeight] = useState(28);
+  const [topBarHeight, setTopBarHeight] = useState(29);
 
 
   const links = useSelector((state) => state.socialLinks.links);
@@ -115,8 +117,8 @@ const Navbar = ({ toggleFilterSidebar, onAboutClick }) => {
         className={`main-navbar ${scrolled ? "fixed scrolled" : ""}`}
         style={{ top: scrolled ? 0 : `${topBarHeight}px` }}
       >
-        <div className="navbar-header w-full md:w-auto ">
-          <div className="flex items-center justify-between w-full">
+        <div className="navbar-header w-full md:w-auto h-[51px]">
+          <div className="flex items-center justify-between w-full h-[55px]">
             {/* Logo */}
             <img
               src="/logo.jpg"
@@ -126,24 +128,22 @@ const Navbar = ({ toggleFilterSidebar, onAboutClick }) => {
               className="rounded-full object-cover transition-transform duration-500 "
             />
             {/* Right actions */}
-            <div className="flex items-center gap-2 md:hidden p-5 ">
-              {/* Search Icon */}
-              <div
-                className="top-search-icon cursor-pointer cart-btn "
-                onClick={toggleSearchBox}
-              >
-                <FaSearch />
-              </div>
+            <div className="flex items-center h-0 gap-2 md:hidden p-5 ">
+             
+              
 
               {/* Filter + Cart */}
               <div className="flex items-center gap-2  ">
-                <button
-                  className="filter-btn flex items-center gap-1  py-1 bg-gray-200 rounded hover:bg-gray-300"
-                  onClick={toggleFilterSidebar}
-                >
-                  <FaFilter size={20} />
-                  <h1 style={{ fontSize: 19 }}>Filter</h1>
-                </button>
+               {location.pathname !== "/" && (
+  <button
+    className="filter-btn flex items-center gap-1 py-1 bg-gray-200 rounded hover:bg-gray-300"
+    onClick={toggleFilterSidebar}
+  >
+    <FaFilter size={20} />
+    <h1 style={{ fontSize: 19 }}>Filter</h1>
+  </button>
+)}
+
 
                 <button
                   className="cart-btn relative group  rounded hover:bg-gray-200"
@@ -190,7 +190,7 @@ const Navbar = ({ toggleFilterSidebar, onAboutClick }) => {
           firstLetter
         }
       </div>
-          {scrolled && (
+          {/* {scrolled && (
             <div
               className="main-search-icon"
               onClick={toggleSearchBox}
@@ -203,15 +203,16 @@ const Navbar = ({ toggleFilterSidebar, onAboutClick }) => {
             >
               <FaSearch />
             </div>
-          )}
+          )} */}
 
-          <div
+          {/* <div
             className="filter-cart-actions"
             style={{ display: "flex", alignItems: "center", gap: "10px" }}
           >
+            {location.pathname !== "/" && (
             <button className="filter-btn" onClick={toggleFilterSidebar}>
               <FaFilter /> Filter
-            </button>
+            </button>)}
 
             <button
               className="cart-btn relative group"
@@ -224,7 +225,7 @@ const Navbar = ({ toggleFilterSidebar, onAboutClick }) => {
                 </span>
               )}
             </button>
-          </div>
+          </div> */}
         </div>
       </div>
     </div>

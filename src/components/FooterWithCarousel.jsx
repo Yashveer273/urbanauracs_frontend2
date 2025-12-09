@@ -23,22 +23,22 @@ const FooterWithCarousel = () => {
       </div>
 
       {/* 🔽 Main Footer Section */}
-      <div className="bg-black text-gray-300 font-[Inter] px-8 sm:px-12 lg:px-16 py-20 sm:py-24 lg:py-28 min-h-[400px] rounded-3xl mx-4 mb-2 shadow-md">
+      <div className="bg-[#1e1e1e] text-gray-300 font-[Inter] px-8 sm:px-12 lg:px-16 py-8 sm:py-8 lg:py-8 min-h-[200px] rounded-3xl mx-4 mb-2 shadow-md">
         <div className="container mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-12">
             
             {/* Company Info */}
             <div className="flex flex-col space-y-4">
               <div className="flex items-center space-x-2">
-                <img
-  src="/logo.jpg"
-  alt="Clean Logo"
-  width={120}
-  height={50}
-  className=" object-cover transition-transform duration-500 "
-/>
-             
-              </div>
+  <img
+    src="/logo.jpg"
+    alt="Clean Logo"
+    width={120}
+    height={50}
+    className="object-cover rounded-full transition-transform duration-500"
+  />
+</div>
+
               <p className="text-md">Your one-stop solution for all home services – from expert cleaning to 
                 reliable repairs and professional plumbing. Quick, affordable, and trusted by thousands.</p>
             </div>
@@ -50,7 +50,7 @@ const FooterWithCarousel = () => {
              
                 <li><a href="#" className="hover:text-white transition-colors duration-200">Home</a></li>
 
-                <li><a href="#" className="hover:text-white transition-colors duration-200">Privacy Policy</a></li>
+                <li><a href="/PrivacyPolicy" className="hover:text-white transition-colors duration-200">Privacy Policy</a></li>
                 <li><a href="/RefundCancellationPolicy" className="hover:text-white transition-colors duration-200">Refund Cancellation Policy</a></li>
                 <li><a href="/contact" className="hover:text-white transition-colors duration-200">Contact</a></li>
               </ul>
@@ -95,14 +95,8 @@ const FooterWithCarousel = () => {
 
       {/* Bottom Bar */}
       <div className="footer-bottom-bar">
-        <p>©Urban Aura Services Pvt Ltd - All rights reserved</p>
-        <p>
-          <a href="/PrivacyPolicy">Privacy Policy </a>
-              
-        </p>
-        <p>
-        <a href="/RefundCancellationPolicy" className="hover:text-white transition-colors duration-200">Refund Cancellation Policy</a>
-        </p>
+        <p>©Urban Aura Services Pvt Ltd - All rights reserved | <a href="/PrivacyPolicy">Privacy Policy </a> | <a href="/RefundCancellationPolicy" className="hover:text-white transition-colors duration-200">Refund Cancellation Policy</a>
+      </p>
       </div>
     </>
   );

@@ -2,13 +2,17 @@ import React, { useRef } from "react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { useLocation } from "react-router-dom";
-import "./invoice.css"
+import "./invoice.css";
 import { API_BASE_URL } from "./API";
+import {
+  CalculateConveniencetotalFee,
+  CalculateGrandTotalForInvoice,
+} from "./components/TexFee";
 export default function Invoice() {
   const invoiceRef = useRef();
   const location = useLocation();
   const { state } = location;
-   const cart = state?.product_info?.cart || [];
+  const cart = state?.product_info?.cart || [];
   const downloadPDF = async () => {
     const input = invoiceRef.current;
     if (!input) return;
@@ -36,40 +40,35 @@ export default function Invoice() {
         pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
         heightLeft -= pageHeight;
       }
-      const date=Date.now();
-       const fileName = `InvoiceS_Order${state.S_orderId}_${date}.pdf`;
+      const date = Date.now();
+      const fileName = `InvoiceS_Order${state.S_orderId}_${date}.pdf`;
       // pdf.save(fileName);
-const pdfBlob = pdf.output("blob");
-const formData = new FormData();
+      const pdfBlob = pdf.output("blob");
+      const formData = new FormData();
 
-  formData.append("file", pdfBlob, fileName);
-  const response = await fetch(`${API_BASE_URL}/upload-invoice?userId=${state.phone_number}`, {
-    method: "POST",
-    body: formData,
-  });
+      formData.append("file", pdfBlob, fileName);
+      const response = await fetch(
+        `${API_BASE_URL}/upload-invoice?userId=${state.phone_number}`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
 
-  const result = await response.json();
-  console.log("Uploaded:", result.url);
-
- 
+      const result = await response.json();
+      console.log("Uploaded:", result.url);
     } catch (err) {
       console.error("Download failed:", err);
     }
   };
- 
-const base = Number(state.oGtotal_price) || 0;
 
-// Step 1: Commission (don't round)
-const commissionFee = base * 0.25;   // 225
+  const base = Number(state.oGtotal_price) || 0;
 
-// Step 2: GST and Platform fee (don't round)
-const gst18 = commissionFee * 0.18;  // 40.5
-const platformFee = commissionFee * 0.02; // 4.5
-
-// Step 3: Round only final convenience fee
-const convenienceFee = Math.round(gst18 + platformFee); // = 45
-const discountAmount = (base + commissionFee + convenienceFee) - state.payableAmount
-const discountPercent = (discountAmount / (base + commissionFee + convenienceFee)) * 100
+  const discountAmount =
+    CalculateConveniencetotalFee(base) - state.payableAmount;
+  const discountPercent = Math.round(
+    (discountAmount / CalculateConveniencetotalFee(base)) * 100
+  );
 
   return (
     <div style={{ background: "#f5f5f5", minHeight: "100vh", padding: "20px" }}>
@@ -99,13 +98,12 @@ const discountPercent = (discountAmount / (base + commissionFee + convenienceFee
               textAlign: "center",
               display: "flex",
               justifyContent: "center",
-              alignItems:"center",
+              alignItems: "center",
               color: "blue",
-              gap:15,
+              gap: 15,
               fontWeight: "bold",
             }}
           >
-            
             <img src="/logo.jpg" style={{ height: "50px" }} />
             <h1 style={{ margin: 0 }}>Urban Aura SERVICES PVT. LTD.</h1>
           </div>
@@ -142,92 +140,88 @@ const discountPercent = (discountAmount / (base + commissionFee + convenienceFee
         {/* Customer Info */}
         <div style={{ marginTop: "10px" }}>
           <h3>Bill To:</h3>
-          <p style={{height:"35px", overflow:"hidden"}}>
+          <p style={{ height: "35px", overflow: "hidden" }}>
             <b>Customer Name / Company Name: </b>
             {state.name}
           </p>
-          <p style={{height:"35px", overflow:"hidden"}}>
+          <p style={{ height: "35px", overflow: "hidden" }}>
             <b>Address: </b>
             {`${state.user_location} | Pin Code:- ${state.pincode}`}
           </p>
-          <p style={{height:"35px", overflow:"hidden"}}>
+          <p style={{ height: "35px", overflow: "hidden" }}>
             <b>Phone: </b> {state.phone_number}
           </p>
-          <p style={{height:"35px", overflow:"hidden"}}>
-            <b>Email: </b> {state.email} 
+          <p style={{ height: "35px", overflow: "hidden" }}>
+            <b>Email: </b> {state.email}
           </p>
         </div>
 
         {/* Services Table */}
-       <table
-      style={{
-        width: "100%",
-        borderCollapse: "collapse",
-        marginTop: "20px",
-      }}
-    >
-      <thead>
-        <tr>
-          <th className="table-cell-wrap">Description</th>
-          <th className="table-cell-wrap">P.Id</th>
-          <th className="table-cell-wrap">Quantity</th>
-          <th className="table-cell-wrap">Date</th>
-          <th className="table-cell-wrap">Booking Date</th>
-          <th className="table-cell-wrap">Booking Add.</th>
-          <th className="table-cell-wrap">Duration</th>
-          <th className="table-cell-wrap">Item Price</th>
-        </tr>
-      </thead>
-
-      <tbody>
-        {cart.length > 0 ? (
-          cart.map((item, index) => (
-            <tr
-              key={index}
-              style={{ cursor: "pointer" }} // 👈 makes the row clickable
-              onClick={() => console.log("Clicked:", item)} // optional
-            >
-              <td className="table-cell-wrap">
-                {item.product_name} <br />
-                <small>{item.description}</small>
-              </td>
-              <td className="table-cell-wrap">
-                {item.og_product_id}
-              </td>
-              <td className="table-cell-wrap">1</td>
-              <td className="table-cell-wrap">
-                {new Date().toLocaleDateString()}
-              </td>
-              <td className="table-cell-wrap">
-                {item.location_booking_time}
-              </td>
-              <td className="table-cell-wrap">
-                {item.bookingAddress??"non"}
-              </td>
-                <td className="table-cell-wrap">
-                {item.duration}
-              </td>
-              <td className="table-cell-wrap">
-                ₹{item.item_price}
-              </td>
+        <table
+          style={{
+            width: "100%",
+            borderCollapse: "collapse",
+            marginTop: "20px",
+          }}
+        >
+          <thead>
+            <tr>
+              <th className="table-cell-wrap">Description</th>
+              <th className="table-cell-wrap">P.Id</th>
+              <th className="table-cell-wrap">Quantity</th>
+              <th className="table-cell-wrap">Date</th>
+              <th className="table-cell-wrap">Booking Date</th>
+              <th className="table-cell-wrap">Booking Add.</th>
+              <th className="table-cell-wrap">Duration</th>
+              <th className="table-cell-wrap">Item Price</th>
             </tr>
-          ))
-        ) : (
-          <tr>
-            <td
-              colSpan="6"
-              style={{
-                border: "1px solid #000",
-                padding: "8px",
-                textAlign: "center",
-              }}
-            >
-              No products found.
-            </td>
-          </tr>
-        )}
-      </tbody>
-    </table>
+          </thead>
+
+          <tbody>
+            {cart.length > 0 ? (
+              cart.map((item, index) => (
+                <tr
+                  key={index}
+                  style={{ cursor: "pointer" }} // 👈 makes the row clickable
+                  onClick={() => console.log("Clicked:", item)} // optional
+                >
+                  <td className="table-cell-wrap">
+                    {item.product_name} <br />
+                    <small>{item.description}</small>
+                  </td>
+                  <td className="table-cell-wrap">{item.og_product_id}</td>
+                  <td className="table-cell-wrap">1</td>
+                  <td className="table-cell-wrap">
+                    {new Date().toLocaleDateString()}
+                  </td>
+                  <td className="table-cell-wrap">
+                    {item.location_booking_time}
+                  </td>
+                  <td className="table-cell-wrap">
+                    {item.bookingAddress ?? "non"}
+                  </td>
+                  <td className="table-cell-wrap">{item.duration}</td>
+                  <td className="table-cell-wrap">
+                    ₹{CalculateConveniencetotalFee(item.item_price)}
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td
+                  colSpan="6"
+                  style={{
+                    border: "1px solid #000",
+                    padding: "8px",
+                    textAlign: "center",
+                  }}
+                >
+                  No products found.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
 
         {/* Totals */}
 
@@ -235,7 +229,7 @@ const discountPercent = (discountAmount / (base + commissionFee + convenienceFee
         <div
           style={{
             border: "2px solid #000",
-       
+
             marginTop: "30px",
             display: "flex",
             alignItems: "center",
@@ -249,37 +243,17 @@ const discountPercent = (discountAmount / (base + commissionFee + convenienceFee
               padding: "10px",
             }}
           >
-         <p>
-          
-  <strong>Sub Total:</strong> ₹
-{base}
-</p>
-<p>
-  Commission Amount (25%): ₹
-  {commissionFee}
-</p>
-<p>
-  GST (18%): ₹
-  {gst18}
-</p>
-<p>
-  Platform Fee (2%): ₹
-  {platformFee}
-</p>
-<p>
-  Total Convenience: ₹
-  {convenienceFee}
-</p>
+            <p>
+              <strong>Sub Total:{CalculateGrandTotalForInvoice(cart)}</strong>
+            </p>
+            <p>
+              Discount: ₹{discountAmount} ({discountPercent}%)
+            </p>
 
- <p>
-Discount: ₹{discountAmount} ({discountPercent}%)
-
-</p>
-
-<h3>
-  <strong>Grand Total:</strong> ₹{base+commissionFee+convenienceFee-discountAmount}
-</h3>
- 
+            <h3>
+              <strong>Grand Total:</strong> ₹
+              {CalculateGrandTotalForInvoice(cart) - discountAmount}
+            </h3>
           </div>
 
           {/* Divider in the center */}
@@ -310,27 +284,47 @@ Discount: ₹{discountAmount} ({discountPercent}%)
           <p>
             <b>Bank:</b>{" "}
             <input
-              type="text" className="cursor-pointer"
+              type="text"
+              className="cursor-pointer"
               defaultValue="Urban Aura Services Pvt. Ltd."
               style={{ width: "60%" }}
             />
           </p>
           <p>
             <b>Account Number:</b>{" "}
-            <input type="text" defaultValue="1234567890" className="cursor-pointer"/>
+            <input
+              type="text"
+              defaultValue="1234567890"
+              className="cursor-pointer"
+            />
           </p>
           <p>
-            <b>Branch:</b> <input type="text" defaultValue="Noida" className="cursor-pointer"/>
+            <b>Branch:</b>{" "}
+            <input
+              type="text"
+              defaultValue="Noida"
+              className="cursor-pointer"
+            />
           </p>
           <p>
             <b>Account Holder:</b>{" "}
-            <input type="text" defaultValue="Urban Aura Pvt Ltd" className="cursor-pointer"/>
+            <input
+              type="text"
+              defaultValue="Urban Aura Pvt Ltd"
+              className="cursor-pointer"
+            />
           </p>
           <p>
-            <b>IFSC Code:</b> <input type="text" defaultValue="HDFC0001234" className="cursor-pointer"/>
+            <b>IFSC Code:</b>{" "}
+            <input
+              type="text"
+              defaultValue="HDFC0001234"
+              className="cursor-pointer"
+            />
           </p>
           <p>
-            <b>Branch Code:</b> <input type="text" defaultValue="1234" className="cursor-pointer" />
+            <b>Branch Code:</b>{" "}
+            <input type="text" defaultValue="1234" className="cursor-pointer" />
           </p>
         </div>
 

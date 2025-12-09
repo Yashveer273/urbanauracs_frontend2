@@ -14,6 +14,7 @@ import InvoiceApp from "./invoice";
 import PrivacyPolicy from "./pages/privacyPolicy";
 import RefundCancellationPolicy from "./pages/refundPolicy";
 import AccountMenu from "./components/AccountMenu";
+import CheckoutSummaryCard from "./pages/CartProductSummery";
 
 
 function App() {
@@ -32,6 +33,7 @@ function App() {
         <Route path="/contact" element={<ContactUs />} />
     
         <Route path="/PaymentGateway" element={<PaymentGateway/>} />
+        <Route path="/CartProductsSummery" element={<CheckoutSummaryCard/>} />
         <Route
           path="/PaymentGateway/PaymentStatus/:id/:amount"
           element={<PaymentStatus />}

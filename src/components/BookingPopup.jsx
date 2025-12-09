@@ -63,9 +63,7 @@ const BookingPopup = ({ onClose, onConfirm }) => {
     onClose();
   };
 const timeSlots = [
-  "6:00 AM", "7:00 AM", "8:00 AM", "9:00 AM", "10:00 AM", "11:00 AM",
-  "12:00 PM", "1:00 PM", "2:00 PM", "3:00 PM", "4:00 PM", "5:00 PM",
-  "6:00 PM", "7:00 PM"
+  "8:00 AM - 10:00 AM", "10:00 AM - 12:00 PM", "12:00 PM - 02:00 PM", "02:00 PM - 04:00 PM", "04:00 PM - 06:00 PM", "06:00 PM - 08:00 PM"
 ];
  const [open, setOpen] = useState(false);
   return (
@@ -104,7 +102,7 @@ const timeSlots = [
                 />
               </div>
 <div className="relative w-full">
-      {/* Input Box */}
+    
       <div
         className="relative cursor-pointer"
         onClick={() => setOpen(!open)}
@@ -119,29 +117,36 @@ const timeSlots = [
         />
       </div>
 
-      {/* Dropdown Menu */}
+      
       {open && (
-        <div className="absolute z-50 mt-2 w-full bg-gray-800 rounded-lg shadow-lg p-3 max-h-48 overflow-y-auto">
-          <div className="grid grid-cols-3 gap-2">
-            {timeSlots.map((slot, index) => (
-              <button
-                key={index}
-                onClick={() => {
-                  setHour(slot);
-                  setOpen(false);
-                }}
-                className={`py-2 rounded-md text-sm font-medium transition ${
-                  hour === slot
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-700 text-gray-200 hover:bg-gray-600"
-                }`}
-              >
-                {slot}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
+  <div className="absolute z-50 mt-2 w-full bg-gray-900 rounded-xl shadow-xl p-4 max-h-60 overflow-y-auto">
+    <div className="grid grid-cols-3 gap-3">
+      {timeSlots.map((slot, index) => {
+        const [start, end] = slot.split(" - ");
+        return (
+          <button
+            key={index}
+            onClick={() => {
+              setHour(slot);
+              setOpen(false);
+            }}
+            className={`px-3 py-2 rounded-lg transition flex flex-col items-center text-center 
+              ${hour === slot
+                ? "bg-blue-600 text-white shadow-md"
+                : "bg-gray-800 text-gray-300 hover:bg-gray-700"}
+            `}
+          >
+            <span className="text-sm font-semibold">{start}</span>
+            <span className="text-[10px] opacity-70 leading-tight">to</span>
+            <span className="text-sm font-semibold">{end}</span>
+          </button>
+        );
+      })}
+    </div>
+  </div>
+)}
+
+
     </div>
 
               {/* Address Field */}

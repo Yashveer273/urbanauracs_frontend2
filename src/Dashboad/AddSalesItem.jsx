@@ -3,6 +3,7 @@ import { PlusCircle, X } from "lucide-react";
 import { GetVenderData } from "./GetVenderData";
 import axios from "axios";
 import { API_BASE_URL } from "../API";
+import { CalculateConvenienceFee } from "../components/TexFee";
 
 
 // Main App component for the form.
@@ -54,7 +55,7 @@ const AddSalesItem = ({ userData,selectedProductInfo }) => {
 
   // State for managing the form input values.
   const [newItem, setNewItem] = useState(initialFormData);
-  const uniqueTags = [...new Set(products.map((p) => p.tag))];
+  const [afterConvenienceFee, setAfterConvenienceFee] = useState(0);
 
   // Opens the modal when the "Add New" button is clicked.
   const handleOpenModal = () => {
@@ -93,6 +94,7 @@ const AddSalesItem = ({ userData,selectedProductInfo }) => {
       if (!isNaN(originalPrice) && !isNaN(discount)) {
         updatedItem.item_price =
           originalPrice - (originalPrice * discount) / 100;
+        
       }
     }
 
@@ -157,22 +159,9 @@ const AddSalesItem = ({ userData,selectedProductInfo }) => {
   };
   const [open, setOpen] = useState(false);
 
-  const timeSlots = [
-    "6:00 AM",
-    "7:00 AM",
-    "8:00 AM",
-    "9:00 AM",
-    "10:00 AM",
-    "11:00 AM",
-    "12:00 PM",
-    "1:00 PM",
-    "2:00 PM",
-    "3:00 PM",
-    "4:00 PM",
-    "5:00 PM",
-    "6:00 PM",
-    "7:00 PM",
-  ];
+const timeSlots = [
+  "8:00 AM - 10:00 AM", "10:00 AM - 12:00 PM", "12:00 PM - 02:00 PM", "02:00 PM - 04:00 PM", "04:00 PM - 06:00 PM", "06:00 PM - 08:00 PM"
+];
 
   const minDate = useMemo(() => {
     const d = new Date();
@@ -237,23 +226,8 @@ const AddSalesItem = ({ userData,selectedProductInfo }) => {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-zinc-700">
-                  Tag
-                </label>
-                <select
-                  name="tag"
-                  value={newItem.tag}
-                  onChange={handleInputChange}
-                  required
-                  className="mt-1 block w-full px-4 py-2 bg-zinc-100 border border-zinc-300 rounded-xl shadow-sm focus:ring-zinc-500 focus:border-zinc-500"
-                >
-                  <option value="">Select a tag</option>
-                  {uniqueTags.map((tag, index) => (
-                    <option key={index} value={tag}>
-                      {tag}
-                    </option>
-                  ))}
-                </select>
+                
+                
               </div>
               <div className="grid grid-cols-3 gap-4">
                 <div>
@@ -294,7 +268,34 @@ const AddSalesItem = ({ userData,selectedProductInfo }) => {
                     disabled
                     className="mt-1 block w-full px-4 py-2 bg-zinc-200 border border-zinc-300 rounded-xl shadow-sm cursor-not-allowed"
                   />
+                  
                 </div>
+                <div><label className="block text-sm font-medium text-zinc-700">
+                    Charges Fee (₹)
+                  </label>
+                 
+                 <input
+  type="number"
+  name="item_price"
+  value={afterConvenienceFee}
+  readOnly
+  disabled
+  className="mt-1 block w-full px-4 py-2 bg-zinc-200 border border-zinc-300 rounded-xl shadow-sm cursor-not-allowed"
+/>
+
+<button
+  type="button"
+  onClick={() => {
+    const feeAdded = CalculateConvenienceFee(newItem.item_price);
+    setAfterConvenienceFee(feeAdded.TexFee);
+  }}
+  className="px-3 py-1.5 bg-blue-600 text-white text-sm rounded-lg mt-2 cursor-pointer active:scale-95 transition"
+>
+  See Charges Fee
+</button>
+
+
+                  </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -332,7 +333,7 @@ const AddSalesItem = ({ userData,selectedProductInfo }) => {
                   />
                 </div>
                 <div
-                  className="relative cursor-pointer"
+                  className="relative cursor-pointer w-80"
                   onClick={() => setOpen(!open)}
                 >
                   <label className="block text-sm font-medium text-zinc-700">
@@ -348,33 +349,41 @@ const AddSalesItem = ({ userData,selectedProductInfo }) => {
                     className="mt-1 block w-full px-4 py-2 bg-zinc-100 border border-zinc-300 rounded-xl shadow-sm focus:ring-zinc-500 focus:border-zinc-500"
                   />
                   {open && (
-                    <div className="absolute z-50 mt-2 w-full bg-gray-800 rounded-lg shadow-lg p-3 max-h-48 overflow-y-auto">
-                      <div className="grid grid-cols-3 gap-2">
-                        {timeSlots.map((slot, index) => (
-                          <button
-                            key={index}
-                            onClick={() => {
-                              let updatedItem = {
-                                ...newItem,
-                                ["SelectedServiceTime"]: slot,
-                              };
-                              setNewItem(updatedItem);
-                              setOpen(false);
-                            }}
-                            className={`py-2 rounded-md text-sm font-medium transition ${
-                              newItem.SelectedServiceTime === slot
-                                ? "bg-blue-600 text-white"
-                                : "bg-gray-700 text-gray-200 hover:bg-gray-600"
-                            }`}
-                          >
-                            {slot}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+  <div className="absolute z-50 mt-2 w-full bg-gray-900 rounded-xl shadow-xl p-4 max-h-60 overflow-y-auto">
+    <div className="grid grid-cols-3 gap-3">
+      {timeSlots.map((slot, index) => {
+        const [start, end] = slot.split(" - ");
+
+        return (
+          <button
+            key={index}
+            onClick={() => {
+              setNewItem({
+                ...newItem,
+                ["SelectedServiceTime"]: slot,
+              });
+              setOpen(false);
+            }}
+            className={`px-3 py-2 rounded-lg transition flex flex-col items-center text-center
+              ${newItem.SelectedServiceTime === slot
+                ? "bg-blue-600 text-white shadow-md"
+                : "bg-gray-800 text-gray-300 hover:bg-gray-700"}
+            `}
+          >
+            <span className="text-sm font-semibold">{start}</span>
+            <span className="text-[10px] opacity-70 leading-tight">to</span>
+            <span className="text-sm font-semibold">{end}</span>
+          </button>
+        );
+      })}
+    </div>
+  </div>
+)}
+
                 </div>
-                <div className="relative">
+               
+              </div>
+ <div className="relative">
                <label className="block text-sm font-medium text-zinc-700">
                     Address
                   </label>
@@ -388,8 +397,6 @@ const AddSalesItem = ({ userData,selectedProductInfo }) => {
                     required
                   />
                 </div>
-              </div>
-
               <div>
                 <label className="block text-sm font-medium text-zinc-700">
                   Custom Service Note
