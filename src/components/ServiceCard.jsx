@@ -1,41 +1,45 @@
-import React, { useState } from 'react';
-import { FaStar, FaClock, FaTicketAlt, FaTimes } from 'react-icons/fa';
-import { useDispatch, useSelector } from 'react-redux';
-import { addItem, setAuthPopupOpen, selectIsAuthenticated,toggleCart } from '../store/CartSlice';
-import './ServiceCard.css';
-import BookingPopup from './BookingPopup';
+import React, { useState } from "react";
+import { FaStar, FaClock, FaTicketAlt, FaTimes } from "react-icons/fa";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  addItem,
+  setAuthPopupOpen,
+  selectIsAuthenticated,
+  toggleCart,
+} from "../store/CartSlice";
+import "./ServiceCard.css";
+import BookingPopup from "./BookingPopup";
 
-import { selectUser, } from "../store/userSlice";
+import { selectUser } from "../store/userSlice";
 
-const ServiceDetailPopup = ({ service, onClose,vendor }) => {
-  
-    const dispatch = useDispatch();
+const ServiceDetailPopup = ({ service, onClose, vendor }) => {
+  const dispatch = useDispatch();
   const user = useSelector(selectUser); // ✅ gets current user state
   const handleAddToCart = () => {
+    if (!user) {
+      dispatch(setAuthPopupOpen(true));
+    } else {
+      dispatch(
+        addItem({
+          ...service,
 
-  if (!user) {
-    dispatch(setAuthPopupOpen(true));
-  } else {
-   dispatch(addItem({
-   ...service,
-   
-   vendorId: vendor.vendorId,
-   vendorName: vendor.vendorName,
-   vendorLocation: vendor.location,
-   vendorImage: vendor.vendorImage,
- }));
-    console.log("✅ Added to cart:", service);
-  }
-};
-
+          vendorId: vendor.vendorId,
+          vendorName: vendor.vendorName,
+          vendorLocation: vendor.location,
+          vendorImage: vendor.vendorImage,
+        })
+      );
+      console.log("✅ Added to cart:", service);
+    }
+  };
 
   if (!service) return null;
 
- return (
-  <>
-    {/* Fade animation */}
-    <style>
-      {`
+  return (
+    <>
+      {/* Fade animation */}
+      <style>
+        {`
       .popup-fade {
         opacity: 0;
         transform: translateY(20px);
@@ -49,103 +53,116 @@ const ServiceDetailPopup = ({ service, onClose,vendor }) => {
         }
       }
       `}
-    </style>
+      </style>
 
-    <div className="fixed inset-0 z-50 pt-40 flex items-center justify-center px-4 sm:px-8">
-      {/* Overlay */}
-      <div
-        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-        onClick={onClose}
-      />
+      <div className="fixed inset-0 z-50 pt-40 flex items-center justify-center px-4 sm:px-8">
+        {/* Overlay */}
+        <div
+          className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+          onClick={onClose}
+        />
 
       {/* Popup */}
-      <div className="popup-fade   relative w-full max-w-4xl max-h-[70vh] overflow-y-scroll rounded-2xl bg-gray-800 text-gray-200 shadow-2xl">
-        {/* Close button */}
-        <button
-          className="absolute top-3 right-3 z-10 text-gray-400 hover:text-white transition-colors"
-          onClick={onClose}
-        >
-          <FaTimes size={28} />
-        </button>
+<div className="popup-fade relative w-full max-w-4xl max-h-[75vh] overflow-hidden rounded-2xl bg-gray-800 text-gray-200 shadow-2xl">
+  {/* Close button */}
+  <button
+    className="absolute top-3 right-3 z-10 text-gray-400 hover:text-white transition-colors"
+    onClick={onClose}
+  >
+    <FaTimes size={28} />
+  </button>
 
-        <div className="flex h-full flex-col md:flex-row">
-          {/* Left image */}
-          <div className="md:w-1/2 h-48 md:h-full flex-shrink-0">
-            <img
-              src={service.serviceImage}
-              alt={service.title}
-              className="h-full w-full object-cover"
-            />
-          </div>
+  {/* Main content container. Ensure h-full is here to respect max-h-[75vh] */}
+  <div className="flex h-full flex-col md:flex-row">
+    {/* Left image panel - **CRITICAL CHANGE: Added md:h-full** */}
+    <div className="h-40 md:h-full md:w-1/2 flex-shrink-0">
+      <img
+        src={service.serviceImage}
+        alt={service.title}
+        className="h-full w-full object-cover" // h-full ensures image fills its wrapper
+      />
+    </div>
 
-          {/* Right panel */}
-          <div className="md:w-1/2 flex flex-col">
-            <div className="flex-1 overflow-y-auto p-4 md:p-6 custom-scroll">
-              {/* Title */}
-              <h2 className="text-xl md:text-2xl font-bold mb-2">{service.title}</h2>
-              <p className="text-sm text-gray-400 mb-4">{service.description}</p>
+    {/* Right panel (Content + Button) */}
+    <div className="md:w-1/2 flex flex-col h-full">
+      {/* Scrollable Content Area */}
+      <div className="flex-1 overflow-y-auto p-4 md:p-6 custom-scroll">
+        {/* Title */}
+        <h2 className="text-xl md:text-2xl font-bold mb-2">
+          {service.title}
+        </h2>
+        <p className="text-sm text-gray-400 mb-4">
+          {service.description}
+        </p>
 
-              {/* Rating + Time */}
-              <div className="flex items-center space-x-4 text-xs text-gray-400 mb-4">
-                <span className="flex items-center">
-                  <FaStar className="text-yellow-400 mr-1" />
-                  {service.rating} ({service.reviews} reviews)
-                </span>
-                <span className="flex items-center">
-                  <FaClock className="text-gray-400 mr-1" />
-                  {service.duration}
-                </span>
-              </div>
+        {/* Rating + Time */}
+        <div className="flex items-center space-x-4 text-xs text-gray-400 mb-4">
+          <span className="flex items-center">
+            <FaStar className="text-yellow-400 mr-1" />
+            {service.rating} ({service.reviews} reviews)
+          </span>
+          <span className="flex items-center">
+            <FaClock className="text-gray-400 mr-1" />
+            {service.duration}
+          </span>
+        </div>
 
-              {/* Price */}
-              <div className="mb-6 p-3 bg-yellow-500 rounded-xl inline-block">
-                <p className="text-xl md:text-2xl font-bold text-black">₹{service.price}</p>
-              </div>
+        {/* Price */}
+        <div className="mb-6 p-3 bg-yellow-500 rounded-xl inline-block">
+          <p className="text-xl md:text-2xl font-bold text-black">
+            ₹{service.price}
+          </p>
+        </div>
 
-              {/* Inclusions */}
-              <div className="mb-4">
-                <h3 className="text-lg font-semibold text-white mb-1">Inclusions:</h3>
-                <ul className="list-disc list-inside text-gray-300 text-sm space-y-1 ml-4">
-                  {(service.inclusions || []).map((item, index) => (
-                    <li key={index}>{item}</li>
-                  ))}
-                </ul>
-              </div>
+        {/* Inclusions */}
+        <div className="mb-4">
+          <h3 className="text-lg font-semibold text-white mb-1">
+            Inclusions:
+          </h3>
+          <ul className="list-disc list-inside text-gray-300 text-sm space-y-1 ml-4">
+            {(service.inclusions || []).map((item, index) => (
+              <li key={index}>{item}</li>
+            ))}
+          </ul>
+        </div>
 
-              {/* Exclusions */}
-              <div className="mb-4">
-                <h3 className="text-lg font-semibold text-white mb-1">Exclusions:</h3>
-                <ul className="list-disc list-inside text-gray-300 text-sm space-y-1 ml-4">
-                  {(service.exclusions || []).map((item, index) => (
-                    <li key={index}>{item}</li>
-                  ))}
-                </ul>
-              </div>
+        {/* Exclusions */}
+        <div className="mb-4">
+          <h3 className="text-lg font-semibold text-white mb-1">
+            Exclusions:
+          </h3>
+          <ul className="list-disc list-inside text-gray-300 text-sm space-y-1 ml-4">
+            {(service.exclusions || []).map((item, index) => (
+              <li key={index}>{item}</li>
+            ))}
+          </ul>
+        </div>
 
-              {/* Vendor */}
-              <div className="mb-4">
-                <h3 className="text-lg font-semibold text-white mb-1">
-                  Vendor: {vendor.vendorName === "self" ? "Urban Aura Services" : vendor.vendorName}
-                </h3>
-              </div>
-            </div>
-
-            {/* Add to cart */}
-            <div className="p-4 border-t border-gray-700">
-              <button
-                className="w-full py-3 rounded-xl font-bold text-sm text-white bg-[#f87559] hover:bg-[#ff8f6e] transition-colors"
-                onClick={handleAddToCart}
-              >
-                Add to Cart
-              </button>
-            </div>
-          </div>
+        {/* Vendor */}
+        <div className="mb-4">
+          <h3 className="text-lg font-semibold text-white mb-1">
+            Vendor:{" "}
+            {vendor.vendorName === "self"
+              ? "Urban Aura Services"
+              : vendor.vendorName}
+          </h3>
         </div>
       </div>
+      {/* Add to cart (Fixed at the bottom) */}
+      <div className="p-4 border-t border-gray-700 flex-shrink-0">
+        <button
+          className="w-full py-3 rounded-xl font-bold text-sm text-white bg-[#f87559] hover:bg-[#ff8f6e] transition-colors"
+          onClick={handleAddToCart}
+        >
+          Add to Cart
+        </button>
+      </div>
     </div>
-  </>
-);
-
+  </div>
+</div>
+      </div>
+    </>
+  );
 };
 
 // --- Frosted Button Component ---
@@ -168,17 +185,15 @@ const PriceTag = ({ price, originalPrice }) => (
   </div>
 );
 
-
-
-const ServiceCard = ({ service,vendor,userLocation }) => {
+const ServiceCard = ({ service, vendor, userLocation }) => {
   const dispatch = useDispatch();
   const isAuthenticated = useSelector(selectIsAuthenticated);
 
-  const user = useSelector(selectUser); 
+  const user = useSelector(selectUser);
 
   // Existing details popup (unchanged)
   const [isPopupOpen, setIsPopupOpen] = useState(false);
-const [Devicelocation, setDevicelocation] = useState("");
+  const [Devicelocation, setDevicelocation] = useState("");
   // New booking popup state
   const [isBookingPopupOpen, setIsBookingPopupOpen] = useState(false);
 
@@ -186,8 +201,8 @@ const [Devicelocation, setDevicelocation] = useState("");
   const handleAddToCart = () => {
     // Be robust to either key your app might set
 
-      console.log(user.length<1);
-    if (user.length<1 &&!isAuthenticated) {
+    console.log(user.length < 1);
+    if (user.length < 1 && !isAuthenticated) {
       // Not logged in → open auth popup
       dispatch(setAuthPopupOpen(true));
 
@@ -201,8 +216,7 @@ const [Devicelocation, setDevicelocation] = useState("");
   };
 
   // Confirm from booking popup → now add to cart with the selected date
-    const handleConfirmBooking = (selectedDate,selectedTime,address) => {
-   
+  const handleConfirmBooking = (selectedDate, selectedTime, address) => {
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         async (pos) => {
@@ -230,25 +244,25 @@ const [Devicelocation, setDevicelocation] = useState("");
         }
       );
     }
-   
-   dispatch(addItem({
-     ...service,
-     roductId:service.id,
-     bookingDate: selectedDate,
-     vendorId: vendor.vendorId,
-     bookingAddress:address,
-     deviceLocation:Devicelocation,
-     SelectedServiceTime: selectedTime,
-     vendorName: vendor.vendorName,
-     vendorLocation: vendor.location,
-     vendorImage: vendor.vendorImage,
-   }));
+
+    dispatch(
+      addItem({
+        ...service,
+        roductId: service.id,
+        bookingDate: selectedDate,
+        vendorId: vendor.vendorId,
+        bookingAddress: address,
+        deviceLocation: Devicelocation,
+        SelectedServiceTime: selectedTime,
+        vendorName: vendor.vendorName,
+        vendorLocation: vendor.location,
+        vendorImage: vendor.vendorImage,
+      })
+    );
     dispatch(toggleCart());
-  
+
     setIsBookingPopupOpen(false);
   };
-
-
 
   const handleViewDetails = () => setIsPopupOpen(true);
   const handleCloseDetails = () => setIsPopupOpen(false);
@@ -314,7 +328,11 @@ const [Devicelocation, setDevicelocation] = useState("");
 
       {/* Existing details popup (unchanged) */}
       {isPopupOpen && (
-        <ServiceDetailPopup service={service} onClose={handleCloseDetails} vendor={vendor} />
+        <ServiceDetailPopup
+          service={service}
+          onClose={handleCloseDetails}
+          vendor={vendor}
+        />
       )}
 
       {/* New booking popup (opens only after login) */}
@@ -322,7 +340,6 @@ const [Devicelocation, setDevicelocation] = useState("");
         <BookingPopup
           onClose={() => setIsBookingPopupOpen(false)}
           onConfirm={handleConfirmBooking}
-          
         />
       )}
     </>
