@@ -9,7 +9,7 @@ const FilterSidebar = ({
   serviceTypes,
   apartmentSize,
   selectedLocation,
-  allServiceTypes,
+  // allServiceTypes,
   allApartmentSizes, // Prop for unique apartment sizes
 }) => {
   const [minPriceState, setMinPriceState] = useState(minPrice);
@@ -19,19 +19,20 @@ const FilterSidebar = ({
   );
   const [selectedApartmentSize, setSelectedApartmentSize] =
     useState(apartmentSize); // Changed to a single string
-  const [filteredSizes, setFilteredSizes] = useState(allApartmentSizes); // State for the dropdown list
+  // const [filteredSizes, setFilteredSizes] = useState(allApartmentSizes); // State for the dropdown list
 
   const [openSection, setOpenSection] = useState(null);
   const [selectedLocationState, setSelectedLocationState] =
     useState(selectedLocation);
 
   useEffect(() => {
+    console.log(maxPrice)
     setMinPriceState(minPrice);
     setMaxPriceState(maxPrice);
     setSelectedServiceTypes(new Set(serviceTypes));
     setSelectedApartmentSize(apartmentSize);
     setSelectedLocationState(selectedLocation);
-    setFilteredSizes(allApartmentSizes);
+    // setFilteredSizes(allApartmentSizes);
 
     if (minPrice !== 400 || maxPrice !== 3000) setOpenSection("price");
     else if (apartmentSize) setOpenSection("size");
@@ -59,57 +60,58 @@ const FilterSidebar = ({
     }
   };
 
-  const handleServiceTypeChange = (e) => {
-    const serviceType = e.target.value;
-    const newSet = new Set(selectedServiceTypes);
-    if (e.target.checked) {
-      newSet.add(serviceType);
-    } else {
-      newSet.delete(serviceType);
-    }
-    setSelectedServiceTypes(newSet);
-  };
+  // const handleServiceTypeChange = (e) => {
+  //   const serviceType = e.target.value;
+  //   const newSet = new Set(selectedServiceTypes);
+  //   if (e.target.checked) {
+  //     newSet.add(serviceType);
+  //   } else {
+  //     newSet.delete(serviceType);
+  //   }
+  //   setSelectedServiceTypes(newSet);
+  // };
 
-  const handleApartmentSizeInputChange = (e) => {
-    const inputValue = e.target.value;
-    setSelectedApartmentSize(inputValue);
-    // Filter suggestions based on input
-    const filtered = allApartmentSizes.filter((size) =>
-      size.toLowerCase().includes(inputValue.toLowerCase())
-    );
-    setFilteredSizes(filtered);
-    // Open the dropdown when the user starts typing
-    setOpenSection("size");
-  };
+  // const handleApartmentSizeInputChange = (e) => {
+  //   const inputValue = e.target.value;
+  //   setSelectedApartmentSize(inputValue);
+  //   // Filter suggestions based on input
+  //   const filtered = allApartmentSizes.filter((size) =>
+  //     size.toLowerCase().includes(inputValue.toLowerCase())
+  //   );
+  //   setFilteredSizes(filtered);
+  //   // Open the dropdown when the user starts typing
+  //   setOpenSection("size");
+  // };
 
-  const handleApartmentSizeSelect = (size) => {
-    setSelectedApartmentSize(size);
-    setFilteredSizes([]); // Hide the dropdown after selection
-  };
+  // const handleApartmentSizeSelect = (size) => {
+  //   setSelectedApartmentSize(size);
+  //   setFilteredSizes([]); // Hide the dropdown after selection
+  // };
 
   const handleApply = () => {
+
     onApplyFilters({
       minPrice: minPriceState,
       maxPrice: maxPriceState,
       serviceTypes: Array.from(selectedServiceTypes),
       apartmentSize: selectedApartmentSize, // Pass a single string
-      location: selectedLocationState,
+      BookingCity: selectedLocationState,
     });
   };
 
   const handleClear = () => {
-    setMinPriceState(400);
-    setMaxPriceState(3000);
+    setMinPriceState(minPrice);
+    setMaxPriceState(maxPrice);
     setSelectedServiceTypes(new Set());
     setSelectedApartmentSize("");
     setSelectedLocationState("");
     setOpenSection(null);
     onApplyFilters({
-      minPrice: 400,
-      maxPrice: 3000,
+      minPrice: 500,
+      maxPrice: 10000,
       serviceTypes: [],
       apartmentSize: "",
-      location: "",
+      BookingCity: "",
     });
   };
 
@@ -194,7 +196,7 @@ const FilterSidebar = ({
         </div>
 
         {/* Size of Apartment Filter */}
-        <div className="border-b border-gray-200 py-4">
+        {/* <div className="border-b border-gray-200 py-4">
           <div
             className="flex justify-between items-center cursor-pointer"
             onClick={() => toggleSection("size")}
@@ -233,7 +235,7 @@ const FilterSidebar = ({
               )}
             </div>
           )}
-        </div>
+        </div> */}
 
         {/* Price Filter */}
         <div className="border-b border-gray-200 py-4">
@@ -250,65 +252,72 @@ const FilterSidebar = ({
               <FaArrowRight className="text-white" />
             </div>
           </div>
-          {openSection === "price" && (
-            <div className="mt-3">
-              <div className="flex justify-between text-gray-600 font-bold mb-2">
-                <span>₹{minPriceState}</span> - <span>₹{maxPriceState}</span>
-              </div>
-              <div className="relative h-2">
-                <input
-                  type="range"
-                  id="min-price-slider"
-                  min="400"
-                  max="5000"
-                  value={minPriceState}
-                  onChange={handlePriceChange}
-                  className="absolute w-full h-1 bg-transparent appearance-none pointer-events-none 
-                            [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 
-                            [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-orange-500 
-                            [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:cursor-pointer 
-                            [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:border-2 
-                            [&::-webkit-slider-thumb]:border-white"
-                  style={{
-                    background: `linear-gradient(to right, #ddd ${
-                      ((minPriceState - 400) / 2600) * 100
-                    }%, #f97316 ${
-                      ((minPriceState - 400) / 2600) * 100
-                    }%, #f97316 ${
-                      ((maxPriceState - 400) / 2600) * 100
-                    }%, #ddd ${((maxPriceState - 400) / 2600) * 100}%)`,
-                  }}
-                />
-                <input
-                  type="range"
-                  id="max-price-slider"
-                  min="400"
-                  max="5000"
-                  value={maxPriceState}
-                  onChange={handlePriceChange}
-                  className="absolute w-full h-1 bg-transparent appearance-none pointer-events-none 
-                            [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 
-                            [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-orange-500 
-                            [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:cursor-pointer 
-                            [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:border-2 
-                            [&::-webkit-slider-thumb]:border-white"
-                  style={{
-                    background: `linear-gradient(to right, #ddd ${
-                      ((minPriceState - 400) / 2600) * 100
-                    }%, #f97316 ${
-                      ((minPriceState - 400) / 2600) * 100
-                    }%, #f97316 ${
-                      ((maxPriceState - 400) / 2600) * 100
-                    }%, #ddd ${((maxPriceState - 400) / 2600) * 100}%)`,
-                  }}
-                />
-              </div>
-            </div>
-          )}
+         {openSection === "price" && (
+  <div className="mt-3 space-y-6">
+
+    {/* ---------- MIN PRICE ---------- */}
+    <div>
+      <div className="flex justify-between text-gray-600 font-bold mb-1">
+        <span>Min Price</span>
+        <span>₹{minPriceState}</span>
+      </div>
+
+      <input
+      id="min-price-slider"
+        type="range"
+        min={minPrice}
+        max={maxPrice}
+        value={minPriceState}
+        onChange={(e) => handlePriceChange(e)}
+        className="w-full h-1 bg-gray-300 rounded-lg appearance-none cursor-pointer
+        [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4
+        [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-orange-500
+        [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:cursor-pointer"
+        style={{
+          background: `linear-gradient(to right, #f97316 ${
+            ((minPriceState - minPrice) / (maxPrice - minPrice)) * 100
+          }%, #ddd ${
+            ((minPriceState - minPrice) / (maxPrice - minPrice)) * 100
+          }%)`,
+        }}
+      />
+    </div>
+
+    {/* ---------- MAX PRICE ---------- */}
+    <div>
+      <div className="flex justify-between text-gray-600 font-bold mb-1">
+        <span>Max Price</span>
+        <span>₹{maxPriceState}</span>
+      </div>
+
+      <input
+         id="max-price-slider"
+        type="range"
+        min={minPrice}
+        max={maxPrice}
+        value={maxPriceState}
+        onChange={(e) => handlePriceChange(e)}
+        className="w-full h-1 bg-gray-300 rounded-lg appearance-none cursor-pointer
+        [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4
+        [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:bg-orange-500
+        [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:cursor-pointer"
+        style={{
+          background: `linear-gradient(to right, #f97316 ${
+            ((maxPriceState - minPrice) / (maxPrice - minPrice)) * 100
+          }%, #ddd ${
+            ((maxPriceState - minPrice) / (maxPrice - minPrice)) * 100
+          }%)`,
+        }}
+      />
+    </div>
+
+  </div>
+)}
+
         </div>
 
         {/* Service Type Filter */}
-        <div className="border-b border-gray-200 py-4">
+        {/* <div className="border-b border-gray-200 py-4">
           <div
             className="flex justify-between items-center cursor-pointer"
             onClick={() => toggleSection("serviceTypes")}
@@ -340,7 +349,7 @@ const FilterSidebar = ({
               ))}
             </ul>
           )}
-        </div>
+        </div> */}
       </div>
 
       <div className="flex justify-between items-center pt-4 border-t border-gray-200">

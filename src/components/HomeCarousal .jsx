@@ -2,11 +2,11 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import React, { useEffect, useState } from "react";
 import { Pagination, Autoplay, Navigation } from "swiper/modules";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
-import { doc, getDoc } from "firebase/firestore";
-import { firestore } from "../firebaseCon"; // adjust import path
+
 import "swiper/css";
 import "swiper/css/pagination";
 import "swiper/css/navigation";
+
 
 // Navigation buttons
 const SwiperNavButtons = () => {
@@ -32,27 +32,15 @@ const SwiperNavButtons = () => {
 };
 
 export default function HeroBannerSlider() {
-  const [images, setImages] = useState([]);
+  let HeroBannerSliderImage = [];
+ const [heroBannerImages, setHeroBannerImages] = useState([]);
+ useEffect(() => {
+    const stored = localStorage.getItem("urbanAuraServicesSliderImage");
 
-  useEffect(() => {
-    const fetchImages = async () => {
-      try {
-        const sliderDocRef = doc(firestore, "homeCleaningSlider", "mainDoc");
-        const snap = await getDoc(sliderDocRef);
+    const data = stored ? JSON.parse(stored) : [];
 
-        if (snap.exists()) {
-          setImages(snap.data().data || []);
-        } else {
-          console.warn("No slider images found in Firestore");
-        }
-      } catch (error) {
-        console.error("Error fetching slider images:", error);
-      }
-    };
-
-    fetchImages();
+    setHeroBannerImages(data); // ✅ update state
   }, []);
-
   return (
     <div className="relative">
       <Swiper
@@ -72,12 +60,12 @@ export default function HeroBannerSlider() {
         }}
         className="rounded-2xl shadow-lg"
       >
-        {images.length > 0 ? (
-          images.map((img, index) => (
+        {heroBannerImages.length > 0 ? (
+          heroBannerImages.map((img, index) => (
             <SwiperSlide key={index}>
               <img
                 src={img.src}
-                alt={img.alt}
+                alt={"No images available"}
                 className="w-full h-[300px] md:h-[400px] object-cover rounded-2xl"
                 onError={(e) => {
                   e.target.onerror = null;

@@ -125,7 +125,7 @@
 //               Ready For A Cleaner, <br /> Happier Home?
 //             </div>
 //             <p className="mt-2 text-base max-w-md mx-auto lg:mx-0">
-//               Book today and discover why families trust Qlinest for spotless living.
+//               Book today and discover why families trust Urban Aura for spotless living.
 //             </p>
 //             <div className="mt-6">
 //               <button className="bg-yellow-400 text-[#1f2d3a] font-semibold px-6 py-3 rounded-full shadow hover:brightness-105 transition">
@@ -189,7 +189,7 @@ const FAQSection = () => {
   const [openIndex, setOpenIndex] = useState(0);
 
   return (
-    <section className="py-16 px-6 md:px-20 bg-white rounded-[32px] mb-24">
+    <section className="py-16 px-6 md:px-20 bg-white rounded-[32px] ">
       <div className="max-w-4xl mx-auto flex flex-col items-center gap-4">
         <div className="inline-block bg-[#fdeae6] text-[#f87559] text-xs font-semibold px-4 py-1 rounded-full mb-1 shadow">
           FAQ
@@ -207,11 +207,11 @@ const FAQSection = () => {
             return (
               <div
                 key={idx}
-                className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden"
+                className="cursor-pointer bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden"
               >
                 <button
                   onClick={() => setOpenIndex(isOpen ? -1 : idx)}
-                  className="w-full flex justify-between items-center px-6 py-4 text-left"
+                  className="w-full flex justify-between items-center px-6 py-4 text-left cursor-pointer"
                 >
                   <div className="flex items-center gap-3">
                     <div

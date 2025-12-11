@@ -30,10 +30,26 @@ export default function CityCards({setMyCity}) {
 
   return (
     <>
+   <style>
+    {`
+      .modal-fade {
+        opacity: 0;
+        transform: scale(0.95);
+        animation: modalFadeIn 0.3s ease-out forwards;
+      }
+
+      @keyframes modalFadeIn {
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+    `}
+  </style>
       {isModalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 mt-50 mb-20">
-          {/* Modal box */}
-          <div className="bg-white  rounded-lg shadow-lg p-6 md:w-2/3 lg:w-1/2 max-h-[70vh] flex flex-col">
+       <div className="fixed inset-0 flex items-center justify-center z-50 mt-50 mb-20 modal-fade">
+   {/* Modal box */}
+          <div className="bg-white max-w-[100vh] max-h-[40vh] rounded-lg shadow-lg p-6 md:w-2/3 lg:w-1/2  flex flex-col">
             {/* Header */}
             <div className="flex justify-between items-center mb-4">
               <h1 className="text-2xl font-bold text-gray-800">Select Booking City</h1>

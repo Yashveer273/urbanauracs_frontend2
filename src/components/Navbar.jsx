@@ -1,33 +1,38 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { selectCartItemCount, toggleCart } from "../store/CartSlice";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
+import { selectUser } from "../store/userSlice";
 import AccountMenu from "./AccountMenu";
 import {
-  FaPhone,
   FaShoppingCart,
-  FaSearch,
   FaBars,
   FaTimes,
   FaFilter,
-  FaEnvelope,
   FaYoutube,
   FaInstagram,
   FaFacebook,
-  FaMapMarkerAlt,
 } from "react-icons/fa";
 import "./Navbar.css";
 
-const Navbar = ({ toggleFilterSidebar, onAboutClick }) => {
+const Navbar = ({ toggleFilterSidebar, }) => {
+  const location = useLocation();
+
+  const user = useSelector(selectUser);
+  const navigator = useNavigate();
+  const dispatch = useDispatch();
+  const firstLetter = user?.username
+    ? user.username.charAt(0).toUpperCase()
+    : user?.email
+    ? user.email.charAt(0).toUpperCase()
+    : "U";
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [showSearchBox, setShowSearchBox] = useState(false);
   const topBarRef = useRef(null);
-  const [topBarHeight, setTopBarHeight] = useState(28);
+  const [topBarHeight, setTopBarHeight] = useState(29);
 
-  // Redux hooks for state management
-  const dispatch = useDispatch();
   const links = useSelector((state) => state.socialLinks.links);
   // Replace 'socialLinks' with the slice name you used
 
@@ -107,9 +112,10 @@ const Navbar = ({ toggleFilterSidebar, onAboutClick }) => {
         className={`main-navbar ${scrolled ? "fixed scrolled" : ""}`}
         style={{ top: scrolled ? 0 : `${topBarHeight}px` }}
       >
-        <div className="navbar-header w-full md:w-auto ">
-          <div className="flex items-center justify-between w-full">
+        <div className="navbar-header w-full md:w-auto h-[51px]">
+          <div className="flex items-center justify-between w-full h-[55px]">
             {/* Logo */}
+            <Link to="/">
             <img
               src="/logo.jpg"
               alt="Clean Logo"
@@ -117,29 +123,24 @@ const Navbar = ({ toggleFilterSidebar, onAboutClick }) => {
               height={50}
               className="rounded-full object-cover transition-transform duration-500 "
             />
+            </Link>
             {/* Right actions */}
-            <div className="flex items-center gap-2 md:hidden p-5 ">
-              {/* Search Icon */}
-              <div
-                className="top-search-icon cursor-pointer cart-btn "
-                onClick={toggleSearchBox}
-              >
-                <FaSearch />
-              </div>
-
+            <div className="flex items-center h-0 gap-2 md:hidden p-5 ">
               {/* Filter + Cart */}
               <div className="flex items-center gap-2  ">
-                <button
-                  className="filter-btn flex items-center gap-1  py-1 bg-gray-200 rounded hover:bg-gray-300"
-                  onClick={toggleFilterSidebar}
-                >
-                  <FaFilter size={20} />
-                  <h1 style={{ fontSize: 19 }}>Filter</h1>
-                </button>
+                {location.pathname !== "/" && (
+                  <button
+                    className="filter-btn flex items-center gap-1 py-1 bg-gray-200 rounded hover:bg-gray-300"
+                    onClick={toggleFilterSidebar}
+                  >
+                    <FaFilter size={20} />
+                    <h1 style={{ fontSize: 19 }}>Filter</h1>
+                  </button>
+                )}
 
                 <button
                   className="cart-btn relative group  rounded hover:bg-gray-200"
-                  onClick={() => dispatch(toggleCart())}
+                  onClick={() => dispatch(toggleCart())} 
                 >
                   <FaShoppingCart
                     size={23}
@@ -161,21 +162,29 @@ const Navbar = ({ toggleFilterSidebar, onAboutClick }) => {
           </div>
         </div>
 
-        <div className={`nav-links ${menuOpen ? "show" : ""} ` } style={{color:"black"}}>
+        <div
+          className={`nav-links ${menuOpen ? "show" : ""} `}
+          style={{ color: "black" }}
+        >
           <Link to="/">Home</Link>
-
-          <button
+          <Link to="/Aboutus">About us</Link>
+          {/* <button
             onClick={onAboutClick}
-            className="bg-transparent border-none cursor-pointer"
+            className="bg-transparent border-none cursor-pointer mr-5"
           >
-            About Us
-          </button>
+            About us
+          </button> */}
           <Link to="/contact">Contact</Link>
         </div>
 
         <div className={`nav-actions ${menuOpen ? "show" : ""}`}>
-          <AccountMenu />
-          {scrolled && (
+          <div
+            onClick={() => navigator("/AccountMenu")}
+            className="w-10 h-10 flex items-center justify-center rounded-full bg-[#f87559] text-white font-bold cursor-pointer hover:scale-105 transition"
+          >
+            {firstLetter}
+          </div>
+          {/* {scrolled && (
             <div
               className="main-search-icon"
               onClick={toggleSearchBox}
@@ -188,15 +197,16 @@ const Navbar = ({ toggleFilterSidebar, onAboutClick }) => {
             >
               <FaSearch />
             </div>
-          )}
+          )} */}
 
           <div
-            className="filter-cart-actions"
-            style={{ display: "flex", alignItems: "center", gap: "10px" }}
+            className="filter-cart-actions "
+            style={{ display: menuOpen ? "none":"flex", alignItems: "center", gap: "10px", }}
           >
+            {location.pathname !== "/" && (
             <button className="filter-btn" onClick={toggleFilterSidebar}>
               <FaFilter /> Filter
-            </button>
+            </button>)}
 
             <button
               className="cart-btn relative group"

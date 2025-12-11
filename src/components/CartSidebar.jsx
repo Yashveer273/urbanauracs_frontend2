@@ -2,14 +2,16 @@ import React from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { removeItem, closeCart, selectCartTotal,addItem,decreaseItem } from "../store/CartSlice";
-import { addToHistory } from "../store/userSlice";
+
 import {
   FaTimes,
   FaTrash,
   FaCalendarAlt,
   FaPlus,
   FaMinus,
+  FaClock,
 } from "react-icons/fa";
+import CartProductSummery from "../pages/CartProductSummery";
 
 const CartSidebar = () => {
   const dispatch = useDispatch();
@@ -70,7 +72,7 @@ const handleDecrease = (id) => {
     >
       {/* Header */}
       <div className="flex justify-between items-center border-b border-gray-200 pb-4 p-6">
-        <h2 className="text-xl font-bold text-gray-900">Your Cart</h2>
+        <h2 className="text-xl font-bold text-gray-900">Your Cart  </h2>
         <button
           className="text-lg text-gray-500 hover:text-gray-700 ml-4"
           onClick={handleClose}
@@ -107,9 +109,23 @@ const handleDecrease = (id) => {
                   <div className="flex items-center text-xs text-gray-600 mt-1">
                     <FaCalendarAlt className="mr-1 text-[#f87559]" />
                     <span>Booking Date: {item.bookingDate}</span>
+           
                   </div>
                 )}
-
+ {item.SelectedServiceTime && (
+                  <div className="flex items-center text-xs text-gray-600 mt-1">
+                    <FaClock className="mr-1 text-[#f87559]" />
+                  
+                    <span>Booking Time: {item.SelectedServiceTime}</span>
+                  </div>
+                )}
+                {item.bookingDate && (
+                  <div className="flex items-center w-40 text-xs text-gray-600 mt-1">
+                    <FaCalendarAlt className="mr-1 text-[#f87559]" />
+                    <span>Booking Address: {item.bookingAddress}</span>
+           
+                  </div>
+                )}
                 <div className="flex items-center justify-between mt-2">
                   <span className="text-lg font-bold text-gray-900">
                     ₹{item.price}

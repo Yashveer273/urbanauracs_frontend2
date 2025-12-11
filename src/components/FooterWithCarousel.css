@@ -180,12 +180,12 @@ body {
   text-align: center;
   font-size: 13px;
   padding: 20px 10px;
-  background-color: #15171f;
-  color: #aaa;
+  background-color: #ffffff;
+  color: #000000;
 }
 
 .footer-bottom-bar a {
-  color: #aaa;
+  color: #000000;
   text-decoration: none;
 }
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect,useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 import {
   LineChart,
@@ -12,12 +12,14 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { collection, onSnapshot, doc, setDoc } from "firebase/firestore";
+import { collection, onSnapshot, doc, setDoc, getDoc, updateDoc } from "firebase/firestore";
 import { firestore } from "../firebaseCon";
 import AddSalesItem from "./AddSalesItem";
 import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
-
+import { API_BASE_URL, updateSale } from "../API";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { CalculateConveniencetotalFee } from "../components/TexFee";
 
 export default function SalesSection() {
   const [salesData, setSalesData] = useState([]);
@@ -73,13 +75,13 @@ export default function SalesSection() {
       (sale) =>
         sale.name?.toLowerCase().includes(filters.name.toLowerCase()) &&
         sale.email?.toLowerCase().includes(filters.email.toLowerCase()) &&
-        sale.phone_number?.includes(filters.phone) &&
         sale.product_info?.cart?.some((item) =>
           item.product_name
             ?.toLowerCase()
             .includes(filters.product.toLowerCase())
         )
     );
+
     setFilteredData(filtered);
 
     const daily = {},
@@ -127,7 +129,18 @@ export default function SalesSection() {
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
 
   const showProductInfo = (sale) => {
-    setSelectedProductInfo({ ...sale.product_info, id: sale.id });
+    setSelectedProductInfo({
+      ...sale.product_info,
+      id: sale.id,
+      userData: {
+        userId: sale.userId,
+        phone_number: sale.phone_number,
+        bookingAddress:
+          sale?.product_info?.cart[sale?.product_info?.cart?.length - 1]
+            .bookingAddress,
+      },
+      S_orderId:sale.S_orderId
+    });
     setModalOpen(true);
     setTimeout(() => setShowModalContent(true), 50);
   };
@@ -154,15 +167,20 @@ export default function SalesSection() {
   const openEditRowCard = (sale) => {
     setEditingRow(sale.id);
     setRowForm({
+      orderId: sale.orderId,
       name: sale.name || "",
       email: sale.email || "",
       phone: sale.phone_number || "",
+      WhatsApp_Mobile_Number: sale.ConfurmWhatsAppMobileNumber || "",
       product:
         sale.product_info?.cart?.map((item) => item.product_name).join(", ") ||
         "",
       pincode: sale.pincode || "",
       location: sale.user_location || "",
       totalPrice: sale.total_price || "",
+      payableAmount: sale.payableAmount || "",
+      payedAmount: sale.payedAmount || "",
+
       dateTime: sale.date_time
         ? new Date(sale.date_time).toISOString().slice(0, 16)
         : "",
@@ -170,22 +188,28 @@ export default function SalesSection() {
   };
   const saveEditedRow = async () => {
     try {
+      let payable = {
+        name: rowForm.name,
+        email: rowForm.email,
+        phone_number: rowForm.phone,
+        ConfurmWhatsAppMobileNumber: rowForm.ConfurmWhatsAppMobileNumber,
+        pincode: rowForm.pincode,
+        user_location: rowForm.location,
+        total_price: Number(rowForm.totalPrice),
+        payableAmount: Number(rowForm.payableAmount),
+        payedAmount: Number(rowForm.payedAmount),
+        date_time: new Date(rowForm.dateTime).toISOString(),
+      };
+      const response = await updateSale(rowForm.orderId, payable);
+      if (response.success != 200) {
+        alert(response.data.message);
+
+        return;
+      }
+
       const saleRef = doc(firestore, "sales", editingRow);
 
-      // Optionally, update only allowed fields
-      await setDoc(
-        saleRef,
-        {
-          name: rowForm.name,
-          email: rowForm.email,
-          phone_number: rowForm.phone,
-          pincode: rowForm.pincode,
-          user_location: rowForm.location,
-          total_price: Number(rowForm.totalPrice),
-          date_time: new Date(rowForm.dateTime).toISOString(),
-        },
-        { merge: true }
-      );
+      await setDoc(saleRef, payable, { merge: true });
 
       setSalesData((prev) =>
         prev.map((s) =>
@@ -195,9 +219,12 @@ export default function SalesSection() {
                 name: rowForm.name,
                 email: rowForm.email,
                 phone_number: rowForm.phone,
+                WhatsApp_Mobile_Number: rowForm.ConfurmWhatsAppMobileNumber,
                 pincode: rowForm.pincode,
                 user_location: rowForm.location,
                 total_price: Number(rowForm.totalPrice),
+                payableAmount: Number(rowForm.payableAmount),
+                payedAmount: Number(rowForm.payedAmount),
                 date_time: new Date(rowForm.dateTime).toISOString(),
               }
             : s
@@ -210,6 +237,85 @@ export default function SalesSection() {
     }
   };
 
+  const [editingCartProduct, setEditingCartProduct] = useState({
+    saleId: null,
+    productIndex: null,
+    productData: null,
+  });
+  const [isEditCartModalOpen, setIsEditCartModalOpen] = useState(false);
+  const openEditCartModal = (item, index, saleId) => {
+    
+    console.log(item, index, saleId);
+    setEditingCartProduct({
+      saleId,
+      productIndex: index,
+      productData: item
+    });
+    setModalOpen(false);
+    setIsEditCartModalOpen(true);
+  };
+
+const saveCartEdit = async (data) => {
+  try {
+    const saleId = data.saleId;
+
+    console.log("🛠 Sending update:", data.productData, saleId);
+console.log(data.productData, saleId,selectedProductInfo.userData.userId);
+    const res = await axios.put(
+      `${API_BASE_URL}/editSalesItem/${saleId}/cart`,
+      {
+        product_purchase_id: data.productData.product_purchase_id,
+        updates: data.productData,
+        userId:selectedProductInfo.userData.userId
+      }
+    );
+
+    if (res.data.success) {
+      alert("✅ Cart item updated successfully:");
+      setIsEditCartModalOpen(false);
+      setModalOpen(true);
+    } else {
+      alert("❌ Update failed:" );
+    }
+  } catch (err) {
+    console.log(err);
+    alert("🔥 Server error:");
+  }
+  try {
+    const saleId = data.saleId;
+
+        console.log(data.productData, saleId,selectedProductInfo.userData.userId);
+    const saleRef = doc(firestore, "sales", saleId);
+
+    const saleSnap = await getDoc(saleRef);
+    if (!saleSnap.exists()) {
+      console.error("Sale not found");
+      return;
+    }
+
+ if (!saleSnap.exists()) {
+    console.error("❌ Sale not found in Firestore");
+    return;
+  }
+
+  const saleData = saleSnap.data();
+  console.log("📦 saleData:", saleData);
+    const updatedCart = saleData.
+product_info.cart.map((item) =>
+      item.product_purchase_id === data.productData.product_purchase_id
+        ? { ...item, ...data.productData } // merge updates
+        : item
+    );
+
+    await updateDoc(saleRef, { cart: updatedCart });
+
+    console.log("✅ Cart item updated successfully");
+    setIsEditCartModalOpen(false);
+    setModalOpen(true);
+  } catch (err) {
+    console.error("❌ Error updating cart item:", err);
+  }
+};
   // Update status & comment
   const updateStatusOrComment = async (
     saleId,
@@ -283,11 +389,13 @@ export default function SalesSection() {
     "User Name",
     "Email",
     "Phone",
-    "Product",
+    "WhatsApp Number",
     "Details",
     "Pincode",
     "Location",
     "Total Price",
+    "Payable Amount",
+    "Payed Amount",
     "Date/Time",
     "Status",
     "Responsible",
@@ -311,6 +419,22 @@ export default function SalesSection() {
   const scrollRight = () => {
     tableContainerRef.current.scrollBy({ left: 200, behavior: "smooth" });
   };
+    const timeSlots = [
+    "6:00 AM",
+    "7:00 AM",
+    "8:00 AM",
+    "9:00 AM",
+    "10:00 AM",
+    "11:00 AM",
+    "12:00 PM",
+    "1:00 PM",
+    "2:00 PM",
+    "3:00 PM",
+    "4:00 PM",
+    "5:00 PM",
+    "6:00 PM",
+    "7:00 PM",
+  ];
   return (
     <div className="flex flex-col min-h-screen font-sans bg-gray-100 w-300">
       <main className="flex-1 p-4 md:p-8 overflow-auto">
@@ -374,22 +498,28 @@ export default function SalesSection() {
           >
             Search
           </button>
-          
         </div>
-<button
-        onClick={scrollLeft}
-        className=""
-      >
-        <FiChevronLeft size={20} />
-      </button>
-      <button
-        onClick={scrollRight}
-        className=""
-      >
-        <FiChevronRight size={20} />
-      </button>
-        <div className="table-container bg-white p-6 rounded-xl shadow-md overflow-x-auto"  ref={tableContainerRef}>
-          
+        <div className="fixed bottom-4 right-4 flex space-x-2">
+          {/* Left (scroll left) */}
+          <button
+            onClick={scrollLeft}
+            className="p-3 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition"
+          >
+            <FiChevronLeft size={20} />
+          </button>
+
+          {/* Right (scroll right) */}
+          <button
+            onClick={scrollRight}
+            className="p-3 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition"
+          >
+            <FiChevronRight size={20} />
+          </button>
+        </div>
+        <div
+          className="table-container bg-white p-6 rounded-xl shadow-md overflow-x-auto"
+          ref={tableContainerRef}
+        >
           <table className="w-full table-auto border-collapse">
             <thead>
               <tr className="bg-gray-100 text-gray-600 uppercase text-sm">
@@ -397,7 +527,7 @@ export default function SalesSection() {
                   <th key={h} className="py-3 px-6">
                     {h}
                   </th>
-                ))}{" "}
+                ))}
               </tr>
             </thead>
             <tbody>
@@ -416,7 +546,7 @@ export default function SalesSection() {
                     <td className="py-4 px-6">
                       <button
                         className="bg-blue-600 cursor-pointer text-white px-3 py-1 rounded-md"
-                        onClick={() => navigate("/InvoiceApp")}
+                        onClick={() => navigate("/InvoiceApp", { state: sale })}
                       >
                         Generate
                       </button>
@@ -425,10 +555,10 @@ export default function SalesSection() {
                     <td className="py-4 px-6">{sale.email}</td>
                     <td className="py-4 px-6">{sale.phone_number}</td>
                     <td className="py-4 px-6">
-                      {sale.product_info?.cart
-                        ?.map((item) => item.product_name)
-                        .join(", ")}
+                      {sale.ConfurmWhatsAppMobileNumber}
+
                     </td>
+                    
                     <td className="py-4 px-6">
                       <button
                         onClick={() => showProductInfo(sale)}
@@ -440,6 +570,9 @@ export default function SalesSection() {
                     <td className="py-4 px-6">{sale.pincode}</td>
                     <td className="py-4 px-6">{sale.user_location}</td>
                     <td className="py-4 px-6">₹{sale.total_price}</td>
+                    <td className="py-4 px-6">₹{sale.payableAmount}</td>
+                    <td className="py-4 px-6">₹{sale.payedAmount}</td>
+
                     <td className="py-4 px-6">
                       {new Date(sale.date_time).toLocaleString()}
                     </td>
@@ -509,7 +642,6 @@ export default function SalesSection() {
               )}
             </tbody>
           </table>
-          
         </div>
 
         {/* Pagination */}
@@ -572,11 +704,16 @@ export default function SalesSection() {
                       "Product ID",
                       "Product Name",
                       "Vendor Name",
+                      "Booking Date",
                       "Booking Time",
+                      "Booking Address",
+                      "Duration",
                       "Item Price",
-                      "Tag",
+                      "After Convenience Fee",
+                     
                       "Status",
                       "Comment",
+                      "Edit", // 👈 New column header
                     ].map((h) => (
                       <th key={h} className="py-3 px-6">
                         {h}
@@ -584,6 +721,7 @@ export default function SalesSection() {
                     ))}
                   </tr>
                 </thead>
+
                 <tbody>
                   {selectedProductInfo.cart.map((item, i) => (
                     <tr key={i} className="hover:bg-gray-50 border-b">
@@ -594,10 +732,23 @@ export default function SalesSection() {
                         {item.vendor_details.vendor_name}
                       </td>
                       <td className="py-4 px-6">
-                        {new Date(item.location_booking_time).toLocaleString()}
+                        {item.location_booking_time}
                       </td>
+                      <td className="py-4 px-6">{item.SelectedServiceTime}</td>
+                      <td className="py-4 px-6">{item.bookingAddress}</td>
+                   <td className="py-4 px-6">
+  {item.duration
+    ? item.duration.toString().toLowerCase().includes("hr")
+      ? item.duration
+      : `${item.duration} hrs`
+    : "-"}
+</td>
+
                       <td className="py-4 px-6">₹{item.item_price}</td>
-                      <td className="py-4 px-6">{item.tag}</td>
+                      <td className="py-4 px-6">₹{CalculateConveniencetotalFee(item.item_price)  }</td>
+                    
+
+                      {/* Status Button */}
                       <td className="py-4 px-6">
                         <button
                           onClick={() =>
@@ -609,15 +760,17 @@ export default function SalesSection() {
                               i
                             )
                           }
-                          className="text-blue-600 "
+                          className="text-blue-600 hover:underline"
                         >
                           {item.status || "Started"}
                         </button>
                       </td>
+
+                      {/* Comment Button */}
                       <td className="py-4 px-6">
                         {item.comment && (
                           <button
-                            className="text-green-600 "
+                            className="text-green-600 hover:underline"
                             onClick={() =>
                               setViewComment({
                                 saleId: selectedProductInfo.id,
@@ -629,12 +782,24 @@ export default function SalesSection() {
                           </button>
                         )}
                       </td>
+
+                      {/* ✅ Edit Button */}
+                      <td className="py-4 px-6">
+                        <button
+                          className="text-indigo-600 hover:text-indigo-800 font-medium"
+                          onClick={() =>
+                            openEditCartModal(item, i, selectedProductInfo.id)
+                          }
+                        >
+                          Edit
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-            <AddSalesItem parentId={selectedProductInfo.phone_number} />
+            <AddSalesItem userData={selectedProductInfo.userData} selectedProductInfo={selectedProductInfo}  />
           </div>
         </div>
       )}
@@ -723,10 +888,13 @@ export default function SalesSection() {
               "name",
               "email",
               "phone",
+              "WhatsApp_Mobile_Number",
               "product",
               "pincode",
               "location",
               "totalPrice",
+              "payableAmount",
+              "payedAmount",
               "dateTime",
             ].map((field) => (
               <div className="mb-3" key={field}>
@@ -764,6 +932,215 @@ export default function SalesSection() {
           </div>
         </div>
       )}
+
+      {isEditCartModalOpen && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[101]">
+    <div className="bg-white p-6 rounded-lg shadow-lg w-96 max-h-[90vh] overflow-y-auto">
+      <h2 className="text-lg font-semibold mb-4">Edit Cart Product</h2>
+
+      {/* Product Name */}
+      <label className="block text-sm font-medium mb-1">Product Name</label>
+      <input
+        type="text"
+        value={editingCartProduct?.productData?.product_name || ""}
+        onChange={(e) =>
+          setEditingCartProduct((prev) => ({
+            ...prev,
+            productData: {
+              ...prev.productData,
+              product_name: e.target.value,
+            },
+          }))
+        }
+        className="w-full border px-3 py-2 mb-3 rounded"
+      />
+
+      {/* Booking Address */}
+      <label className="block text-sm font-medium mb-1">Booking Address</label>
+      <input
+        type="text"
+        value={editingCartProduct?.productData?.bookingAddress || ""}
+        onChange={(e) =>
+          setEditingCartProduct((prev) => ({
+            ...prev,
+            productData: {
+              ...prev.productData,
+              bookingAddress: e.target.value,
+            },
+          }))
+        }
+        className="w-full border px-3 py-2 mb-3 rounded"
+      />
+
+      {/* Booking Date */}
+      <label className="block text-sm font-medium mb-1">Booking Date</label>
+   <input
+  type="date"
+  value={
+    editingCartProduct?.productData?.location_booking_time
+      ? new Date(editingCartProduct.productData.location_booking_time)
+          .toISOString()
+          .split("T")[0]
+      : ""
+  }
+  min={new Date().toISOString().split("T")[0]} // disables past dates
+  onChange={(e) =>
+    setEditingCartProduct((prev) => ({
+      ...prev,
+      productData: {
+        ...prev.productData,
+        location_booking_time: e.target.value,
+      },
+    }))
+  }
+  className="w-full border px-3 py-2 mb-3 rounded"
+/>
+
+      {/* Booking Time */}
+      <label className="block text-sm font-medium mb-1">Booking Time</label>
+     <select
+  value={editingCartProduct?.productData?.SelectedServiceTime || ""}
+  onChange={(e) =>
+    setEditingCartProduct((prev) => ({
+      ...prev,
+      productData: {
+        ...prev.productData,
+        SelectedServiceTime: e.target.value,
+      },
+    }))
+  }
+  className="w-full border px-3 py-2 mb-3 rounded bg-white"
+>
+ 
+  {timeSlots.map((time) => (
+    <option key={time} value={time}>
+      {time}
+    </option>
+  ))}
+</select>
+
+      {/* Description */}
+      <label className="block text-sm font-medium mb-1">Description</label>
+      <input
+        type="text"
+        value={editingCartProduct?.productData?.description || ""}
+        onChange={(e) =>
+          setEditingCartProduct((prev) => ({
+            ...prev,
+            productData: {
+              ...prev.productData,
+              description: e.target.value,
+            },
+          }))
+        }
+        className="w-full border px-3 py-2 mb-3 rounded"
+      />
+
+
+     
+      
+
+      {/* Duration */}
+      <label className="block text-sm font-medium mb-1">Duration</label>
+      <input
+        type="text"
+        value={editingCartProduct?.productData?.duration || ""}
+        onChange={(e) =>
+          setEditingCartProduct((prev) => ({
+            ...prev,
+            productData: {
+              ...prev.productData,
+              duration: e.target.value,
+            },
+          }))
+        }
+        className="w-full border px-3 py-2 mb-3 rounded"
+      />
+
+      {/* Vendor Location */}
+      <label className="block text-sm font-medium mb-1">Vendor Location</label>
+      <input
+        type="text"
+        value={
+          editingCartProduct?.productData?.vendor_details?.vendorLocation || ""
+        }
+        onChange={(e) =>
+          setEditingCartProduct((prev) => ({
+            ...prev,
+            productData: {
+              ...prev.productData,
+              vendor_details: {
+                ...prev.productData.vendor_details,
+                vendorLocation: e.target.value,
+              },
+            },
+          }))
+        }
+        className="w-full border px-3 py-2 mb-3 rounded"
+      />
+
+      {/* Vendor ID */}
+      <label className="block text-sm font-medium mb-1">Vendor ID</label>
+      <input
+        type="text"
+        value={editingCartProduct?.productData?.vendor_details?.vendor_id || ""}
+        onChange={(e) =>
+          setEditingCartProduct((prev) => ({
+            ...prev,
+            productData: {
+              ...prev.productData,
+              vendor_details: {
+                ...prev.productData.vendor_details,
+                vendor_id: e.target.value,
+              },
+            },
+          }))
+        }
+        className="w-full border px-3 py-2 mb-3 rounded"
+      />
+
+      {/* Vendor Name */}
+      <label className="block text-sm font-medium mb-1">Vendor Name</label>
+      <input
+        type="text"
+        value={editingCartProduct?.productData?.vendor_details?.vendor_name || ""}
+        onChange={(e) =>
+          setEditingCartProduct((prev) => ({
+            ...prev,
+            productData: {
+              ...prev.productData,
+              vendor_details: {
+                ...prev.productData.vendor_details,
+                vendor_name: e.target.value,
+              },
+            },
+          }))
+        }
+        className="w-full border px-3 py-2 mb-3 rounded"
+      />
+
+      {/* Buttons */}
+      <div className="flex justify-end gap-3 mt-4">
+        <button
+          onClick={() => {setIsEditCartModalOpen(false); setModalOpen(true);
+
+          }}
+          className="px-4 py-2 bg-gray-300 rounded"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={() => saveCartEdit(editingCartProduct)}
+          className="px-4 py-2 bg-blue-600 text-white rounded"
+        >
+          Save
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
     </div>
   );
 }
+// vendor_details: id,number,name,location

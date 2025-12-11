@@ -14,12 +14,12 @@ const Services = () => {
         <div className="grid gap-8 sm:grid-cols-1 md:grid-cols-3">
           <div className="bg-white text-black rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300">
             <img
-              src="https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcSl50UiaOipImx_MtPjWZfCUnOzSUHYOXCv63UCKq7-qzj_bfFR"
-              alt="Residential Cleaning"
+              src="/images/house_cleanning.jpeg"
+              alt="House Cleaning"
               className="w-full h-56 object-cover rounded-t-xl"
             />
             <div className="p-6">
-              <h3 className="text-xl font-semibold mb-2">Residential Cleaning</h3>
+              <h3 className="text-xl font-semibold mb-2">House Cleaning</h3>
               <p className="text-gray-700">
                 Thorough cleaning for your home with eco-friendly products.
               </p>
@@ -28,12 +28,12 @@ const Services = () => {
 
           <div className="bg-white text-black rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300">
             <img
-              src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQsOLXKm7d8oF7v-3ms6qzDYnY-Fjda5RAMAojnkaa6qE_AIc5G"
-              alt="Office Cleaning"
+              src="/images/Residential_Cleaning.jpeg"
+              alt="Residential Cleaning"
               className="w-full h-56 object-cover rounded-t-xl"
             />
             <div className="p-6">
-              <h3 className="text-xl font-semibold mb-2">Office Cleaning</h3>
+              <h3 className="text-xl font-semibold mb-2">Residential Cleaning</h3>
               <p className="text-gray-700">
                 Keep your workspace clean and professional at all times.
               </p>
@@ -42,12 +42,12 @@ const Services = () => {
 
           <div className="bg-white text-black rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300">
             <img
-              src="https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcRbKKMBZdPVJ8rXhJKrKMc5o5VrVeCTzkeQADpowFi7AnmqNGHb"
-              alt="Deep Cleaning"
+              src="/images/office_Cleaning.jpeg"
+              alt="Office Cleaning"
               className="w-full h-56 object-cover rounded-t-xl"
             />
             <div className="p-6">
-              <h3 className="text-xl font-semibold mb-2">Deep Cleaning</h3>
+              <h3 className="text-xl font-semibold mb-2">Office Cleaning</h3>
               <p className="text-gray-700">
                 Ideal for move-ins, move-outs, and spring cleaning tasks.
               </p>

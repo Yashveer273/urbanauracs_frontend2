@@ -1,71 +1,19 @@
 /* eslint-disable no-unused-vars */
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, MapPin, ChevronRight } from "lucide-react";
+import {  ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import VendorSection from "./VendorSection";
 import HeroBannerSlider from "./HomeCarousal ";
-import fullHomeVendors from "../data/fullHomeVendors.json";
-import acRepairVendors from "../data/AcRepair.json";
-import commercialCleaning from "../data/CommercialCleaning.json";
+
 import { useDispatch } from "react-redux";
 import { openChatbox } from "../store/chatboxSlice";
-const serviceDataMap = {
-  "full-home-cleaning": fullHomeVendors,
-  "ac-repair": acRepairVendors,
-  "commercial-cleaning": commercialCleaning,
-};
 
-const services = [
-  {
-    title: "Full Home Cleaning",
-    image: "/images/home_cleaning copy.jpg",
-    link: "/services/full-home-cleaning",
-  },
-  {
-    title: "AC Repair Service",
-    image: "/images/ac_repair.jpg",
-    link: "/services/ac-repair",
-  },
-  {
-    title: "Cleaning Service",
-    image: "/images/cleaning_service.jpg",
-    link: "/services/cleaning",
-  },
-  {
-    title: "Commercial Cleaning",
-    image: "/images/commercial.jpg",
-    link: "/services/commercial-cleaning",
-  },
-  {
-    title: "Pest Control",
-    image: "/images/pest_control.jpg",
-    link: "/services/pest-control",
-  },
-  {
-    title: "Carpenter",
-    image: "/images/carpenter.jpg",
-    link: "/services/carpenter",
-  },
-  {
-    title: "Home Painting",
-    image: "/images/home_painting.jpg",
-    link: "/services/home-painting",
-  },
-  { title: "Plumber", image: "/images/plumber.jpg", link: "/services/plumber" },
-  {
-    title: "Electrician",
-    image: "/images/electrician.jpg",
-    link: "/services/electrician",
-  },
-  {
-    title: "Balloon Decoration",
-    image: "/images/balloon_decoration.jpg",
-    link: "/services/balloon-decoration",
-  },
-];
+import { services } from "../data/ProductData";
 
-const HeroSectionWrapper = ({ MyCity}) => {
+
+
+const HeroSectionWrapper = ({ MyCity }) => {
   const [showServices, setShowServices] = useState(false);
   const [filteredVendors, setFilteredVendors] = useState([]);
   const [selectedLocation, setSelectedLocation] = useState("");
@@ -80,10 +28,11 @@ const HeroSectionWrapper = ({ MyCity}) => {
     }, 100);
   };
 
+
   return (
     <div className="bg-[#fff]  font-sans">
       <main className=" px-0">
-        <HeroSection onShowServices={handleShowServices} MyCity={MyCity} />
+        <HeroSection onShowServices={handleShowServices} MyCity={MyCity}  />
         <AnimatePresence>
           {showServices && (
             <div ref={servicesRef} className="relative">
@@ -109,7 +58,7 @@ const HeroSection = ({ onShowServices, MyCity }) => {
     >
       <div className="container mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center mt-28 md:mt-22">
         <div>
-          <HeroBannerSlider />
+          <HeroBannerSlider/>
         </div>
         <motion.div
           className="text-center md:text-left z-5"
@@ -118,7 +67,7 @@ const HeroSection = ({ onShowServices, MyCity }) => {
           transition={{ duration: 1.5, ease: "easeOut" }}
         >
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-tight">
-            Get Your 
+            Get Your
             <br />
             <span className="text-[#f87559]">Dream Clean</span> Home
           </h1>
@@ -126,7 +75,7 @@ const HeroSection = ({ onShowServices, MyCity }) => {
             Professional, reliable, and eco-friendly cleaning solutions tailored
             to your lifestyle.
           </p>
-          <BookingForm onShowServices={onShowServices} MyCity={MyCity}  />
+          <BookingForm onShowServices={onShowServices} MyCity={MyCity} />
         </motion.div>
       </div>
     </section>
@@ -135,10 +84,10 @@ const HeroSection = ({ onShowServices, MyCity }) => {
 
 const BookingForm = ({ MyCity }) => {
   const dispatch = useDispatch();
-  const [location, setLocation] = useState("");
+
   const [BookingCity, setBookingCity] = useState("");
   const [isManualLocation, setIsManualLocation] = useState(false);
-  const [selectedService, setSelectedService] = useState(services[0].link);
+  const [selectedService, setSelectedService] = useState("");
   const navigate = useNavigate();
   const BookingCities = [
     "Delhi",
@@ -173,60 +122,24 @@ const BookingForm = ({ MyCity }) => {
     if (MyCity) {
       setBookingCity(MyCity);
     }
-    if ("geolocation" in navigator && !isManualLocation && !location) {
-      navigator.geolocation.getCurrentPosition(
-        async (pos) => {
-          const { latitude, longitude } = pos.coords;
-          try {
-            const res = await fetch(
-              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
-            );
-            const data = await res.json();
-            const city =
-              data.address.city ||
-              data.address.town ||
-              data.address.village ||
-              "";
-            const state = data.address.state || "";
-            setLocation(`${city}, ${state}`);
-          } catch (err) {
-            console.error("Error fetching location details:", err);
-            setLocation("");
-          }
-        },
-        (err) => {
-          console.warn("Location access denied:", err);
-          setLocation("");
-        }
-      );
-    }
-  }, [isManualLocation, location, MyCity]);
-
-  const handleLocationChange = (e) => {
-    const value = e.target.value;
-    setLocation(value);
-    setIsManualLocation(!!value);
-  };
+  }, [isManualLocation, MyCity]);
 
   const handleBookNow = () => {
-    const serviceName = selectedService.split("/").pop();
-    let vendors = serviceDataMap[serviceName];
+    console.log(services);
+    let serviceData = services.find((s) => s.ServiceName == selectedService);
 
-    vendors = vendors.filter(
-      (vendor) =>
-        vendor.location?.toLowerCase().replace(/\s/g, "") ===
-        BookingCity.toLowerCase().replace(/\s/g, "")
+    const Data = serviceData.data.filter(
+      (Product) =>
+        Product.location?.trim().toLowerCase().replace(/\s+/g, "") ===
+        BookingCity.trim().toLowerCase().replace(/\s+/g, "")
     );
-    console.log(vendors.length);
-    if (vendors.length <= 0) {
+    console.log(Data.length);
+    if (Data.length <= 0) {
       alert("😔 No services available in your selected location");
       // setchatopenStatus=true;
-         dispatch(openChatbox());
+      dispatch(openChatbox());
     } else {
-      console.log(selectedService);
-      navigate(selectedService, {
-        state: { location: location, BookingCities: BookingCity },
-      });
+      navigate(`services/${selectedService}-${BookingCity}`);
     }
   };
 
@@ -244,16 +157,20 @@ const BookingForm = ({ MyCity }) => {
             <select
               id="service"
               value={selectedService}
+              required
               onChange={(e) => setSelectedService(e.target.value)}
               className="w-full bg-transparent focus:outline-none font-semibold text-white placeholder-gray-500 border-b border-gray-600 pb-1 cursor-pointer relative z-10"
             >
+              <option value="" disabled hidden>
+                Select Service
+              </option>
               {services.map((service, idx) => (
                 <option
                   key={idx}
-                  value={service.link}
+                  value={service.ServiceName}
                   className="bg-[#2c2d34] text-white"
                 >
-                  {service.title}
+                  {service.ServiceName}
                 </option>
               ))}
             </select>
@@ -275,7 +192,7 @@ const BookingForm = ({ MyCity }) => {
                 Select City
               </option>
               {BookingCities.map((city, index) => (
-                <option key={index} value={city} className="text-black">
+                <option key={index} value={city} className="bg-[#2c2d34] text-white">
                   {city}
                 </option>
               ))}
@@ -284,20 +201,6 @@ const BookingForm = ({ MyCity }) => {
         </div>
 
         {/* Divider */}
-
-        {/* Location Input */}
-        <div className="w-full md:flex-1 flex items-center relative">
-          <div className="w-full">
-            <input
-              type="text"
-              id="location"
-              placeholder="City, State"
-              value={location}
-              onChange={handleLocationChange}
-              className="w-full bg-transparent focus:outline-none font-semibold text-white placeholder-gray-500 relative z-10"
-            />
-          </div>
-        </div>
       </div>
 
       {/* Book Now Button */}

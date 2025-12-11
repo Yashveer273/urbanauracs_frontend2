@@ -19,10 +19,10 @@ const ServicePopup = ({ services }) => {
               {services
                 .filter((_, i) => i % 2 === col)
                 .map((service, index) => (
-                  <a href={service.link} className="custom-service-item-link" key={index}>
+                  <a href="#" className="custom-service-item-link" key={index}>
                     <div className="custom-service-item">
-                      <img src={service.image} alt={service.title} className="custom-service-image" />
-                      <span>{service.title}</span>
+                      <img src={service.image} alt={service.ServiceName} className="custom-service-image" />
+                      <span>{service.ServiceName}</span>
                       </div>
                   </a>
                 ))}

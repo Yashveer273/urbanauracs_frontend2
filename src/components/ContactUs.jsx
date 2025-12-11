@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import FooterWithCarousel from "./FooterWithCarousel";
 import "./ContactUs.css";
 import Chatbot from "./Chatbot";
 import { useSelector } from "react-redux";
@@ -210,6 +211,8 @@ export default function ContactUs() {
       </main>
 
       <Chatbot />
+      {/* Footer start from here */}
+      <FooterWithCarousel />
     </div>
   );
 }

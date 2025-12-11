@@ -1,133 +1,114 @@
-import React, { useState, useEffect } from 'react';
 import {
-  LineChart, Line, BarChart, Bar,
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
-} from 'recharts';
+  collection,
+  query,
+  orderBy,
+  limit,
+  startAfter,
+  getDocs,
+  getCountFromServer,
+} from "firebase/firestore";
+import React, { useState, useEffect } from "react";
+import {
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
+import { firestore } from "../firebaseCon";
 
-// Sample JSON data for user registrations
-const authData = [
-  {
-    "countryCode": "+91",
-    "email": "soniyash921@gmail.com",
-    "location": "khair",
-    "mobileNumber": "09627068853",
-    "pincode": "202138",
-    "token": "mock_token_456",
-    "username": "yash",
-    "createdAt": "2025-08-29T10:00:00Z"
-  },
-  {
-    "countryCode": "+91",
-    "email": "jane.doe@example.com",
-    "location": "Pune, India",
-    "mobileNumber": "9816543210",
-    "pincode": "411001",
-    "token": "mock_token_123",
-    "username": "Jane Doe",
-    "createdAt": "2025-08-28T14:00:00Z"
-  },
-  {
-    "countryCode": "+91",
-    "email": "harsh.gupta@example.com",
-    "location": "Mumbai, India",
-    "mobileNumber": "9876509876",
-    "pincode": "400001",
-    "token": "mock_token_789",
-    "username": "Harsh Gupta",
-    "createdAt": "2025-08-28T15:45:00Z"
-  },
-  {
-    "countryCode": "+91",
-    "email": "customer1@example.com",
-    "location": "New Delhi, India",
-    "mobileNumber": "9876543210",
-    "pincode": "110001",
-    "token": "mock_token_987",
-    "username": "Simran singh",
-    "createdAt": "2025-08-27T10:30:00Z"
-  },
-  {
-    "countryCode": "+91",
-    "email": "sanjay.kumar@example.com",
-    "location": "Bangalore, India",
-    "mobileNumber": "9988776655",
-    "pincode": "560001",
-    "token": "mock_token_567",
-    "username": "Sanjay Kumar",
-    "createdAt": "2025-08-26T09:15:00Z"
-  },
-    {
-    "countryCode": "+91",
-    "email": "priya.sharma@example.com",
-    "location": "Hyderabad, India",
-    "mobileNumber": "9876543210",
-    "pincode": "500001",
-    "token": "mock_token_234",
-    "username": "Priya Sharma",
-    "createdAt": "2025-08-25T17:30:00Z"
-  },
-  {
-    "countryCode": "+91",
-    "email": "rajesh.patel@example.com",
-    "location": "Ahmedabad, India",
-    "mobileNumber": "9012345678",
-    "pincode": "380001",
-    "token": "mock_token_876",
-    "username": "Rajesh Patel",
-    "createdAt": "2025-08-24T10:00:00Z"
-  },
-  {
-    "countryCode": "+91",
-    "email": "anita.desai@example.com",
-    "location": "Jaipur, India",
-    "mobileNumber": "9123456789",
-    "pincode": "302001",
-    "token": "mock_token_345",
-    "username": "Anita Desai",
-    "createdAt": "2025-08-23T16:00:00Z"
-  }
-];
+import { updateUser } from "../API";
 
-// Main App component
 export default function AuthDashboard() {
   // State for search inputs
-  const [searchName, setSearchName] = useState('');
-  const [searchEmail, setSearchEmail] = useState('');
-  const [searchPincode, setSearchPincode] = useState('');
-  const [searchMobile, setSearchMobile] = useState('');
+  const [searchName, setSearchName] = useState("");
+  const [searchEmail, setSearchEmail] = useState("");
+  const [searchPincode, setSearchPincode] = useState("");
+  const [searchMobile, setSearchMobile] = useState("");
+  const [authData, setAuthData] = useState([]);
 
-  // States for the date filter
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
-  // State for the filtered data displayed in the table
-  const [filteredData, setFilteredData] = useState(authData);
+  const [filteredData, setFilteredData] = useState([]);
 
-  // State for pagination
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const [update, setupdate] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const itemsPerPage = 1;
+
+  const [pageSnapshots, setPageSnapshots] = useState([]);
 
   // States for the two new graphs
   const [last7DaysData, setLast7DaysData] = useState([]);
   const [monthlyRegistrationsData, setMonthlyRegistrationsData] = useState([]);
-  const [monthlyGraphTitle, setMonthlyGraphTitle] = useState('');
+  const [monthlyGraphTitle, setMonthlyGraphTitle] = useState("");
+ const [editingUser, setEditingUser] = useState(null);
+  const [formData, setFormData] = useState({
+    mobileNumber: "",
+    phoneType: "",
+    _id:""
+  });
+  const [loading, setLoading] = useState(false);
+  const handleEditClick = (user) => {
+    setEditingUser(user);
+    setFormData({
+      mobileNumber: user.ConfurmWhatsAppMobileNumber,
+      phoneType: user.phoneType,
+      _id:user._id,
+    });
+  };
+  
+  const handleUpdate = async () => {
+    if (!editingUser) return;
+   
+    setLoading(true);
 
-  // Function to filter the data based on search inputs
+    try {
+      const res = await     updateUser(editingUser._id,formData);
+    
+      alert(res.message || "User updated successfully!");
+      setEditingUser(null);
+      setupdate(update+1);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to update user.");
+    } finally {
+      setLoading(false);
+    }
+  };
+    const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
   const filterTable = () => {
-    const filtered = authData.filter(user => {
-      const nameMatch = user.username.toLowerCase().includes(searchName.toLowerCase());
-      const emailMatch = user.email.toLowerCase().includes(searchEmail.toLowerCase());
+ 
+    const filtered = authData.filter((user) => {
+      const nameMatch = user.username
+        .toLowerCase()
+        .includes(searchName.toLowerCase());
+      const emailMatch = user.email
+        .toLowerCase()
+        .includes(searchEmail.toLowerCase());
       const pincodeMatch = user.pincode.includes(searchPincode);
       const mobileMatch = user.mobileNumber.includes(searchMobile);
       const userDate = new Date(user.createdAt);
 
-      const dateMatch = (
+      const dateMatch =
         (!startDate || userDate >= new Date(startDate)) &&
-        (!endDate || userDate <= new Date(endDate))
+        (!endDate || userDate <= new Date(endDate));
+const ConfurmWhatsAppMobileNumber=user.ConfurmWhatsAppMobileNumber;
+      return (
+        nameMatch && emailMatch && pincodeMatch && mobileMatch && dateMatch && ConfurmWhatsAppMobileNumber && user 
       );
-      
-      return nameMatch && emailMatch && pincodeMatch && mobileMatch && dateMatch;
     });
+
     setFilteredData(filtered);
   };
 
@@ -135,14 +116,21 @@ export default function AuthDashboard() {
   const processGraphData = () => {
     // 1. Process data for the last 7 days graph
     const dailyRegistrations = {};
-    authData.forEach(user => {
-      const date = new Date(user.createdAt).toISOString().slice(0, 10);
+    authData.forEach((user) => {
+      if (!user.created || !user.created.seconds) {
+        console.warn("Missing or invalid created timestamp:", user);
+        return;
+      }
+
+      const createdAt = new Date(user.created.seconds * 1000); // convert Firestore seconds → JS Date
+      const date = createdAt.toISOString().slice(0, 10); // format: YYYY-MM-DD
+
       dailyRegistrations[date] = (dailyRegistrations[date] || 0) + 1;
     });
 
     const sortedDates = Object.keys(dailyRegistrations).sort();
     const last7Dates = sortedDates.slice(-7);
-    const last7DaysGraphData = last7Dates.map(date => {
+    const last7DaysGraphData = last7Dates.map((date) => {
       const d = new Date(date);
       const day = d.getDate();
       const month = d.getMonth() + 1; // Month is 0-indexed
@@ -160,9 +148,11 @@ export default function AuthDashboard() {
     const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
 
     // Set the title for the monthly graph
-    const monthName = today.toLocaleString('default', { month: 'long' });
-    setMonthlyGraphTitle(`Registration Progress for ${monthName} ${currentYear}`);
-    
+    const monthName = today.toLocaleString("default", { month: "long" });
+    setMonthlyGraphTitle(
+      `Registration Progress for ${monthName} ${currentYear}`
+    );
+
     // Create an array for all days of the current month, initialized to 0
     const monthlyGraphData = Array.from({ length: daysInMonth }, (_, i) => {
       const day = i + 1;
@@ -172,12 +162,17 @@ export default function AuthDashboard() {
       };
     });
 
-    authData.forEach(user => {
+    authData.forEach((user) => {
       const userDate = new Date(user.createdAt);
-      if (userDate.getMonth() === currentMonth && userDate.getFullYear() === currentYear) {
+      if (
+        userDate.getMonth() === currentMonth &&
+        userDate.getFullYear() === currentYear
+      ) {
         const day = userDate.getDate();
         // Find the correct day in our initialized array and add the registration count
-        const dayData = monthlyGraphData.find(d => parseInt(d.formattedDate) === day);
+        const dayData = monthlyGraphData.find(
+          (d) => parseInt(d.formattedDate) === day
+        );
         if (dayData) {
           dayData.registrations += 1;
         }
@@ -186,49 +181,160 @@ export default function AuthDashboard() {
     setMonthlyRegistrationsData(monthlyGraphData);
   };
 
-  // useEffect hook to run the filter and graph processing functions whenever search inputs change or data is updated
+  const fetchUsers = async (page) => {
+    try {
+      const userRef = collection(firestore, "User");
+      let q;
+
+      if (page === 1) {
+        // ✅ Sort by 'created' descending (newest first)
+        q = query(userRef, orderBy("created", "desc"), limit(itemsPerPage));
+      } else {
+        const prevCursor = pageSnapshots[page - 2];
+        if (!prevCursor) return;
+
+        // ✅ Continue pagination after previous page’s last document
+        q = query(
+          userRef,
+          orderBy("created", "desc"),
+          startAfter(prevCursor),
+          limit(itemsPerPage)
+        );
+      }
+
+      const snapshot = await getDocs(q);
+     
+      const newUsers = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+ 
+      setAuthData(newUsers);
+
+      // ✅ Save last document snapshot for pagination cursor
+      const lastDoc = snapshot.docs[snapshot.docs.length - 1];
+      if (lastDoc) {
+        const newPageSnapshots = [...pageSnapshots];
+        newPageSnapshots[page - 1] = lastDoc;
+        setPageSnapshots(newPageSnapshots);
+      }
+    } catch (error) {
+      console.error("❌ Error fetching paginated users:", error);
+    }
+  };
+
   useEffect(() => {
-    filterTable();
-    processGraphData();
-    // Reset to the first page whenever the filter changes
-    setCurrentPage(1);
-  }, [searchName, searchMobile, searchEmail, searchPincode, startDate, endDate]);
+    fetchUsers(currentPage);
+  }, [update]);
+
+  // 🔹 Pagination Controls
+  const handleNext = () => setCurrentPage((prev) => prev + 1);
+  const handlePrev = () => setCurrentPage((prev) => Math.max(prev - 1, 1));
+ 
+  useEffect(() => {
+    if (authData.length > 0) {
+      filterTable();
+      processGraphData();
+    }
+  }, [
+    authData,
+    searchName,
+    searchEmail,
+    searchPincode,
+    searchMobile,
+    currentPage,
+  ]);
 
   // Pagination logic to calculate data for the current page
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentData = filteredData.slice(startIndex, endIndex);
-  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+  useEffect(() => {
+    const getTotalPages = async () => {
+      const snapshot = await getCountFromServer(collection(firestore, "User"));
+      const totalCount = snapshot.data().count;
+      setTotalPages(Math.ceil(totalCount / itemsPerPage));
+    };
+    getTotalPages();
+  }, []);
+  const getVisiblePages = () => {
+    const delta = 2; // how many pages to show around current
+    const range = [];
+    const rangeWithDots = [];
+    let l;
+
+    for (let i = 1; i <= totalPages; i++) {
+      if (
+        i === 1 ||
+        i === totalPages ||
+        (i >= currentPage - delta && i <= currentPage + delta)
+      ) {
+        range.push(i);
+      }
+    }
+
+    for (let i of range) {
+      if (l) {
+        if (i - l === 2) {
+          rangeWithDots.push(l + 1);
+        } else if (i - l !== 1) {
+          rangeWithDots.push("...");
+        }
+      }
+      rangeWithDots.push(i);
+      l = i;
+    }
+
+    return rangeWithDots;
+  };
 
   // Render the component
   return (
     <div className="flex flex-col min-h-screen font-sans bg-gray-100">
       {/* Main Content */}
       <main className="flex-1 p-4 md:p-8 overflow-auto">
-        <h2 className="text-3xl font-bold text-gray-800 mb-6">User Authentication Dashboard</h2>
+        <h2 className="text-3xl font-bold text-gray-800 mb-6">
+          User Authentication Dashboard
+        </h2>
 
         {/* Graphs Section */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           {/* Last 7 Days Registrations Graph */}
           <div className="bg-white p-6 rounded-xl shadow-md">
-            <h3 className="text-xl font-semibold text-gray-800 mb-4">Last 7 Days Registration Trend</h3>
+            <h3 className="text-xl font-semibold text-gray-800 mb-4">
+              Last 7 Days Registration Trend
+            </h3>
             <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={last7DaysData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+              <LineChart
+                data={last7DaysData}
+                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+              >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="formattedDate" />
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Line type="monotone" dataKey="registrations" stroke="#8884d8" activeDot={{ r: 8 }} />
+                <Line
+                  type="monotone"
+                  dataKey="registrations"
+                  stroke="#8884d8"
+                  activeDot={{ r: 8 }}
+                />
               </LineChart>
             </ResponsiveContainer>
           </div>
 
           {/* Monthly Registrations Progress Graph */}
           <div className="bg-white p-6 rounded-xl shadow-md">
-            <h3 className="text-xl font-semibold text-gray-800 mb-4">{monthlyGraphTitle}</h3>
+            <h3 className="text-xl font-semibold text-gray-800 mb-4">
+              {monthlyGraphTitle}
+            </h3>
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={monthlyRegistrationsData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+              <BarChart
+                data={monthlyRegistrationsData}
+                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+              >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="formattedDate" />
                 <YAxis />
@@ -240,7 +346,7 @@ export default function AuthDashboard() {
           </div>
         </div>
 
-        <hr className="my-6 border-gray-300"/>
+        <hr className="my-6 border-gray-300" />
 
         <h2 className="text-2xl font-bold text-gray-800 mb-6">User Records</h2>
 
@@ -274,7 +380,7 @@ export default function AuthDashboard() {
             value={searchMobile}
             onChange={(e) => setSearchMobile(e.target.value)}
           />
-           <input
+          <input
             type="date"
             placeholder="Start Date"
             className="p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -295,66 +401,181 @@ export default function AuthDashboard() {
           <table className="w-full text-left table-auto border-collapse">
             <thead>
               <tr className="bg-gray-100 text-gray-600 uppercase text-sm leading-normal rounded-xl">
-                <th className="py-3 px-6 border-b border-gray-200 rounded-tl-xl">Username</th>
+                <th className="py-3 px-6 border-b border-gray-200 rounded-tl-xl">
+                  Username
+                </th>
                 <th className="py-3 px-6 border-b border-gray-200">Email</th>
-                <th className="py-3 px-6 border-b border-gray-200">Mobile Number</th>
+                <th className="py-3 px-6 border-b border-gray-200">
+                  Mobile Number
+                </th>
+                <th className="py-3 px-6 border-b border-gray-200">
+                  WhatsApp Mobile Number
+                </th>
+                
+                <th className="py-3 px-6 border-b border-gray-200">
+                  Is WhatsApp
+                </th>
+                <th className="py-3 px-6 border-b border-gray-200">
+              Action
+                </th>
                 <th className="py-3 px-6 border-b border-gray-200">Location</th>
                 <th className="py-3 px-6 border-b border-gray-200">Pincode</th>
-                <th className="py-3 px-6 border-b border-gray-200 rounded-tr-xl">Registered On</th>
+                <th className="py-3 px-6 border-b border-gray-200 rounded-tr-xl">
+                  Registered On
+                </th>
               </tr>
             </thead>
             <tbody className="text-gray-600 text-sm font-light">
               {/* Map through the current data for the table rows */}
               {currentData.map((user, index) => (
-                <tr key={index} className="hover:bg-gray-50 border-b border-gray-200">
+                <tr
+                  key={index}
+                  className="hover:bg-gray-50 border-b border-gray-200"
+                >
                   <td className="py-4 px-6">{user.username}</td>
                   <td className="py-4 px-6">{user.email}</td>
                   <td className="py-4 px-6">{user.mobileNumber}</td>
+                  <td className="py-4 px-6">{user.ConfurmWhatsAppMobileNumber}</td>
+                  <td className="py-4 px-6">{user.phoneType}</td>
+                  <td className="py-4 px-6">
+                <button
+                  onClick={() => handleEditClick(user)}
+                  className="bg-blue-500 text-white px-3 py-1 rounded-lg hover:bg-blue-600"
+                >
+                  Edit
+                </button>
+              </td>
                   <td className="py-4 px-6">{user.location}</td>
                   <td className="py-4 px-6">{user.pincode}</td>
-                  <td className="py-4 px-6">{new Date(user.createdAt).toLocaleString()}</td>
+                  <td className="py-4 px-6">
+                    {user.created?.toDate
+                      ? new Date(user.created.toDate()).toLocaleString()
+                      : new Date(user.created).toLocaleString()}
+                  </td>
                 </tr>
               ))}
               {/* Show a message if no data is found */}
               {currentData.length === 0 && (
                 <tr>
-                  <td colSpan="6" className="py-4 px-6 text-center text-gray-500">
+                  <td
+                    colSpan="6"
+                    className="py-4 px-6 text-center text-gray-500"
+                  >
                     No matching records found.
                   </td>
                 </tr>
               )}
             </tbody>
           </table>
+          {editingUser && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+          <div className="bg-white p-6 rounded-xl shadow-xl w-96">
+            <h3 className="text-lg font-semibold mb-4 text-gray-700">
+              Edit User: {editingUser.username}
+            </h3>
+
+            <label className="block text-gray-600 text-sm mb-2">
+            WhatsApp Mobile Number
+            </label>
+            <input
+              type="number"
+              name="mobileNumber"
+              value={formData.mobileNumber}
+              onChange={handleChange}
+              className="w-full border p-2 rounded mb-3"
+            />
+
+            <label className="block text-gray-600 text-sm mb-2">
+              Phone Type
+            </label>
+            <select
+              name="phoneType"
+              value={formData.phoneType}
+              onChange={handleChange}
+              className="w-full border p-2 rounded mb-4"
+            >
+              <option value="">Select Type</option>
+           <option value="whatsapp">WhatsApp Number</option>
+    <option value="non-whatsapp">Not WhatsApp Number</option>
+            </select>
+
+            <div className="flex justify-between">
+              <button
+                onClick={() => setEditingUser(null)}
+                className="bg-gray-400 text-white px-4 py-2 rounded-lg hover:bg-gray-500"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleUpdate}
+                disabled={loading}
+                className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
+              >
+                {loading ? "Updating..." : "Update"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
         </div>
 
-        {/* Pagination Controls */}
-        {totalPages > 1 && (
-          <div className="flex justify-center items-center space-x-2 mt-6">
+        {/* Pagination Buttons */}
+        <div className="flex flex-col items-center mt-6 space-y-3">
+          {/* Page Info */}
+          <p className="text-gray-600 font-medium">
+            Page {currentPage} of {totalPages}
+          </p>
+
+          {/* Pagination Buttons */}
+          <div className="flex justify-center items-center space-x-2">
             <button
-              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              onClick={handlePrev}
               disabled={currentPage === 1}
-              className={`px-4 py-2 rounded-xl transition-colors duration-200 ${currentPage === 1 ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-white text-gray-800 hover:bg-gray-200'}`}
+              className={`px-4 py-2 rounded-xl transition-colors duration-200 ${
+                currentPage === 1
+                  ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                  : "bg-white text-gray-800 hover:bg-gray-200"
+              }`}
             >
               Previous
             </button>
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-              <button
-                key={page}
-                onClick={() => setCurrentPage(page)}
-                className={`px-4 py-2 rounded-xl transition-colors duration-200 ${currentPage === page ? 'bg-blue-600 text-white' : 'bg-white text-gray-800 hover:bg-gray-200'}`}
-              >
-                {page}
-              </button>
-            ))}
+
+            {getVisiblePages().map((page, index) =>
+              page === "..." ? (
+                <span key={index} className="px-3 py-2 text-gray-500">
+                  ...
+                </span>
+              ) : (
+                <button
+                  key={page}
+                  onClick={() => {
+                    setCurrentPage(page);
+                    fetchUsers(page);
+                  }}
+                  className={`px-4 py-2 rounded-xl transition-colors duration-200 ${
+                    currentPage === page
+                      ? "bg-blue-600 text-white"
+                      : "bg-white text-gray-800 hover:bg-gray-200"
+                  }`}
+                >
+                  {page}
+                </button>
+              )
+            )}
+
             <button
-              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              onClick={handleNext}
               disabled={currentPage === totalPages}
-              className={`px-4 py-2 rounded-xl transition-colors duration-200 ${currentPage === totalPages ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-white text-gray-800 hover:bg-gray-200'}`}
+              className={`px-4 py-2 rounded-xl transition-colors duration-200 ${
+                currentPage === totalPages
+                  ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                  : "bg-white text-gray-800 hover:bg-gray-200"
+              }`}
             >
               Next
             </button>
           </div>
-        )}
+        </div>
       </main>
     </div>
   );

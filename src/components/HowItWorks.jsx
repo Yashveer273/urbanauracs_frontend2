@@ -11,99 +11,45 @@
 //                 <h2>How We Can Help</h2>
 //             </div>
 //            </div>
-//         </section>    
+//         </section>
 //     );
 // };
 
 // export default HowItWorks;
 import React, { useEffect, useRef } from "react";
+import { FaCalendarCheck,FaCogs,FaUserTie,FaStar,FaBroom } from "react-icons/fa";
 
 const steps = [
   {
     title: "Book Online",
     description:
       "Easily choose your preferred service and conveniently schedule it at a time that works best for you through our simple booking.",
-    icon: (
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        className="h-6 w-6"
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth={2}
-        stroke="#f87559"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M3 8.5a4.5 4.5 0 019 0V13a5 5 0 11-10 0V8.5zM16 12h5"
-        />
-      </svg>
-    ),
+    icon: <FaCalendarCheck className="text-[#f87559] h-4 w-4" />, // smaller so it fits inside circle
     active: true,
   },
   {
     title: "Customize Plan",
     description:
       "Customize your cleaning just the way you like it – choose the service type, schedule, and how often you need it.",
-    icon: (
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        className="h-6 w-6"
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth={2}
-        stroke="#0f172a"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M8 7h8M8 11h8M8 15h5M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-        />
-      </svg>
-    ),
+    icon: <FaCogs className="text-[#0f172a] h-4 w-4" />,
     active: false,
   },
   {
     title: "Meet Your Cleaner",
     description:
       "Meet the professional who’ll care for your space – we’ll share their name and details before your appointment.",
-    icon: (
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        className="h-6 w-6"
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth={2}
-        stroke="#0f172a"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M5.121 17.804A13.937 13.937 0 0112 15c2.5 0 4.847.64 6.879 1.804M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-        />
-      </svg>
-    ),
+    icon: <FaBroom className="text-[#0f172a] h-4 w-4" />,
     active: false,
   },
   {
     title: "Get Sparkling Results",
     description:
       "Enjoy a spotless home, cleaned with care. Our pros use eco-friendly products and proven methods for a deep.",
-    icon: (
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        className="h-6 w-6"
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth={2}
-        stroke="#0f172a"
-      >
-        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-      </svg>
-    ),
+    icon: <FaStar className="text-[#0f172a] h-4 w-4" />,
     active: false,
   },
 ];
+
 
 const HowItWorks = () => {
   const imageRef = useRef(null);
@@ -151,12 +97,10 @@ const HowItWorks = () => {
                         step.active ? "bg-[#f87559]" : ""
                       } rounded-full`}
                       style={{
-
-                            top: "31px",
-    bottom: "0px",
-    left: "13px",
-
-                       }}
+                        top: "31px",
+                        bottom: "0px",
+                        left: "13px",
+                      }}
                     />
                     <div
                       className={`z-10 flex items-center justify-center rounded-full border-2 ${

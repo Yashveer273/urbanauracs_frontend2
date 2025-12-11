@@ -73,7 +73,7 @@
   border-bottom-left-radius: 20px;
   border-bottom-right-radius: 20px;
   position: fixed;
-  top: 28px;
+  top: 29px;
   width: 100%;
   z-index: 999;
   box-sizing: border-box;
@@ -254,7 +254,7 @@
   border-radius: 50px; /* New border-radius on hover */
 }
 .service-page {
-  padding-top: 120px;
+  padding-top: 87px;
 }
 
 .main-navbar {
@@ -267,7 +267,7 @@
   border-bottom-left-radius: 20px;
   border-bottom-right-radius: 20px;
   position: fixed;
-  top: 28px;
+  top: 29px;
   width: 100%;
   z-index: 999;
   box-sizing: border-box;
@@ -338,8 +338,8 @@
   .main-navbar {
     flex-direction: column;
     align-items: flex-start;
-    padding: 0px 20px;
-    top: 25px;
+    padding: 4px 20px;
+    top: 29px;
   }
 
   .logo {
@@ -381,7 +381,7 @@
   .top-bar {
     flex-direction: column;
     align-items: flex-start;
-    padding: 8px 20px;
+    padding: 3px 20px;
     font-size: 0.75rem;
   }
 
@@ -411,7 +411,10 @@
   .logo {
     font-size: 1.2rem;
   }
-
+.main-navbar {
+ 
+    top: 29px;
+  }
   .ticket-btn {
     font-size: 0.9rem;
     padding: 6px 14px;

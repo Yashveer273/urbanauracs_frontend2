@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { API_BASE_URL } from '../API';
 
 const DashboardContrller = () => {
   // --- State Variables ---
@@ -30,7 +31,7 @@ const DashboardContrller = () => {
 
   const fetchUsers = async () => {
     try {
-      const res = await axios.get('https://totaltimesnews.com/api/get-dashAuth');
+      const res = await axios.get(`${API_BASE_URL}/api/get-dashAuth`);
       setUsers(res.data);
     } catch (error) {
       console.error(error);
@@ -68,12 +69,12 @@ const DashboardContrller = () => {
 
     try {
       if (isEditing) {
-        await axios.put(`https://totaltimesnews.com/api/update-dashAuth/${userId}`, {
+        await axios.put(`${API_BASE_URL}/api/update-dashAuth/${userId}`, {
           tags: selectedTags.join(","),
         });
         showMessage(`Permissions for ${userId} updated successfully!`, 'success');
       } else {
-        await axios.post('https://totaltimesnews.com/api/create-dashAuth', {
+        await axios.post(`${API_BASE_URL}/api/create-dashAuth`, {
           id: userId,
           pass: password,
           tagAccess: selectedTags.join(","),
@@ -98,7 +99,7 @@ const DashboardContrller = () => {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`https://totaltimesnews.com/api/delete-dashAuth/${id}`);
+      await axios.delete(`${API_BASE_URL}/api/delete-dashAuth/${id}`);
       showMessage(`Permissions for ${id} deleted successfully!`, 'success');
       fetchUsers();
     } catch (error) {

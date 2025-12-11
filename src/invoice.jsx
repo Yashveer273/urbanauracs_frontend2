@@ -1,10 +1,18 @@
 import React, { useRef } from "react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
-
+import { useLocation } from "react-router-dom";
+import "./invoice.css";
+import { API_BASE_URL } from "./API";
+import {
+  CalculateConveniencetotalFee,
+  CalculateGrandTotalForInvoice,
+} from "./components/TexFee";
 export default function Invoice() {
   const invoiceRef = useRef();
-
+  const location = useLocation();
+  const { state } = location;
+  const cart = state?.product_info?.cart || [];
   const downloadPDF = async () => {
     const input = invoiceRef.current;
     if (!input) return;
@@ -32,11 +40,35 @@ export default function Invoice() {
         pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
         heightLeft -= pageHeight;
       }
-      pdf.save("Invoice.pdf");
+      const date = Date.now();
+      const fileName = `InvoiceS_Order${state.S_orderId}_${date}.pdf`;
+      // pdf.save(fileName);
+      const pdfBlob = pdf.output("blob");
+      const formData = new FormData();
+
+      formData.append("file", pdfBlob, fileName);
+      const response = await fetch(
+        `${API_BASE_URL}/upload-invoice?userId=${state.phone_number}`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      const result = await response.json();
+      console.log("Uploaded:", result.url);
     } catch (err) {
       console.error("Download failed:", err);
     }
   };
+
+  const base = Number(state.oGtotal_price) || 0;
+
+  const discountAmount =
+    CalculateConveniencetotalFee(base) - state.payableAmount;
+  const discountPercent = Math.round(
+    (discountAmount / CalculateConveniencetotalFee(base)) * 100
+  );
 
   return (
     <div style={{ background: "#f5f5f5", minHeight: "100vh", padding: "20px" }}>
@@ -63,18 +95,17 @@ export default function Invoice() {
         >
           <div
             style={{
-              flex: 1,
               textAlign: "center",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
               color: "blue",
+              gap: 15,
               fontWeight: "bold",
             }}
           >
-            <h1 style={{ margin: 0 }}>URBAN AURA SERVICES PVT. LTD.</h1>
-          </div>
-          <div
-            style={{ position: "absolute", right: "420px", bottom: "420px" }}
-          >
-            <img src="/logo.jpg" style={{ height: "150px" }} />
+            <img src="/logo.jpg" style={{ height: "50px" }} />
+            <h1 style={{ margin: 0 }}>Urban Aura SERVICES PVT. LTD.</h1>
           </div>
         </div>
 
@@ -101,30 +132,27 @@ export default function Invoice() {
         <div style={{ display: "flex", justifyContent: "space-between" }}>
           <div>
             <h2>Invoice</h2>
-            <p>Invoice No: UAS/2025/001</p>
+            <p>Invoice No: {state.S_orderId}</p>
             <p>Date: {new Date().toLocaleDateString()}</p>
           </div>
         </div>
 
         {/* Customer Info */}
-        <div style={{ marginTop: "20px" }}>
+        <div style={{ marginTop: "10px" }}>
           <h3>Bill To:</h3>
-          <p>
-            <b>Customer Name / Company Name:</b>{" "}
-            <input type="text" defaultValue="ABC Enterprises" />
+          <p style={{ height: "35px", overflow: "hidden" }}>
+            <b>Customer Name / Company Name: </b>
+            {state.name}
           </p>
-          <p>
-            <b>Address:</b>{" "}
-            <input
-              type="text"
-              defaultValue="123 Street, City, State, Pincode"
-            />
+          <p style={{ height: "35px", overflow: "hidden" }}>
+            <b>Address: </b>
+            {`${state.user_location} | Pin Code:- ${state.pincode}`}
           </p>
-          <p>
-            <b>Phone:</b> <input type="text" defaultValue="+91-9876543210" />
+          <p style={{ height: "35px", overflow: "hidden" }}>
+            <b>Phone: </b> {state.phone_number}
           </p>
-          <p>
-            <b>GSTIN:</b> <input type="text" defaultValue="22AAAAA0000A1Z5" />
+          <p style={{ height: "35px", overflow: "hidden" }}>
+            <b>Email: </b> {state.email}
           </p>
         </div>
 
@@ -138,57 +166,60 @@ export default function Invoice() {
         >
           <thead>
             <tr>
-              <th style={{ border: "1px solid #000", padding: "8px" }}>
-                Description
-              </th>
-              <th style={{ border: "1px solid #000", padding: "8px" }}>P.Id</th>
-              <th style={{ border: "1px solid #000", padding: "8px" }}>
-                Quantity
-              </th>
-              <th style={{ border: "1px solid #000", padding: "8px" }}>Date</th>
-              <th style={{ border: "1px solid #000", padding: "8px" }}>Booking Date</th>
-              <th style={{ border: "1px solid #000", padding: "8px" }}>
-                Amount
-              </th>
+              <th className="table-cell-wrap">Description</th>
+              <th className="table-cell-wrap">P.Id</th>
+              <th className="table-cell-wrap">Quantity</th>
+              <th className="table-cell-wrap">Date</th>
+              <th className="table-cell-wrap">Booking Date</th>
+              <th className="table-cell-wrap">Booking Add.</th>
+              <th className="table-cell-wrap">Duration</th>
+              <th className="table-cell-wrap">Item Price</th>
             </tr>
           </thead>
+
           <tbody>
-            <tr>
-              <td style={{ border: "1px solid #000", padding: "8px" }}>
-                House Cleaning Service
-              </td>
-              <td style={{ border: "1px solid #000", padding: "8px" }}>
-                998533
-              </td>
-              <td style={{ border: "1px solid #000", padding: "8px" }}>1</td>
-              <td style={{ border: "1px solid #000", padding: "8px" }}>
-                {new Date().toLocaleDateString()}
-              </td>
-                <td style={{ border: "1px solid #000", padding: "8px" }}>
-                {new Date().toLocaleDateString()}
-              </td>
-              <td style={{ border: "1px solid #000", padding: "8px" }}>
-                ₹2500
-              </td>
-            </tr>
-            <tr>
-              <td style={{ border: "1px solid #000", padding: "8px" }}>
-                Deep Sanitation
-              </td>
-              <td style={{ border: "1px solid #000", padding: "8px" }}>
-                998533
-              </td>
-              <td style={{ border: "1px solid #000", padding: "8px" }}>1</td>
-              <td style={{ border: "1px solid #000", padding: "8px" }}>
-                {new Date().toLocaleDateString()}
-              </td>
-              <td style={{ border: "1px solid #000", padding: "8px" }}>
-                {new Date().toLocaleDateString()}
-              </td>
-              <td style={{ border: "1px solid #000", padding: "8px" }}>
-                ₹1500
-              </td>
-            </tr>
+            {cart.length > 0 ? (
+              cart.map((item, index) => (
+                <tr
+                  key={index}
+                  style={{ cursor: "pointer" }} // 👈 makes the row clickable
+                  onClick={() => console.log("Clicked:", item)} // optional
+                >
+                  <td className="table-cell-wrap">
+                    {item.product_name} <br />
+                    <small>{item.description}</small>
+                  </td>
+                  <td className="table-cell-wrap">{item.og_product_id}</td>
+                  <td className="table-cell-wrap">1</td>
+                  <td className="table-cell-wrap">
+                    {new Date().toLocaleDateString()}
+                  </td>
+                  <td className="table-cell-wrap">
+                    {item.location_booking_time}
+                  </td>
+                  <td className="table-cell-wrap">
+                    {item.bookingAddress ?? "non"}
+                  </td>
+                  <td className="table-cell-wrap">{item.duration}</td>
+                  <td className="table-cell-wrap">
+                    ₹{CalculateConveniencetotalFee(item.item_price)}
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td
+                  colSpan="6"
+                  style={{
+                    border: "1px solid #000",
+                    padding: "8px",
+                    textAlign: "center",
+                  }}
+                >
+                  No products found.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
 
@@ -198,7 +229,7 @@ export default function Invoice() {
         <div
           style={{
             border: "2px solid #000",
-            height: "120px",
+
             marginTop: "30px",
             display: "flex",
             alignItems: "center",
@@ -212,10 +243,17 @@ export default function Invoice() {
               padding: "10px",
             }}
           >
-            <p>Sub Total: ₹4000</p>
-            <p>CGST (9%): ₹360</p>
-            <p>SGST (9%): ₹360</p>
-            <h3>Grand Total: ₹4720</h3>
+            <p>
+              <strong>Sub Total:{CalculateGrandTotalForInvoice(cart)}</strong>
+            </p>
+            <p>
+              Discount: ₹{discountAmount} ({discountPercent}%)
+            </p>
+
+            <h3>
+              <strong>Grand Total:</strong> ₹
+              {CalculateGrandTotalForInvoice(cart) - discountAmount}
+            </h3>
           </div>
 
           {/* Divider in the center */}
@@ -247,26 +285,46 @@ export default function Invoice() {
             <b>Bank:</b>{" "}
             <input
               type="text"
+              className="cursor-pointer"
               defaultValue="Urban Aura Services Pvt. Ltd."
               style={{ width: "60%" }}
             />
           </p>
           <p>
             <b>Account Number:</b>{" "}
-            <input type="text" defaultValue="1234567890" />
+            <input
+              type="text"
+              defaultValue="1234567890"
+              className="cursor-pointer"
+            />
           </p>
           <p>
-            <b>Branch:</b> <input type="text" defaultValue="Noida" />
+            <b>Branch:</b>{" "}
+            <input
+              type="text"
+              defaultValue="Noida"
+              className="cursor-pointer"
+            />
           </p>
           <p>
             <b>Account Holder:</b>{" "}
-            <input type="text" defaultValue="Urban Aura Pvt Ltd" />
+            <input
+              type="text"
+              defaultValue="Urban Aura Pvt Ltd"
+              className="cursor-pointer"
+            />
           </p>
           <p>
-            <b>IFSC Code:</b> <input type="text" defaultValue="HDFC0001234" />
+            <b>IFSC Code:</b>{" "}
+            <input
+              type="text"
+              defaultValue="HDFC0001234"
+              className="cursor-pointer"
+            />
           </p>
           <p>
-            <b>Branch Code:</b> <input type="text" defaultValue="1234" />
+            <b>Branch Code:</b>{" "}
+            <input type="text" defaultValue="1234" className="cursor-pointer" />
           </p>
         </div>
 

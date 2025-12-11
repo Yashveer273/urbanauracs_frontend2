@@ -1,51 +1,96 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import { useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { setOrder } from "../store/orderSlices";
 import { selectUser } from "../store/userSlice";
+import { API_BASE_URL, handleBuy } from "../API";
+import CheckoutSummaryCard from "./CartProductSummery";
+import { CheckCircle } from "lucide-react";
+import { CalculateGrandTotal } from "../components/TexFee";
+import { FaArrowLeft } from "react-icons/fa";
 
 const PaymentGateway = () => {
+  const scrollRef = useRef(null);
+  const { items: cartItems } = useSelector((state) => state.cart);
   const location = useLocation();
-  const { date, total_price, cartItems } = location.state || {};
+  const { date,  } = location.state || {};
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
 
   const [coupon, setCoupon] = useState("");
   const [discount, setDiscount] = useState(0);
+  const [total, setTotal] = useState(0);
+  const [advance, setAdvance] = useState(0);
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [message, setMessage] = useState(null);
+const action =async(response,data)=>{
+  console.log(response);
+   const { Url,status } = response.data;
 
-  // ✅ Handle Pay Now
-  const handlePayment = async (amount, status, left_amount) => {
+        if (status=="success") {
+          dispatch(setOrder(data));
+          window.location.href = Url;
+        } else {
+          setMessage({
+            type: "error",
+            text: "❌ Payment initialization failed!",
+          });
+        }
+}
+  // ✅ Handle Payment
+  const handlePayment = async (
+    advance,
+    status,
+    left_amount,
+    oGtotal_price,
+    total_price
+  ) => {
     if (!user?.username || !user?.mobileNumber) {
       setMessage({ type: "error", text: "❌ Missing user details or amount!" });
       return;
     }
 
-    const orderId = `TXN_${user.mobileNumber}_${date}`;
+    const orderId = `receipt_${user.mobileNumber}_${date}`;
     const data = {
       name: user.username,
       mobileNumber: user.mobileNumber,
-      amount,
+      advance,
       left_amount,
+      oGtotal_price,
+      total_price,
       status,
       date,
       orderId,
     };
 
     try {
-      const response = await axios.post(
-        "https://totaltimesnews.com/create-order",
-        data
-      );
-      const { url } = response.data;
-
-      if (url) {
-        dispatch(setOrder(data));
-        window.location.href = url; // redirect to PhonePe gateway
+      if (status !== "CoD") {
+        // const response = await axios.post(`${API_BASE_URL}/create-order`, data);
+       
+   await handleBuy(data,action);
+      
+       
       } else {
-        setMessage({ type: "error", text: "❌ Payment initialization failed!" });
+        const response = await axios.post(
+          `${API_BASE_URL}/create-case-on-delivery`,
+          data
+        );
+        const { url } = response.data;
+
+        if (status === "CoD") {
+          window.location.href = url;
+          dispatch(setOrder(data));
+          setMessage({
+            type: "success",
+            text: "✅ Order placed! Pay on delivery.",
+          });
+        } else {
+          setMessage({
+            type: "error",
+            text: "❌ Payment initialization failed!",
+          });
+        }
       }
     } catch (error) {
       console.error("❌ Error in payment:", error);
@@ -56,20 +101,20 @@ const PaymentGateway = () => {
     }
   };
 
-  // ✅ GST Breakdown
-  const base = Number(total_price) || 0;
-  const gst18 = Math.round(base * 0.09);
+  
+ 
 
-  const delivery = 0;
-  const total = base + gst18*2 + delivery - discount;
-  const advance = Math.round(total * 0.1);
 
   // ✅ Coupon Handling
-  const verifyCoupon = async () => {
+  const verifyCoupon = async (selectedCoupon) => {
+    const code = selectedCoupon || coupon;
+    if (!code) {
+      setMessage({ type: "error", text: "Please enter or select a coupon!" });
+      return;
+    }
+
     try {
-      const res = await fetch(
-        `https://totaltimesnews.com/api/coupons/${coupon}`
-      );
+      const res = await fetch(`${API_BASE_URL}/api/coupons/${code}`);
       const data = await res.json();
 
       if (data.success) {
@@ -84,8 +129,15 @@ const PaymentGateway = () => {
         setAppliedCoupon(data.coupon.code);
         setMessage({
           type: "success",
-          text: `🎉 Coupon applied! Saved ₹${discountAmount}.`,
+          text: `🎉 ${data.coupon.code} applied - ₹${discountAmount} savings`,
         });
+        setCoupon("");
+
+        setTimeout(() => {
+          setAppliedCoupon(null);
+          setMessage(null);
+          setCoupon("");
+        }, 3000);
       } else {
         setDiscount(0);
         setAppliedCoupon(null);
@@ -95,153 +147,252 @@ const PaymentGateway = () => {
       console.error("Error verifying coupon:", error);
       setMessage({ type: "error", text: "Server error. Try again later." });
     }
+    // ✅ catch case me bhi reset daal do
+    setTimeout(() => {
+      setAppliedCoupon(null);
+      setMessage(null);
+      setCoupon("");
+    }, 3000);
   };
 
   const removeCoupon = () => {
     setDiscount(0);
     setAppliedCoupon(null);
     setMessage(null);
+    setCoupon("");
   };
+  const [coupons, setCoupons] = useState([]);
+  const fetchCoupons = async () => {
 
+    try {
+      const res = await axios.get(`${API_BASE_URL}/api/Allcoupons`);
+      setCoupons(res.data.coupons || []);
+    } catch (error) {
+      console.error("Error fetching coupons:", error);
+      setMessage({ type: "error", text: "Failed to load coupons" });
+    }
+  };
+  useEffect(()=>{
+ setTotal(CalculateGrandTotal(cartItems));
+       
+  setAdvance( Math.round(total * 0.1))
+  },[total,advance])
+  useEffect(() => {
+    fetchCoupons();
+    const el = scrollRef.current;
+    // eslint-disable-next-line no-unused-vars
+    let scrollAmount = 0;
+
+    const interval = setInterval(() => {
+      if (!el) return;
+      if (window.innerWidth >= 640) {
+        // Desktop: horizontal scroll
+        el.scrollLeft += 1;
+        scrollAmount += 1;
+        if (el.scrollLeft + el.clientWidth >= el.scrollWidth) {
+          el.scrollLeft = 0; // loop
+        }
+      } else {
+        // Mobile: vertical scroll
+        el.scrollTop += 1;
+        scrollAmount += 1;
+        if (el.scrollTop + el.clientHeight >= el.scrollHeight) {
+          el.scrollTop = 0; // loop
+        }
+      }
+    }, 30); // speed (lower = faster)
+
+    return () => clearInterval(interval);
+  }, []);
+  const handlePayment2 = (totalAmount) => {
+    // Here you would implement actual payment initiation logic
+    console.log(`Final payment amount ready to be processed: ₹${totalAmount}`);
+  };
   return (
-   <div className="min-h-screen bg-gray-100 flex justify-center items-stretch p-6 font-sans">
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-7xl">
-    
-    {/* LEFT SIDE - Cart Items Table */}
-    <div className="bg-white shadow-lg rounded-2xl p-6 flex flex-col h-full">
-      <h2 className="text-xl font-bold text-gray-800 mb-4">Selected Services</h2>
+    <>
+      <style>
+        {`
+                
+                .total-label {
+                    font-size: 1.125rem; /* text-lg */
+                    font-weight: 400; /* font-normal */
+                    color: #d1d5db; /* gray-300 */
+                    display: block;
+                }
+                .final-total-amount {
+                    font-size: 1.5rem; /* text-4xl */
+                    font-weight: 800; /* font-extrabold */
+                    color: #f97316; /* orange-500 */
+                }
 
-      {cartItems?.length > 0 ? (
-        <div className="overflow-x-auto flex-1">
-          <table className="w-full border border-gray-200 rounded-lg">
-            <thead>
-              <tr className="bg-gray-100 text-gray-700 text-sm">
-                <th className="p-2 border">Image</th>
-                <th className="p-2 border">Title</th>
-                <th className="p-2 border">Tag</th>
-                <th className="p-2 border">Date</th>
-                <th className="p-2 border">Time</th>
-                <th className="p-2 border">Location</th>
-                <th className="p-2 border">Price</th>
-              </tr>
-            </thead>
-            <tbody>
-              {cartItems.map((item) => (
-                <tr key={item.id} className="text-sm text-center">
-                  <td className="p-2 border">
-                    <img
-                      src={item.serviceImage}
-                      alt={item.title}
-                      className="w-12 h-12 object-cover rounded-lg mx-auto"
-                    />
-                  </td>
-                  <td className="p-2 border font-semibold">{item.title}</td>
-                  <td className="p-2 border">{item.tag}</td>
-                  <td className="p-2 border">{item.bookingDate}</td>
-                  <td className="p-2 border">{item.SelectedServiceTime}</td>
-                  <td className="p-2 border">{item.location}</td>
-                  <td className="p-2 border font-bold text-green-600">
-                    ₹{item.price}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ) : (
-        <div className="flex flex-1 items-center justify-center text-gray-500 italic">
-          No services selected yet
-        </div>
-      )}
-    </div>
+                /* Action Button */
+                .action-button {
+                    width: 100%;
+                    padding: 0.75rem 2.5rem; /* px-10 py-3 */
+                    background-color: #ea580c; /* orange-600 */
+                    color: white;
+                    font-weight: 600; /* font-semibold */
+                    font-size: 1.25rem; /* text-xl */
+                    border-radius: 0.5rem; /* rounded-lg */
+                    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-xl */
+                    transition: all 0.2s ease-in-out;
+                }
+                @media (min-width: 640px) { /* sm: */
+                    .action-button {
+                        width: auto; /* sm:w-auto */
+                    }
+                }
+                .action-button:hover {
+                    background-color: #c2410c; /* hover:bg-orange-700 */
+                    transform: scale(1.02); /* hover:scale-[1.02] */
+                }
+                .button-inner {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+                .button-inner svg {
+                    margin-right: 0.5rem;
+                }
+                `}
+      </style>{" "}
+      <div className="font-sans">
+        <div className="bg-white min-h-screen shadow-lg p-4 sm:p-6 md:p-10 w-full">
+           <button
+        onClick={() => window.history.back()}
+        className="flex items-center gap-2 text-gray-700 hover:text-black mb-4"
+      >
+        <FaArrowLeft /> Back
+      </button>
+          <div className="flex flex-col gap-5  lg:flex-row lg:space-x-8">
+          
 
-    {/* RIGHT SIDE - Payment Summary */}
-    <div className="bg-white shadow-lg rounded-2xl p-6 flex flex-col justify-between h-full">
-      <div className="space-y-6">
-        <h2 className="text-xl font-bold text-gray-800">Payment Summary</h2>
+            <CheckoutSummaryCard
+              items={cartItems}
+              onProceedToPayment={handlePayment2}
+            />
+            <div className="flex-1 lg:max-w-[720px]">
+              {/* Coupon Section */}
+              {!appliedCoupon && (
+                <div className="space-y-4 sm:space-y-6 mt-6 sm:mt-10">
+                  <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 items-stretch sm:items-center">
+                    <select
+  value={coupon}
+  onChange={(e) => setCoupon(e.target.value)}
+  className="flex-1 p-2 border rounded-lg text-sm sm:text-base bg-white text-black"
+>
+  <option value="">Select Coupon</option>
 
-        {message && (
-          <div
-            className={`p-3 rounded-lg text-sm font-semibold shadow-md ${
-              message.type === "success"
-                ? "bg-green-100 text-green-700 border border-green-300"
-                : "bg-red-100 text-red-700 border border-red-300"
-            }`}
-          >
-            {message.text}
+  {coupons.map((c) => (
+    <option
+      key={c.id}
+      value={c.code}
+      style={{
+        backgroundColor: "#2d2d2d",  // Dark background
+        color: "#f87559",            // Orange text
+      }}
+    >
+      {c.code} — {c.discount}% OFF
+    </option>
+  ))}
+</select>
+
+
+                    <button
+                      onClick={() => verifyCoupon(coupon)}
+                      className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition text-sm sm:text-base"
+                    >
+                      Verify
+                    </button>
+                  </div>
+
+                 
+                </div>
+              )}
+              {message && (
+                <div
+                  className={`p-3 rounded-lg text-xs sm:text-sm font-semibold shadow-md mb-4 sm:mb-6 ${
+                    message.type === "success"
+                      ? "bg-green-100 text-green-700 border border-green-300"
+                      : "bg-red-100 text-red-700 border border-red-300"
+                  }`}
+                >
+                  {message.text}
+                </div>
+              )}
+              <div className="border-t p-2 mt-4 sm:mt-6 text-lg sm:text-xl font-bold text-gray-900">
+                {discount > 0 && (
+                  <p className="text-green-600 font-semibold">
+                    Coupon Discount: -₹{discount}
+                  </p>
+                )}
+              </div>
+              {appliedCoupon && (
+                <div className="flex items-center justify-between bg-green-50 p-3 rounded-lg border border-green-200 mt-4 sm:mt-6 text-sm sm:text-base">
+                  <span className="text-green-700 font-semibold">
+                    {appliedCoupon} applied - ₹{discount} savings
+                  </span>
+                  <button
+                    onClick={removeCoupon}
+                    className="text-red-500 font-bold text-sm sm:text-base"
+                  >
+                    Remove
+                  </button>
+                </div>
+              )}
+
+              {/* Payment Buttons */}
+              <div className="mt-6 sm:mt-3 space-y-4 sm:space-y-6">
+                <div className="flex justify-center">
+                  <button
+                    onClick={() =>
+                      handlePayment(
+                        advance - discount,
+                        "Pay Advance",
+                        total - advance,
+                        total,
+                        total - discount
+                      )
+                      
+                    }
+                    className="w-full sm:w-auto px-6 sm:px-12 py-3 sm:py-4 text-base sm:text-lg font-bold text-white bg-black rounded-lg shadow-lg hover:from-[#43a047] hover:to-[#4caf50] transition-all duration-300"
+                  >
+                    Pay Advance ₹{advance - discount}
+                  </button>
+                </div>
+
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center space-y-3 sm:space-y-0 sm:space-x-4">
+                  <button
+                    onClick={() => window.history.back()}
+                    className="w-full sm:w-auto px-6 sm:px-12 py-3 sm:py-4 text-sm sm:text-base font-bold text-white bg-gray-400 rounded-lg shadow-md hover:bg-gray-500 transition-all duration-300"
+                  >
+                    Cancel
+                  </button>
+
+                  <button
+                    onClick={() =>
+                      handlePayment(
+                        0,
+                        "CoD",
+                        total - discount,
+                        total,
+                        total - discount
+                      )
+                    }
+                    className="action-button"
+                  >
+                    <span className="button-inner">
+                      <CheckCircle size={24}  />
+                      Cash on delivery
+                    </span>
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
-        )}
-
-        <div className="space-y-2 text-gray-700">
-          <p>Sub Total: ₹{base}</p>
-          <p>CGST 9%: ₹{gst18}</p>
-          <p>SGST 9%: ₹{gst18}</p>
-          {discount > 0 && (
-            <p className="text-green-600 font-semibold">
-              Coupon Discount: -₹{discount}
-            </p>
-          )}
         </div>
-
-        <div className="border-t pt-3 mt-3 text-lg font-bold text-gray-900">
-          Grand Total: ₹{total}
-        </div>
-        <p className="text-[#f87559] font-semibold">
-          Advance Booking (10%): ₹{advance}
-        </p>
-
-        {/* Coupon Input */}
-        <div className="flex space-x-2">
-          <input
-            type="text"
-            value={coupon}
-            onChange={(e) => setCoupon(e.target.value)}
-            placeholder="Enter Coupon Code"
-            className="flex-1 p-2 border rounded-lg"
-          />
-          <button
-            onClick={() => verifyCoupon()}
-            className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition"
-          >
-            Verify
-          </button>
-        </div>
-
-        {/* Applied Coupon */}
-        {appliedCoupon && (
-          <div className="flex items-center justify-between bg-green-50 p-3 rounded-lg border border-green-200">
-            <span className="text-green-700 font-semibold">
-              {appliedCoupon} applied - ₹{discount} savings
-            </span>
-            <button onClick={removeCoupon} className="text-red-500 font-bold">
-              Remove
-            </button>
-          </div>
-        )}
       </div>
-
-      {/* Buttons */}
-      <div className="space-y-3 mt-6">
-        <button
-          onClick={() => handlePayment(total - discount, "Full Amount", 0)}
-          className="w-full py-3 text-lg font-bold text-white bg-green-600 rounded-xl shadow-md hover:bg-green-700 transition"
-        >
-          Pay Full Amount ₹{total - discount}
-        </button>
-
-        <button
-          onClick={() =>
-            handlePayment(advance - discount, "Pay Advance", total - advance)
-          }
-          className="w-full py-3 text-lg font-bold text-white bg-[#f87559] rounded-xl shadow-md hover:bg-orange-600 transition"
-        >
-          Pay Advance ₹{advance - discount}
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
+    </>
   );
 };
 

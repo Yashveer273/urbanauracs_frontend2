@@ -113,11 +113,11 @@ const NewsletterFooter = () => {
           <div className="flex-1">
             
             <h4 className="text-xl font-semibold">
-              Stay In The Loop With Qlinest
+              Stay In The Loop With Urban Aura
             </h4>
             <p className="text-sm mt-1">
               Receive cleaning tips, exclusive deals, and seasonal updates right in your inbox.
-            </p>
+            </p> 
           </div>
           <div className="flex-1 flex items-center">
             <div className="relative w-full max-w-md">
@@ -140,7 +140,7 @@ const NewsletterFooter = () => {
           <div className="flex flex-col gap-4">
             <div className="text-2xl font-bold flex items-center gap-2">
               <div className="w-6 h-6 bg-white rounded-full" />
-              Qlinest
+              Urban Aura Services
             </div>
             <div className="flex gap-6 text-sm">
               <a href="#" className="hover:underline">
@@ -173,7 +173,7 @@ const NewsletterFooter = () => {
               </div>
             </div>
             <div className="flex flex-col sm:flex-row gap-4">
-              <div>© 2035 Qlinest. All rights reserved.</div>
+              <div>© 2025 Urban Aura Services. All rights reserved.</div>
               <div className="flex gap-4">
                 <a href="#" className="hover:underline">
                   Privacy & Policy

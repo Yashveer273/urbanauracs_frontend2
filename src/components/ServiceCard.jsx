@@ -5,13 +5,15 @@ import { addItem, setAuthPopupOpen, selectIsAuthenticated,toggleCart } from '../
 import './ServiceCard.css';
 import BookingPopup from './BookingPopup';
 
+import { selectUser, } from "../store/userSlice";
 
 const ServiceDetailPopup = ({ service, onClose,vendor }) => {
-  const dispatch = useDispatch();
   
+    const dispatch = useDispatch();
+  const user = useSelector(selectUser); // ✅ gets current user state
   const handleAddToCart = () => {
-  const userData = JSON.parse(localStorage.getItem("userData"));
-  if (!userData) {
+
+  if (!user) {
     dispatch(setAuthPopupOpen(true));
   } else {
    dispatch(addItem({
@@ -29,105 +31,121 @@ const ServiceDetailPopup = ({ service, onClose,vendor }) => {
 
   if (!service) return null;
 
-  return (
-   <div className="fixed inset-0 z-50 flex items-start justify-center p-16">
-  {/* Transparent overlay */}
-  <div
-    className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-    onClick={onClose}
-  ></div>
+ return (
+  <>
+    {/* Fade animation */}
+    <style>
+      {`
+      .popup-fade {
+        opacity: 0;
+        transform: translateY(20px);
+        animation: popupFade 0.35s ease-out forwards;
+      }
 
-  {/* Popup container with gap below navbar */}
-  <div className="relative w-full h-[50vh] md:h-[70vh] max-w-6xl overflow-hidden rounded-2xl bg-gray-800 text-gray-200 shadow-2xl transition-all duration-300 mt-[120px]">
-    {/* Close button */}
-    <button
-      className="absolute top-3 right-3 z-10 text-gray-400 hover:text-white transition-colors"
-      onClick={onClose}
-    >
-      <FaTimes size={28} />
-    </button>
+      @keyframes popupFade {
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      `}
+    </style>
 
-    <div className="flex h-full flex-col md:flex-row">
-      {/* Left image */}
-      <div className="flex-1 md:w-1/2">
-        <img
-          src={service.serviceImage}
-          alt={service.title}
-          className="h-full w-full object-cover"
-        />
-      </div>
+    <div className="fixed inset-0 z-50 pt-40 flex items-center justify-center px-4 sm:px-8">
+      {/* Overlay */}
+      <div
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        onClick={onClose}
+      />
 
-      {/* Right content with scroll */}
-      <div className="flex-1 flex flex-col">
-        <div className="p-4 md:p-6 overflow-y-auto custom-scroll">
-          <h2 className="text-2xl font-bold text-white mb-2">{service.title}</h2>
-          <p className="text-sm text-gray-400 mb-4">{service.description}</p>
+      {/* Popup */}
+      <div className="popup-fade   relative w-full max-w-4xl max-h-[70vh] overflow-y-scroll rounded-2xl bg-gray-800 text-gray-200 shadow-2xl">
+        {/* Close button */}
+        <button
+          className="absolute top-3 right-3 z-10 text-gray-400 hover:text-white transition-colors"
+          onClick={onClose}
+        >
+          <FaTimes size={28} />
+        </button>
 
-          <div className="flex items-center space-x-6 text-xs text-gray-400 mb-4">
-            <span className="flex items-center">
-              <FaStar className="text-yellow-400 mr-1" />
-              {service.rating} ({service.reviews} reviews)
-            </span>
-            <span className="flex items-center">
-              <FaClock className="text-gray-400 mr-1" />
-              {service.duration}
-            </span>
+        <div className="flex h-full flex-col md:flex-row">
+          {/* Left image */}
+          <div className="md:w-1/2 h-48 md:h-full flex-shrink-0">
+            <img
+              src={service.serviceImage}
+              alt={service.title}
+              className="h-full w-full object-cover"
+            />
           </div>
 
-          <div className="mb-6 p-3 bg-gray-700 rounded-xl">
-            <p className="text-2xl font-bold text-white">
-              ₹{service.price}
-              <span className="text-xs line-through text-gray-400 ml-2 font-normal">
-                ₹{service.originalPrice}
-              </span>
-            </p>
-            <div className="mt-1 text-xs font-semibold text-red-400">
-              ₹{service.originalPrice - service.price} Instant off. Upto 20% off on checkout. Use NAKODA2024
+          {/* Right panel */}
+          <div className="md:w-1/2 flex flex-col">
+            <div className="flex-1 overflow-y-auto p-4 md:p-6 custom-scroll">
+              {/* Title */}
+              <h2 className="text-xl md:text-2xl font-bold mb-2">{service.title}</h2>
+              <p className="text-sm text-gray-400 mb-4">{service.description}</p>
+
+              {/* Rating + Time */}
+              <div className="flex items-center space-x-4 text-xs text-gray-400 mb-4">
+                <span className="flex items-center">
+                  <FaStar className="text-yellow-400 mr-1" />
+                  {service.rating} ({service.reviews} reviews)
+                </span>
+                <span className="flex items-center">
+                  <FaClock className="text-gray-400 mr-1" />
+                  {service.duration}
+                </span>
+              </div>
+
+              {/* Price */}
+              <div className="mb-6 p-3 bg-yellow-500 rounded-xl inline-block">
+                <p className="text-xl md:text-2xl font-bold text-black">₹{service.price}</p>
+              </div>
+
+              {/* Inclusions */}
+              <div className="mb-4">
+                <h3 className="text-lg font-semibold text-white mb-1">Inclusions:</h3>
+                <ul className="list-disc list-inside text-gray-300 text-sm space-y-1 ml-4">
+                  {(service.inclusions || []).map((item, index) => (
+                    <li key={index}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Exclusions */}
+              <div className="mb-4">
+                <h3 className="text-lg font-semibold text-white mb-1">Exclusions:</h3>
+                <ul className="list-disc list-inside text-gray-300 text-sm space-y-1 ml-4">
+                  {(service.exclusions || []).map((item, index) => (
+                    <li key={index}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Vendor */}
+              <div className="mb-4">
+                <h3 className="text-lg font-semibold text-white mb-1">
+                  Vendor: {vendor.vendorName === "self" ? "Urban Aura Services" : vendor.vendorName}
+                </h3>
+              </div>
+            </div>
+
+            {/* Add to cart */}
+            <div className="p-4 border-t border-gray-700">
+              <button
+                className="w-full py-3 rounded-xl font-bold text-sm text-white bg-[#f87559] hover:bg-[#ff8f6e] transition-colors"
+                onClick={handleAddToCart}
+              >
+                Add to Cart
+              </button>
             </div>
           </div>
-
-          {/* Inclusions */}
-          <div className="mb-4">
-            <h3 className="text-lg font-semibold text-white mb-1">Inclusions:</h3>
-            <ul className="list-disc list-inside text-gray-300 text-sm space-y-1 ml-4">
-              {(service.inclusions || []).map((item, index) => (
-                <li key={index}>{item}</li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Exclusions */}
-          <div className="mb-4">
-            <h3 className="text-lg font-semibold text-white mb-1">Exclusions:</h3>
-            <ul className="list-disc list-inside text-gray-300 text-sm space-y-1 ml-4">
-              {(service.exclusions || []).map((item, index) => (
-                <li key={index}>{item}</li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Vendor */}
-          <div className="mb-4">
-            <h3 className="text-lg font-semibold text-white mb-1">Vendor:</h3>
-            <p className="text-gray-300 text-sm">Perfect Urban Services</p>
-          </div>
-        </div>
-
-        {/* Add to cart button */}
-        <div className="p-4 border-t border-gray-700">
-          <button
-            className="w-full py-3 rounded-xl font-bold text-sm text-white bg-[#f87559] hover:bg-[#ff8f6e] transition-colors"
-            onClick={handleAddToCart}
-          >
-            Add to Cart
-          </button>
         </div>
       </div>
     </div>
-  </div>
-</div>
+  </>
+);
 
-  );
 };
 
 // --- Frosted Button Component ---
@@ -156,6 +174,8 @@ const ServiceCard = ({ service,vendor,userLocation }) => {
   const dispatch = useDispatch();
   const isAuthenticated = useSelector(selectIsAuthenticated);
 
+  const user = useSelector(selectUser); 
+
   // Existing details popup (unchanged)
   const [isPopupOpen, setIsPopupOpen] = useState(false);
 const [Devicelocation, setDevicelocation] = useState("");
@@ -165,11 +185,9 @@ const [Devicelocation, setDevicelocation] = useState("");
   // Show login if not authenticated; otherwise open booking calendar
   const handleAddToCart = () => {
     // Be robust to either key your app might set
-    const currentUser =
-      JSON.parse(localStorage.getItem("currentUser") || "null") ||
-      JSON.parse(localStorage.getItem("userData") || "null");
 
-    if (!currentUser && !isAuthenticated) {
+      console.log(user.length<1);
+    if (user.length<1 &&!isAuthenticated) {
       // Not logged in → open auth popup
       dispatch(setAuthPopupOpen(true));
 
