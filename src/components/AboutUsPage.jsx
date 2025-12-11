@@ -7,7 +7,7 @@ export default function AboutUsPage() {
     <div>
         <header className="header">
         <div className="dot"></div>
-        <h1>About us</h1>
+        <h1>About Us</h1>
       </header>
       <AboutUs/>
       <FooterWithCarousel/>
