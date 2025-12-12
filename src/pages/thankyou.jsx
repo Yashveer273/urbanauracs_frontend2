@@ -1,7 +1,39 @@
 import React from "react";
 import { FaFacebook, FaInstagram, FaYoutube } from "react-icons/fa";
+import { Copy, Check} from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 
-export default function OrderSuccess() {
+export default function OrderSuccess({id}) {
+  const navigator =useNavigate();
+
+
+const [copied, setCopied] = useState(false);
+
+const handleCopy = async (text) => {
+  try {
+    if (navigator?.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+    } else {
+      // Fallback for older browsers
+      const textarea = document.createElement("textarea");
+      textarea.value = text;
+      textarea.style.position = "fixed";
+      textarea.style.opacity = "0";
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textarea);
+    }
+
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1200); // Auto reset
+  } catch (err) {
+    console.error("Copy failed", err);
+  }
+};
+
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 p-6">
       {/* Success Icon */}
@@ -13,10 +45,23 @@ export default function OrderSuccess() {
         Your order has been placed successfully.
       </p>
 
-      {/* Order ID */}
-      <p className="text-lg font-semibold mb-6">
-        Order ID : <span className="text-orange-600">#123456</span>
-      </p>
+     <p className="text-lg font-semibold mb-6 flex items-center gap-2">
+  Order ID :
+  <span className="text-orange-600">{id}</span>
+
+  <button
+    onClick={() => handleCopy(id)}
+    className="p-1 rounded hover:bg-gray-200 transition flex items-center"
+    type="button"
+  >
+    {copied ? (
+      <Check size={18} className="text-green-600" />
+    ) : (
+      <Copy size={18} className="text-gray-700" />
+    )}
+  </button>
+</p>
+
       <p className="text-gray-600 mb-8">Our experts will contact you shortly.</p>
 
       {/* Go Back Button */}

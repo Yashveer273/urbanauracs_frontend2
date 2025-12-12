@@ -22,7 +22,7 @@ const FooterWithCarousel = () => {
   return (
     <>
       <Chatbot />
-      {/* 🔼 Moved carousel section to the top */}
+     
       <div className="brand-carousel-wrapper">
         <div className="brand-carousel">
           {[...cities, ...cities].map((city, index) => (

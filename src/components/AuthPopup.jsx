@@ -204,7 +204,7 @@ const AuthPopup = ({ onClose }) => {
           `Your OTP is: ${Gotp}`,
           "Login"
         );
-        console.log(response.data.token);
+
         // Check response status
         if (
           response.status === 200 &&
@@ -212,7 +212,7 @@ const AuthPopup = ({ onClose }) => {
           response.data.data
         ) {
           setShowOtpInput(true);
-          setError(response.data.data);
+
           setLogtToken(response.data.token);
         } else {
           setError(response.data.message);
@@ -279,7 +279,7 @@ const AuthPopup = ({ onClose }) => {
         response.data.data
       ) {
         //   setShowOtpInput(true);
-        setError(response.data.data);
+
         setisOtpSent(true);
       } else {
         setError(
@@ -306,7 +306,11 @@ const AuthPopup = ({ onClose }) => {
   const handleSignupSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    if (!isVerified) return;
+    setLoading(true); // <-- start loading
+    if (!isVerified) {
+      setLoading(false); // stop loading if not verified
+      return;
+    }
 
     // First step: Validate and simulate sending OTP
     const { email, username, mobileNumber, pincode, location, phoneType } =
@@ -320,6 +324,7 @@ const AuthPopup = ({ onClose }) => {
       !phoneType
     ) {
       setError("All fields are required to sign up.");
+      setLoading(false); // stop loading if validation fails
       return;
     }
     console.log(formData);
@@ -348,6 +353,7 @@ const AuthPopup = ({ onClose }) => {
     } else {
       setError(data.message || "Registration failed. Try again later.");
     }
+    setLoading(false); // <-- stop loading
   };
 
   return (
@@ -442,20 +448,30 @@ const AuthPopup = ({ onClose }) => {
                         placeholder="Mobile number"
                         value={formData.mobileNumber}
                         onChange={handleChange}
-                        className="w-full bg-transparent text-white pl-12 pr-4 py-3 rounded-lg focus:outline-none"
+                        className={`w-full pl-12 pr-4 py-3 rounded-lg focus:outline-none transition-colors ${
+                          formData.mobileNumber
+                            ? "bg-white text-black"
+                            : "bg-gray-700 text-white"
+                        }`}
                         required
                       />
                     </div>
 
                     <button
                       type="submit"
-                      disabled={isSubmitting}
-                      className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-[#f87559] text-white rounded-full p-2 hover:bg-[#ff8f6e] transition-colors"
+                      disabled={isSubmitting} // same, disables clicks while loading
+                       className={`
+    absolute right-2 top-1/2 transform -translate-y-1/2 
+    rounded-full p-2 transition-colors
+    ${isSubmitting 
+      ? "bg-[#f87559] cursor-not-allowed" 
+      : "bg-[#f87559] hover:bg-[#ff8f6e] text-white cursor-pointer"
+    }
+  `}
                     >
                       {isSubmitting ? (
-                        // Loading spinner
                         <svg
-                          className="animate-spin h-6 w-6 text-white"
+                          className="animate-spin h-6 w-6 text-white mx-auto"
                           xmlns="http://www.w3.org/2000/svg"
                           fill="none"
                           viewBox="0 0 24 24"
@@ -475,7 +491,6 @@ const AuthPopup = ({ onClose }) => {
                           ></path>
                         </svg>
                       ) : (
-                        // Arrow icon when not loading
                         <FaArrowRight className="h-6 w-6" />
                       )}
                     </button>
@@ -511,6 +526,33 @@ const AuthPopup = ({ onClose }) => {
                     />
                   </div>
                   <div className="relative">
+                    <FaMapPin className="absolute top-1/2 left-4 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                    <input
+                      type="text"
+                      name="location"
+                      placeholder="Location"
+                      value={formData.location}
+                      onChange={handleChange}
+                      className="w-full bg-gray-700 rounded-lg pl-12 pr-4 py-3 text-white focus:outline-none"
+                      required
+                    />
+                  </div>
+                  <div className="relative">
+                    <FaMapPin className="absolute top-1/2 left-4 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                    <input
+                        type="number" 
+                      name="pincode"
+                        maxlength="6"
+                      placeholder="PIN Code"
+                      value={formData.pincode}
+                      onChange={handleChange}
+                      className="w-full bg-gray-700 rounded-lg pl-12 pr-4 py-3 text-white focus:outline-none"
+                      required
+                     
+                    />
+                  </div>
+
+                  <div className="relative">
                     <input
                       type="tel"
                       name="mobileNumber"
@@ -521,22 +563,27 @@ const AuthPopup = ({ onClose }) => {
                       className="flex-grow bg-transparent text-white py-3 pr-4 pl-4 focus:outline-none w-full border border-gray-500 rounded-lg"
                       required
                     />
-                    {formData.mobileNumber.length > 0 && (
-                      <button
-                        type="button"
-                        onClick={verifySignupNumber}
-                        className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-blue-600 px-3 py-1 rounded text-white flex items-center"
-                        disabled={loading || isOtpSent}
-                      >
-                        {loading ? (
-                          <span className="loader border-t-2 border-white rounded-full w-4 h-4 animate-spin mr-2"></span>
-                        ) : isVerified ? (
-                          "Verified"
-                        ) : (
-                          "Verify"
-                        )}
-                      </button>
-                    )}
+                   {formData.mobileNumber.length > 0 && (
+  <button
+    type="button"
+    onClick={verifySignupNumber}
+    className={`
+      absolute right-2 top-1/2 transform -translate-y-1/2 
+      bg-blue-600 px-3 py-1 rounded text-white flex items-center
+      ${loading || isOtpSent ? "cursor-not-allowed opacity-70" : "cursor-pointer"}
+    `}
+    disabled={loading || isOtpSent}
+  >
+    {loading ? (
+      <span className="loader border-t-2 border-white rounded-full w-4 h-4 animate-spin mr-2"></span>
+    ) : isVerified ? (
+      "Verified"
+    ) : (
+      "Verify"
+    )}
+  </button>
+)}
+
                   </div>
 
                   {isOtpSent && !isVerified && (
@@ -575,38 +622,40 @@ const AuthPopup = ({ onClose }) => {
 
                     <FaPhone className="absolute top-1/2 left-4 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
                   </div>
-                  <div className="relative">
-                    <FaMapPin className="absolute top-1/2 left-4 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-                    <input
-                      type="text"
-                      name="pincode"
-                      placeholder="Pincode"
-                      value={formData.pincode}
-                      onChange={handleChange}
-                      className="w-full bg-gray-700 rounded-lg pl-12 pr-4 py-3 text-white focus:outline-none"
-                      required
-                      disabled={!isVerified}
-                    />
-                  </div>
 
-                  <div className="relative">
-                    <FaMapPin className="absolute top-1/2 left-4 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-                    <input
-                      type="text"
-                      name="location"
-                      placeholder="Location"
-                      value={formData.location}
-                      onChange={handleChange}
-                      className="w-full bg-gray-700 rounded-lg pl-12 pr-4 py-3 text-white focus:outline-none"
-                      required
-                      disabled={!isVerified}
-                    />
-                  </div>
                   <button
                     type="submit"
-                    className="w-full bg-[#f87559] text-white py-3 rounded-lg font-bold text-lg hover:bg-[#ff8f6e] transition-colors"
+                    disabled={loading} // <-- disable while processing
+                    className={`w-full py-3 rounded-lg font-bold text-lg transition-colors ${
+                      loading
+                        ? "bg-[#f87559] cursor-not-allowed"
+                        : "bg-[#f87559] hover:bg-[#ff8f6e] text-white"
+                    }`}
                   >
-                    Sign Up
+                    {loading ? (
+                      <svg
+                        className="animate-spin h-6 w-6 mx-auto text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8z"
+                        ></path>
+                      </svg>
+                    ) : (
+                      "Sign Up"
+                    )}
                   </button>
                 </>
               )}

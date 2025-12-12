@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import FooterWithCarousel from "./FooterWithCarousel";
 import "./ContactUs.css";
+import Navbar from "./Navbar";
 import Chatbot from "./Chatbot";
 import { useSelector } from "react-redux";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
@@ -60,7 +61,10 @@ export default function ContactUs() {
   };
 
   return (
+    <>
+    <Navbar />
     <div className="contact-page">
+      
       <header className="header">
         <div className="dot"></div>
         <h1>Contact Us</h1>
@@ -214,5 +218,6 @@ export default function ContactUs() {
       {/* Footer start from here */}
       <FooterWithCarousel />
     </div>
+    </>
   );
 }

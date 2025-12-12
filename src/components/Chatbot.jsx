@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import "./Chatbot.css";
+
 import { useSelector, useDispatch } from "react-redux";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { toggleChatbox, selectChatbox } from "../store/chatboxSlice";
@@ -96,7 +96,7 @@ export default function Chatbot() {
     <>
       {/* Chat button */}
       <div
-        className="fixed bottom-6 right-6 z-50 p-4 bg-teal-500 text-white rounded-full shadow-lg cursor-pointer transition-transform duration-300 hover:scale-110"
+        className="fixed bottom-15 right-6 z-50 p-4 bg-teal-500 text-white rounded-full shadow-lg cursor-pointer transition-transform duration-300 hover:scale-110"
         onClick={() => dispatch(toggleChatbox())} // ✅ use Redux toggle
       >
         {isOpen ? closeIcon : chatIcon}

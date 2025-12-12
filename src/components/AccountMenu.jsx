@@ -13,7 +13,8 @@ import {
 } from "react-icons/fa";
 import { clearCart } from "../store/CartSlice";
 
-import { getMyOrderHistory } from "../API";
+import { getMyOrderHistory, handlePaymentLeft } from "../API";
+import { CalculateConveniencetotalFee } from "./TexFee";
 
 const AccountMenu = () => {
   const [history, setHistory] = useState([]);
@@ -27,6 +28,7 @@ const AccountMenu = () => {
 
     if (res?.status === 200 && res.data.orders?.length > 0) {
       const formatted = res.data.orders.map((order) => {
+        console.log(order)
         const cartItems = order?.product_info?.cart || [];
 
         return {
@@ -41,9 +43,9 @@ const AccountMenu = () => {
           statusColor:
             order?.status === "Completed"
               ? "green"
-              : order?.status === "Ongoing"
+              : order?.status === "Confirmed"
               ? "blue"
-              : order?.status === "Rejected"
+              : order?.status === "Cancelled"
               ? "red"
               : "gray",
 
@@ -52,7 +54,7 @@ const AccountMenu = () => {
             productName: item?.product_name,
             tag: item?.tag,
             duration: item?.duration,
-
+quantity:item?.quantity,
             product_purchase_id: item?.product_purchase_id,
             itemPrice: item?.item_price,
             bookingDate: item?.location_booking_time,
@@ -85,7 +87,45 @@ const AccountMenu = () => {
       hour12: true,
     }).format(new Date(isoDate));
   };
+  const [copied, setCopied] = useState(false);
 
+  const handleCopy = async (text) => {
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        fallbackCopy(text);
+      }
+
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch (error) {
+      console.error("Copy failed:", error);
+    }
+  };
+
+  const fallbackCopy = (text) => {
+    const textarea = document.createElement("textarea");
+    textarea.value = text;
+    textarea.style.position = "fixed";
+    textarea.style.opacity = "0";
+    document.body.appendChild(textarea);
+
+    textarea.select();
+    document.execCommand("copy");
+    document.body.removeChild(textarea);
+  };
+
+  const action = (res, data) => {
+    console.log(res, data);
+    if (res.data.status == "success") {
+      if (user.userId) {
+        callOrderHistory();
+      }
+    } else {
+      alert(res.data.message);
+    }
+  };
   return (
     <>
       <div className="relative w-[100%] h-[100vh]  bg-white  shadow-2xl overflow-hidden animate-fadeIn flex flex-col">
@@ -99,78 +139,96 @@ const AccountMenu = () => {
           </button>
         </div>
         <div className="overflow-y-auto">
-        <div className="relative bg-gradient-to-r from-[#f87559] to-orange-500 text-white p-6 flex flex-col items-center">
-          {/* Avatar */}
+          <div className="relative bg-gradient-to-r from-[#f87559] to-orange-500 text-white p-6 flex flex-col items-center">
+            {/* Avatar */}
 
-          <div className="w-20 h-20 rounded-full bg-white flex items-center justify-center text-[#f87559] text-4xl font-bold shadow-md mb-3 border-4 border-white">
-            {user?.avatar ? (
-              <img
-                src={user.avatar}
-                alt="avatar"
-                className="w-full h-full object-cover rounded-full"
-              />
-            ) : (
-              <FaUserCircle className="text-[#f87559] text-5xl" />
-            )}
+            <div className="w-20 h-20 rounded-full bg-white flex items-center justify-center text-[#f87559] text-4xl font-bold shadow-md mb-3 border-4 border-white">
+              {user?.avatar ? (
+                <img
+                  src={user.avatar}
+                  alt="avatar"
+                  className="w-full h-full object-cover rounded-full"
+                />
+              ) : (
+                <FaUserCircle className="text-[#f87559] text-5xl" />
+              )}
+            </div>
+
+            <h2 className="text-xl font-semibold">
+              {user?.username || "Guest"}
+            </h2>
+            <p className="text-sm text-orange-100 flex items-center gap-1">
+              <FaEnvelope className="text-orange-200" />
+              {user?.email || "No email provided"}
+            </p>
           </div>
 
-          <h2 className="text-xl font-semibold">{user?.username || "Guest"}</h2>
-          <p className="text-sm text-orange-100 flex items-center gap-1">
-            <FaEnvelope className="text-orange-200" />
-            {user?.email || "No email provided"}
-          </p>
-        </div>
+          {/* User Info */}
+          <div className="px-6 py-4 bg-gray-50 border-b space-y-2 text-sm text-gray-700">
+            <p className="flex items-center gap-2">
+              <FaMobileAlt className="text-[#f87559]" />
+              <span className="font-semibold">Mobile:</span>{" "}
+              {user?.mobileNumber || "N/A"}
+            </p>
+            <p className="flex items-center gap-2">
+              <FaMapMarkerAlt className="text-[#f87559]" />
+              <span className="font-semibold">Location:</span>{" "}
+              {user?.location || "N/A"}
+            </p>
+            <p className="flex items-center gap-2">
+              <FaMapMarkerAlt className="text-[#f87559]" />
+              <span className="font-semibold">Pincode:</span>{" "}
+              {user?.pincode || "N/A"}
+            </p>
+            <p className="flex items-center gap-2">
+              <FaGlobe className="text-[#f87559]" />
+              <span className="font-semibold">Country Code:</span>{" "}
+              {user?.countryCode || "N/A"}
+            </p>
+          </div>
 
-        {/* User Info */}
-        <div className="px-6 py-4 bg-gray-50 border-b space-y-2 text-sm text-gray-700">
-          <p className="flex items-center gap-2">
-            <FaMobileAlt className="text-[#f87559]" />
-            <span className="font-semibold">Mobile:</span>{" "}
-            {user?.mobileNumber || "N/A"}
-          </p>
-          <p className="flex items-center gap-2">
-            <FaMapMarkerAlt className="text-[#f87559]" />
-            <span className="font-semibold">Location:</span>{" "}
-            {user?.location || "N/A"}
-          </p>
-          <p className="flex items-center gap-2">
-            <FaMapMarkerAlt className="text-[#f87559]" />
-            <span className="font-semibold">Pincode:</span>{" "}
-            {user?.pincode || "N/A"}
-          </p>
-          <p className="flex items-center gap-2">
-            <FaGlobe className="text-[#f87559]" />
-            <span className="font-semibold">Country Code:</span>{" "}
-            {user?.countryCode || "N/A"}
-          </p>
-        </div>
+          {/* Purchase History */}
+          <div className="flex-1  px-5 py-3">
+            <h3 className="text-gray-800 font-semibold text-sm mb-2 flex items-center gap-2">
+              <FaClock className="text-[#f87559]" /> Purchase History
+            </h3>
 
-        {/* Purchase History */}
-        <div className="flex-1  px-5 py-3">
-          <h3 className="text-gray-800 font-semibold text-sm mb-2 flex items-center gap-2">
-            <FaClock className="text-[#f87559]" /> Purchase History
-          </h3>
+            {history && history.length > 0 ? (
+              history.map((order) => (
+                <div
+                  key={order.orderId}
+                  className="p-4 mb-4 bg-white border border-gray-300 rounded-xl shadow-sm"
+                >
+                  {/* Top Section */}
+                  <div className="flex justify-between items-center mb-3">
+                    <div>
+                      <p className="text-xs text-black flex items-center gap-2">
+                        Order Id:
+                        <span className="font-semibold">{order.order_id}</span>
+                        {/* Copy Button */}
+                        <button
+                          type="button"
+                          onClick={() => handleCopy(order.order_id)}
+                          className="p-1 rounded hover:bg-gray-200 transition flex items-center gap-1"
+                        >
+                          {copied ? (
+                            <span className="text-green-600 text-sm font-bold">
+                              ✓
+                            </span>
+                          ) : (
+                            <span className="text-gray-600">📋</span>
+                          )}
+                        </button>
+                      </p>
 
-          {history && history.length > 0 ? (
-            history.map((order) => (
-              <div
-                key={order.orderId}
-                className="p-4 mb-4 bg-white border border-gray-300 rounded-xl shadow-sm"
-              >
-                {/* Top Section */}
-                <div className="flex justify-between items-center mb-3">
-                  <div>
-                    <p className="text-xs text-black">
-                      Order Id: {order.order_id}
-                    </p>
-                    <p className="text-xs text-gray-500">Order Submitted</p>
-                    <p className="font-semibold text-gray-800">
-                      {formatDate(order.orderSubmittedDate)}
-                    </p>
-                  </div>
+                      <p className="text-xs text-gray-500">Order Submitted</p>
+                      <p className="font-semibold text-gray-800">
+                        {formatDate(order.orderSubmittedDate)}
+                      </p>
+                    </div>
 
-                  <span
-                    className={`px-3 py-1 text-xs rounded-full font-semibold 
+                    <span
+                      className={`px-3 py-1 text-xs rounded-full font-semibold 
             ${
               order.status === "Completed"
                 ? "bg-green-100 text-green-700"
@@ -181,111 +239,151 @@ const AccountMenu = () => {
                 : "bg-gray-100 text-gray-700"
             }
           `}
-                  >
-                    {order.status}
-                  </span>
-                </div>
-
-                {/* Billing */}
-                <div className="grid grid-cols-2 gap-2 mb-3 text-sm">
-                  <div className="bg-gray-50 p-2 rounded-md">
-                    <p className="text-gray-500 text-xs">Payable Amount</p>
-                    <p className="font-semibold text-gray-800">
-                      ₹{order.payableAmount}
-                    </p>
-                  </div>
-
-                  <div className="bg-gray-50 p-2 rounded-md">
-                    <p className="text-gray-500 text-xs">Paid Amount</p>
-                    <p className="font-semibold text-gray-800">
-                      ₹{order.payedAmount ?? 0}
-                    </p>
-                  </div>
-                </div>
-
-                <hr className="my-3" />
-
-                {/* CART ITEMS */}
-                <div className="space-y-4">
-                  {order.cart.map((itm, idx) => (
-                    <div
-                      key={idx}
-                      className="p-3 border border-gray-200 rounded-lg shadow-sm bg-white"
                     >
-                      {/* Product Title */}
-                      <h4 className="font-semibold text-gray-900 text-sm mb-2">
-                        {itm.productName}
-                      </h4>
+                      {order.status}
+                    </span>
+                  </div>
 
-                      {/* Table View */}
-                      <table className="w-full text-xs text-gray-600 border-collapse">
-                        <tbody>
-                          {/* Description + Tag */}
-                          <tr className="border-b">
-                            <td className="py-1 font-semibold w-28 align-top">
-                              Details
-                            </td>
+                  {/* Billing */}
+                  <div className="grid grid-cols-2 gap-2 mb-3 text-sm">
+                   
+                     
+                      <div className="bg-gray-50 p-2 rounded-md">
+                        <p className="text-gray-500 text-xs">Payable Amount</p>
+                        <p className="font-semibold text-gray-800 text-base">
+                          ₹{order.payableAmount}
+                        </p>
+                        <button
+                          disabled={order.payableAmount == 0}
+                          onClick={async () => {
+                            if (order.payableAmount == 0) return;
 
-                            <td className="py-1 align-top">
-                              <p className="text-xs text-gray-500 max-w-[250px] break-words">
-                                Description: {itm.description}
-                              </p>
+                            const date = Date.now();
+                            await handlePaymentLeft(
+                              {
+                                name: user.name,
+                                amount: order.payableAmount,
+                                order_id: order.order_id,
+                                user: user,
+                                transectionId: `${date}`,
+                              },
+                              action
+                            );
+                          }}
+                          className={`font-semibold px-4 py-2 rounded-md shadow transition-all duration-200
+                              ${
+                                order.payableAmount === 0
+                                ? "bg-green-500 text-white cursor-not-allowed"
+                                 : "bg-orange-500 hover:bg-orange-600 text-white"
+                                  }
+                                `}
+                        >
+                          {order.payableAmount === 0
+                            ? "Complete"
+                            : `Pay Now ₹${order.payableAmount}`}
+                        </button>
+                      </div>
+                   
 
-                              <span className="text-blue-600 ml-1">
-                                {itm.tag}
-                              </span>
-                            </td>
-                          </tr>
+                    <div className="bg-gray-50 p-2 rounded-md">
+                      <p className="text-gray-500 text-xs">Paid Amount</p>
+                      <p className="font-semibold text-gray-800">
+                        ₹{order.paidAmount}
+                      </p>
+                    </div>
+                  </div>
 
-                          {/* Duration */}
-                          <tr className="border-b">
-                            <td className="py-1 font-semibold w-28">
-                              Duration
-                            </td>
-                            <td className="py-1">{itm.duration}</td>
-                          </tr>
+                  <hr className="my-3" />
 
-                          {/* Price */}
-                          <tr className="border-b">
-                            <td className="py-1 font-semibold w-28">Price</td>
-                            <td className="py-1">₹{itm.itemPrice}</td>
-                          </tr>
+                  {/* CART ITEMS */}
+                  <div className="space-y-4">
+                    {order.cart.map((itm, idx) => (
+                      <div
+                        key={idx}
+                        className="p-3 border border-gray-200 rounded-lg shadow-sm bg-white"
+                      >
+                        {/* Product Title */}
+                        <h4 className="font-semibold text-gray-900 text-sm mb-2">
+                          {itm.productName}
+                        </h4>
 
-                          {/* Booking Date */}
-                          <tr className="border-b">
-                            <td className="py-1 font-semibold w-28">Date</td>
-                            <td className="py-1">{itm.bookingDate}</td>
-                          </tr>
+                        {/* Table View */}
+                        <table className="w-full text-xs text-gray-600 border-collapse">
+                          <tbody>
+                            {/* Description + Tag */}
+                            <tr className="border-b">
+                              <td className="py-1 font-semibold w-28 align-top">
+                                Description
+                              </td>
 
-                          {/* Booking Time */}
-                          <tr>
-                            <td className="py-1 font-semibold w-28">Time</td>
-                            <td className="py-1">{itm.serviceTime}</td>
-                          </tr>
-                          <tr>
+                              <td className="py-1 align-top">
+                                <p className="text-xs text-gray-500 max-w-[250px] break-words">
+                                   {itm.description}
+                                </p>
+
+                                <span className="text-blue-600 ml-1">
+                                  {itm.tag}
+                                </span>
+                              </td>
+                            </tr>
+
+                            {/* Duration */}
+                            <tr className="border-b">
+                              <td className="py-1 font-semibold w-28">
+                                Duration
+                              </td>
+                              <td className="py-1">{itm.duration}</td>
+                            </tr>
+
+                            {/* Price */}
+                            <tr className="border-b">
+                              <td className="py-1 font-semibold w-28">Price</td>
+                              <td className="py-1">₹{itm.itemPrice}</td>
+                            </tr>
+                            <tr className="border-b">
+                              <td className="py-1 font-semibold w-28">Quantity</td>
+                              <td className="py-1">{itm.quantity}</td>
+                            </tr>
+                            
+ <tr className="border-b">
+                              <td className="py-1 font-semibold w-28">Price after Convenience</td>
+                              <td className="py-1">₹{CalculateConveniencetotalFee(itm.itemPrice*itm.quantity )}</td>
+                            </tr>
+                            {/* Booking Date */}
+                            <tr className="border-b">
+                              <td className="py-1 font-semibold w-28">Date</td>
+                              <td className="py-1">{itm.bookingDate}</td>
+                            </tr>
+
+                            {/* Booking Time */}
+                            <tr>
+                              <td className="py-1 font-semibold w-28">Time</td>
+                              <td className="py-1">{itm.serviceTime}</td>
+                            </tr>
+                            {/* <tr>
                             <td className="py-1 font-semibold w-28">
                               Product Purchase Id
                             </td>
                             <td className="py-1">{itm.product_purchase_id}</td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </div>
-                  ))}
-                </div>
+                          </tr> */}
+                          </tbody>
+                        </table>
+                      </div>
+                    ))}
+                  </div>
 
-                <div className="text-right mt-3 font-bold text-gray-900">
-                  Total Price: ₹{order.totalPrice}
+                  <div className="text-right mt-3 font-bold text-gray-900">
+                    Total Price: ₹{order.totalPrice}
+                  </div>
                 </div>
+              ))
+            ) : (
+              <div className="text-center text-gray-400 py-8 text-sm">
+                No order history found.
               </div>
-            ))
-          ) : (
-            <div className="text-center text-gray-400 py-8 text-sm">
-              No order history found.
-            </div>
-          )}
+            )}
+          </div>
         </div>
-</div>
         {
           /* Footer */
           user?.username ? (

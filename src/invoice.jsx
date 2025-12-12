@@ -61,14 +61,13 @@ export default function Invoice() {
       console.error("Download failed:", err);
     }
   };
+console.log(state)
+ 
 
-  const base = Number(state.oGtotal_price) || 0;
+  const discountAmount = state.discount
+ 
 
-  const discountAmount =
-    CalculateConveniencetotalFee(base) - state.payableAmount;
-  const discountPercent = Math.round(
-    (discountAmount / CalculateConveniencetotalFee(base)) * 100
-  );
+
 
   return (
     <div style={{ background: "#f5f5f5", minHeight: "100vh", padding: "20px" }}>
@@ -190,7 +189,7 @@ export default function Invoice() {
                     <small>{item.description}</small>
                   </td>
                   <td className="table-cell-wrap">{item.og_product_id}</td>
-                  <td className="table-cell-wrap">1</td>
+                  <td className="table-cell-wrap">{item.quantity}</td>
                   <td className="table-cell-wrap">
                     {new Date().toLocaleDateString()}
                   </td>
@@ -202,7 +201,7 @@ export default function Invoice() {
                   </td>
                   <td className="table-cell-wrap">{item.duration}</td>
                   <td className="table-cell-wrap">
-                    ₹{CalculateConveniencetotalFee(item.item_price)}
+                    ₹{CalculateConveniencetotalFee(item.item_price*item.quantity)}
                   </td>
                 </tr>
               ))
@@ -247,12 +246,12 @@ export default function Invoice() {
               <strong>Sub Total:{CalculateGrandTotalForInvoice(cart)}</strong>
             </p>
             <p>
-              Discount: ₹{discountAmount} ({discountPercent}%)
+              Discount: ₹{discountAmount}
             </p>
 
             <h3>
               <strong>Grand Total:</strong> ₹
-              {CalculateGrandTotalForInvoice(cart) - discountAmount}
+              {state.total_price}
             </h3>
           </div>
 
@@ -341,11 +340,7 @@ export default function Invoice() {
           <p>3. For any queries, contact us at.</p>
         </div>
 
-        {/* Thank you */}
-        <h3 style={{ textAlign: "center", marginTop: "30px" }}>
-          Thank You for letting us brighten your space. We look forward to
-          serving you again! - Team Urban Aura Services!
-        </h3>
+        
       </div>
 
       {/* Download Button */}

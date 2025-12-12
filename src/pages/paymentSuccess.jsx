@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, } from "react-router-dom";
 
 import axios from "axios";
 // eslint-disable-next-line no-unused-vars
@@ -22,7 +22,7 @@ const PaymentSuccess = () => {
   const hasRun = useRef(false);
   const cartTotal = useSelector(selectCartTotal);
   let total_price = cartTotal.toFixed(2);
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const cart = useSelector((state) => state.cart.items);
   const user = useSelector((state) => state.user.user);
   const order = useSelector((state) => state.order);
@@ -55,6 +55,8 @@ const PaymentSuccess = () => {
           oGtotal_price: total_price,
           total_price: order.total_price,
           advance: order.advance,
+          discount:order.discount,
+          appliedCoupon:order.discount,
           left_amount: order.left_amount,
           pincode: user?.pincode,
           user_location: user?.location || "Unknown",
@@ -66,6 +68,7 @@ const PaymentSuccess = () => {
               location_booking_time: item.bookingDate,
               SelectedServiceTime: item.SelectedServiceTime,
               item_price: item.price,
+              quantity:item.quantity,
               originalPrice: item.originalPrice,
               description: item.description,
               duration: item.duration,
@@ -100,9 +103,9 @@ const PaymentSuccess = () => {
           dispatch(clearOrder());
           dispatch(clearCart());
           dispatch(closeCart());
-          setTimeout(() => {
-            navigate("/", { replace: true }); // replaces current entry
-          }, 4000);
+          // setTimeout(() => {
+          //   navigate("/", { replace: true }); // replaces current entry
+          // }, 4000);
         } else {
           console.error("Unexpected response:", response);
           setStatus("error");
@@ -161,7 +164,7 @@ const PaymentSuccess = () => {
                 (status === "error" ? "border-red-500" : "border-blue-500")
           }`}
         >
-          {status === "success" ? <OrderSuccess /> : statusMap[status].icon}
+          {status === "success" ? <OrderSuccess id={id}/> : statusMap[status].icon}
 
           <h2
             className="text-2xl font-bold mb-2"

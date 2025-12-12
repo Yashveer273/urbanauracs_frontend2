@@ -14,30 +14,30 @@ const PaymentGateway = () => {
   const scrollRef = useRef(null);
   const { items: cartItems } = useSelector((state) => state.cart);
   const location = useLocation();
-  const { date,  } = location.state || {};
+  const { date } = location.state || {};
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
-
+  const [loadingType, setLoadingType] = useState(null);
   const [coupon, setCoupon] = useState("");
   const [discount, setDiscount] = useState(0);
   const [total, setTotal] = useState(0);
   const [advance, setAdvance] = useState(0);
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [message, setMessage] = useState(null);
-const action =async(response,data)=>{
-  console.log(response);
-   const { Url,status } = response.data;
+  const action = async (response, data) => {
+    
+    const { Url, status } = response.data;
 
-        if (status=="success") {
-          dispatch(setOrder(data));
-          window.location.href = Url;
-        } else {
-          setMessage({
-            type: "error",
-            text: "❌ Payment initialization failed!",
-          });
-        }
-}
+    if (status == "success") {
+      dispatch(setOrder(data));
+      window.location.href = Url;
+    } else {
+      setMessage({
+        type: "error",
+        text: "❌ Payment initialization failed!",
+      });
+    }
+  };
   // ✅ Handle Payment
   const handlePayment = async (
     advance,
@@ -48,10 +48,10 @@ const action =async(response,data)=>{
   ) => {
     if (!user?.username || !user?.mobileNumber) {
       setMessage({ type: "error", text: "❌ Missing user details or amount!" });
-      return;
+      return true;
     }
 
-    const orderId = `receipt_${user.mobileNumber}_${date}`;
+    const orderId = `${date}`;
     const data = {
       name: user.username,
       mobileNumber: user.mobileNumber,
@@ -62,15 +62,16 @@ const action =async(response,data)=>{
       status,
       date,
       orderId,
+      discount,
+      appliedCoupon
     };
 
     try {
       if (status !== "CoD") {
         // const response = await axios.post(`${API_BASE_URL}/create-order`, data);
-       
-   await handleBuy(data,action);
-      
-       
+
+        await handleBuy(data, action);
+        return true;
       } else {
         const response = await axios.post(
           `${API_BASE_URL}/create-case-on-delivery`,
@@ -90,6 +91,7 @@ const action =async(response,data)=>{
             type: "error",
             text: "❌ Payment initialization failed!",
           });
+          return true;
         }
       }
     } catch (error) {
@@ -98,12 +100,9 @@ const action =async(response,data)=>{
         type: "error",
         text: "Something went wrong! Please try again.",
       });
+      return true;
     }
   };
-
-  
- 
-
 
   // ✅ Coupon Handling
   const verifyCoupon = async (selectedCoupon) => {
@@ -163,7 +162,6 @@ const action =async(response,data)=>{
   };
   const [coupons, setCoupons] = useState([]);
   const fetchCoupons = async () => {
-
     try {
       const res = await axios.get(`${API_BASE_URL}/api/Allcoupons`);
       setCoupons(res.data.coupons || []);
@@ -172,11 +170,11 @@ const action =async(response,data)=>{
       setMessage({ type: "error", text: "Failed to load coupons" });
     }
   };
-  useEffect(()=>{
- setTotal(CalculateGrandTotal(cartItems));
-       
-  setAdvance( Math.round(total * 0.1))
-  },[total,advance])
+  useEffect(() => {
+    setTotal(CalculateGrandTotal(cartItems));
+
+    setAdvance(Math.round(total * 0.1));
+  }, [total, advance]);
   useEffect(() => {
     fetchCoupons();
     const el = scrollRef.current;
@@ -203,7 +201,8 @@ const action =async(response,data)=>{
     }, 30); // speed (lower = faster)
 
     return () => clearInterval(interval);
-  }, []);
+
+  }, [discount]);
   const handlePayment2 = (totalAmount) => {
     // Here you would implement actual payment initiation logic
     console.log(`Final payment amount ready to be processed: ₹${totalAmount}`);
@@ -258,15 +257,13 @@ const action =async(response,data)=>{
       </style>{" "}
       <div className="font-sans">
         <div className="bg-white min-h-screen shadow-lg p-4 sm:p-6 md:p-10 w-full">
-           <button
-        onClick={() => window.history.back()}
-        className="flex items-center gap-2 text-gray-700 hover:text-black mb-4"
-      >
-        <FaArrowLeft /> Back
-      </button>
+          <button
+            onClick={() => window.history.back()}
+            className="flex items-center gap-2 text-gray-700 hover:text-black mb-4"
+          >
+            <FaArrowLeft /> Back
+          </button>
           <div className="flex flex-col gap-5  lg:flex-row lg:space-x-8">
-          
-
             <CheckoutSummaryCard
               items={cartItems}
               onProceedToPayment={handlePayment2}
@@ -277,26 +274,25 @@ const action =async(response,data)=>{
                 <div className="space-y-4 sm:space-y-6 mt-6 sm:mt-10">
                   <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 items-stretch sm:items-center">
                     <select
-  value={coupon}
-  onChange={(e) => setCoupon(e.target.value)}
-  className="flex-1 p-2 border rounded-lg text-sm sm:text-base bg-white text-black"
->
-  <option value="">Select Coupon</option>
+                      value={coupon}
+                      onChange={(e) => setCoupon(e.target.value)}
+                      className="flex-1 p-2 border rounded-lg text-sm sm:text-base bg-white text-black"
+                    >
+                      <option value="">Select Coupon</option>
 
-  {coupons.map((c) => (
-    <option
-      key={c.id}
-      value={c.code}
-      style={{
-        backgroundColor: "#2d2d2d",  // Dark background
-        color: "#f87559",            // Orange text
-      }}
-    >
-      {c.code} — {c.discount}% OFF
-    </option>
-  ))}
-</select>
-
+                      {coupons.map((c) => (
+                        <option
+                          key={c.id}
+                          value={c.code}
+                          style={{
+                            backgroundColor: "#2d2d2d", // Dark background
+                            color: "#f87559", // Orange text
+                          }}
+                        >
+                          {c.code} — {c.discount}% OFF
+                        </option>
+                      ))}
+                    </select>
 
                     <button
                       onClick={() => verifyCoupon(coupon)}
@@ -305,8 +301,6 @@ const action =async(response,data)=>{
                       Verify
                     </button>
                   </div>
-
-                 
                 </div>
               )}
               {message && (
@@ -343,48 +337,100 @@ const action =async(response,data)=>{
 
               {/* Payment Buttons */}
               <div className="mt-6 sm:mt-3 space-y-4 sm:space-y-6">
+                {/* 1st Button – Pay Advance */}
                 <div className="flex justify-center">
                   <button
-                    onClick={() =>
-                      handlePayment(
+                    disabled={loadingType !== null} // disable if any request running
+                    onClick={async () => {
+                      setLoadingType("advance");
+
+                      await handlePayment(
                         advance - discount,
                         "Pay Advance",
                         total - advance,
                         total,
                         total - discount
-                      )
-                      
-                    }
-                    className="w-full sm:w-auto px-6 sm:px-12 py-3 sm:py-4 text-base sm:text-lg font-bold text-white bg-black rounded-lg shadow-lg hover:from-[#43a047] hover:to-[#4caf50] transition-all duration-300"
+                      );
+
+                      setLoadingType(null); // re-enable buttons
+                    }}
+                    className={`w-full px-6 sm:px-12 py-3 sm:py-4 text-base sm:text-lg font-bold rounded-lg shadow-lg transition-all duration-300
+        ${
+          loadingType !== null
+            ? "bg-gray-700 cursor-not-allowed text-gray-300"
+            : "bg-black text-white"
+        }
+      `}
                   >
-                    Pay Advance ₹{advance - discount}
+                    {loadingType === "advance" ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                        Processing...
+                      </span>
+                    ) : (
+                      <>Booking Advance ₹{advance - discount}</>
+                    )}
                   </button>
                 </div>
 
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center space-y-3 sm:space-y-0 sm:space-x-4">
+                {/* 2nd + 3rd Buttons */}
+                <div className="flex flex-col sm:flex-row justify-between w-full space-y-3 sm:space-y-0 sm:space-x-4">
+                  {/* CANCEL BUTTON */}
                   <button
+                    disabled={loadingType !== null} // disabled during loader
                     onClick={() => window.history.back()}
-                    className="w-full sm:w-auto px-6 sm:px-12 py-3 sm:py-4 text-sm sm:text-base font-bold text-white bg-gray-400 rounded-lg shadow-md hover:bg-gray-500 transition-all duration-300"
+                    className={`
+        w-full sm:w-1/2 px-6 sm:px-12 py-3 sm:py-4 
+        text-sm sm:text-base rounded-lg shadow-md 
+        transition-all duration-300 flex items-center justify-center
+        ${
+          loadingType !== null
+            ? "bg-gray-300 cursor-not-allowed text-gray-500"
+            : "bg-gray-400 text-white hover:bg-gray-500"
+        }
+      `}
+                    style={{ fontSize: "20px", fontWeight: "600" }}
                   >
                     Cancel
                   </button>
 
+                  {/* PAY LATER (COD) */}
                   <button
-                    onClick={() =>
-                      handlePayment(
+                    disabled={loadingType !== null} // disable all buttons
+                    onClick={async () => {
+                      setLoadingType("cod");
+
+                      await handlePayment(
                         0,
                         "CoD",
                         total - discount,
                         total,
                         total - discount
-                      )
-                    }
-                    className="action-button"
+                      );
+
+                      setLoadingType(null);
+                    }}
+                    className={`
+        w-full sm:w-1/2 px-6 py-3 text-base sm:text-lg font-semibold rounded-lg shadow-md 
+        transition-all duration-300 flex items-center justify-center gap-2
+        ${
+          loadingType !== null
+            ? "bg-gray-400 cursor-not-allowed text-gray-300"
+            : "bg-[#f87559] hover:bg-[#ff8f6e] text-white"
+        }
+      `}
                   >
-                    <span className="button-inner">
-                      <CheckCircle size={24}  />
-                      Cash on delivery
-                    </span>
+                    {loadingType === "cod" ? (
+                      <span className="flex items-center gap-2">
+                        <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                        Processing...
+                      </span>
+                    ) : (
+                      <>
+                        <CheckCircle size={24} />
+                        Pay Later
+                      </>
+                    )}
                   </button>
                 </div>
               </div>

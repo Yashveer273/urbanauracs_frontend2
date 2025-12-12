@@ -16,7 +16,7 @@ import { collection, onSnapshot, doc, setDoc, getDoc, updateDoc } from "firebase
 import { firestore } from "../firebaseCon";
 import AddSalesItem from "./AddSalesItem";
 import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
-import { API_BASE_URL, updateSale } from "../API";
+import { API_BASE_URL, updateSale, updateStatusOrCommentDB } from "../API";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { CalculateConveniencetotalFee } from "../components/TexFee";
@@ -55,17 +55,21 @@ export default function SalesSection() {
   const navigate = useNavigate();
   // Fetch sales
   useEffect(() => {
-    const unsubscribe = onSnapshot(
-      collection(firestore, "sales"),
-      (snapshot) => {
-        const newSales = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setSalesData(newSales);
-        setCurrentPage(1);
-      }
-    );
+  const unsubscribe = onSnapshot(
+  collection(firestore, "sales"),
+  (snapshot) => {
+    const newSales = snapshot.docs
+      .map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }))
+      .reverse();               // 👈 reverse order
+
+    setSalesData(newSales);
+    setCurrentPage(1);
+  }
+);
+
     return () => unsubscribe();
   }, []);
 
@@ -350,6 +354,8 @@ product_info.cart.map((item) =>
           )
         );
       }
+ await  updateStatusOrCommentDB(newStatus,saleId);
+
     } catch (e) {
       console.error("Error updating:", e);
     }
@@ -385,7 +391,7 @@ product_info.cart.map((item) =>
   const tableHeaders = [
     "S_orderId",
     "Edit",
-    "create Invoice",
+    
     "User Name",
     "Email",
     "Phone",
@@ -394,12 +400,14 @@ product_info.cart.map((item) =>
     "Pincode",
     "Location",
     "Total Price",
+    "Discount",
     "Payable Amount",
     "Payed Amount",
     "Date/Time",
     "Status",
     "Responsible",
     "Comment",
+    "create Invoice",
   ];
   const orderStatusOptions = [
     "Received",
@@ -543,14 +551,7 @@ product_info.cart.map((item) =>
                         Edit
                       </button>
                     </td>
-                    <td className="py-4 px-6">
-                      <button
-                        className="bg-blue-600 cursor-pointer text-white px-3 py-1 rounded-md"
-                        onClick={() => navigate("/InvoiceApp", { state: sale })}
-                      >
-                        Generate
-                      </button>
-                    </td>
+                   
                     <td className="py-4 px-6">{sale.name}</td>
                     <td className="py-4 px-6">{sale.email}</td>
                     <td className="py-4 px-6">{sale.phone_number}</td>
@@ -570,6 +571,7 @@ product_info.cart.map((item) =>
                     <td className="py-4 px-6">{sale.pincode}</td>
                     <td className="py-4 px-6">{sale.user_location}</td>
                     <td className="py-4 px-6">₹{sale.total_price}</td>
+                    <td className="py-4 px-6">₹{sale.discount}</td>
                     <td className="py-4 px-6">₹{sale.payableAmount}</td>
                     <td className="py-4 px-6">₹{sale.payedAmount}</td>
 
@@ -627,6 +629,14 @@ product_info.cart.map((item) =>
                               : "")}
                         </button>
                       )}
+                    </td>
+                     <td className="py-4 px-6">
+                      <button
+                        className="bg-blue-600 cursor-pointer text-white px-3 py-1 rounded-md"
+                        onClick={() => navigate("/InvoiceApp", { state: sale })}
+                      >
+                        Generate
+                      </button>
                     </td>
                   </tr>
                 ))
@@ -701,6 +711,7 @@ product_info.cart.map((item) =>
                   <tr className="bg-gray-100 text-gray-600 uppercase text-sm">
                     {[
                       "Purchase ID",
+
                       "Product ID",
                       "Product Name",
                       "Vendor Name",
@@ -708,8 +719,9 @@ product_info.cart.map((item) =>
                       "Booking Time",
                       "Booking Address",
                       "Duration",
-                      "Item Price",
+                      "Item Price","Quantity","Item Price*Quantity",
                       "After Convenience Fee",
+                      "Total",
                      
                       "Status",
                       "Comment",
@@ -745,7 +757,10 @@ product_info.cart.map((item) =>
 </td>
 
                       <td className="py-4 px-6">₹{item.item_price}</td>
-                      <td className="py-4 px-6">₹{CalculateConveniencetotalFee(item.item_price)  }</td>
+                      <td className="py-4 px-6">{item.quantity  }</td>
+                      <td className="py-4 px-6">₹{item.item_price*item.quantity  }</td>
+                      <td className="py-4 px-6">₹{CalculateConveniencetotalFee(item.item_price*item.quantity)  }</td>
+                      
                     
 
                       {/* Status Button */}
@@ -1143,4 +1158,4 @@ product_info.cart.map((item) =>
     </div>
   );
 }
-// vendor_details: id,number,name,location
+

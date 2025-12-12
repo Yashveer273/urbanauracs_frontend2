@@ -53,7 +53,7 @@ export  const CalculateGrandTotal = (items) => {
     
     // Sum the final calculated total for each item
     items.forEach(item => {
-        grandTotal += CalculateConveniencetotalFee(item.price);
+        grandTotal += CalculateConveniencetotalFee(item.price*item.quantity);
     });
 
     return grandTotal;
@@ -67,7 +67,7 @@ export const CalculateGrandTotalForInvoice = (items) => {
     
     // Sum the final calculated total for each item
     items.forEach(item => {
-        grandTotal += CalculateConveniencetotalFee(item.item_price);
+        grandTotal += CalculateConveniencetotalFee(item.item_price*item.quantity);
     });
 
     return grandTotal;

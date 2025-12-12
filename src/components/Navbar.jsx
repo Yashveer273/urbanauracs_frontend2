@@ -4,7 +4,7 @@ import { selectCartItemCount, toggleCart } from "../store/CartSlice";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import { selectUser } from "../store/userSlice";
-import AccountMenu from "./AccountMenu";
+
 import {
   FaShoppingCart,
   FaBars,
@@ -18,6 +18,34 @@ import "./Navbar.css";
 
 const Navbar = ({ toggleFilterSidebar, }) => {
   const location = useLocation();
+// ------------------ active-page detection (ADD) ------------------
+  const currentPath = location.pathname.toLowerCase();
+
+  let activePage = "";
+
+  switch (currentPath) {
+    case "/aboutus":
+      activePage = "about";
+      break;
+
+    case "/contact":
+      activePage = "contact";
+      break;
+
+    case "/":
+    case "":
+      activePage = "home";
+      break;
+
+    default:
+      activePage = "";
+  }
+
+  const activeStyle = {
+    color: "#f87559",
+    fontWeight: "bold",
+  };
+  // ---------------- end add ----------------
 
   const user = useSelector(selectUser);
   const navigator = useNavigate();
@@ -163,18 +191,27 @@ const Navbar = ({ toggleFilterSidebar, }) => {
         </div>
 
         <div
-          className={`nav-links ${menuOpen ? "show" : ""} `}
+          className={`nav-links ${menuOpen ? "show" : ""}`}
           style={{ color: "black" }}
         >
-          <Link to="/">Home</Link>
-          <Link to="/Aboutus">About us</Link>
+          <Link to="/" style={activePage === "home" ? activeStyle : {}}>
+            Home
+          </Link>
+          <Link to="/Aboutus" style={activePage === "about" ? activeStyle : {}}>
+            About us
+          </Link>
           {/* <button
             onClick={onAboutClick}
             className="bg-transparent border-none cursor-pointer mr-5"
           >
             About us
           </button> */}
-          <Link to="/contact">Contact</Link>
+          <Link
+            to="/contact"
+            style={activePage === "contact" ? activeStyle : {}}
+          >
+            Contact
+          </Link>
         </div>
 
         <div className={`nav-actions ${menuOpen ? "show" : ""}`}>
