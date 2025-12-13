@@ -80,12 +80,11 @@ const PaymentGateway = () => {
         const { url } = response.data;
 
         if (status === "CoD") {
-
           window.location.href = url;
           dispatch(setOrder(data));
           setMessage({
             type: "success",
-            text: "✅ Order placed! Pay on delivery.",
+            text: "✅ Order placed! Pay on delivery..",
           });
         } else {
           setMessage({
