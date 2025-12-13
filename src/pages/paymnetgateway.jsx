@@ -78,7 +78,7 @@ const PaymentGateway = () => {
           data
         );
         const { url } = response.data;
-console.log(response)
+
         if (status === "CoD") {
 
           window.location.href = url;
