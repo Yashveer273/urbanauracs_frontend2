@@ -16,6 +16,8 @@ import PrivacyPolicy from "./pages/privacyPolicy";
 import RefundCancellationPolicy from "./pages/refundPolicy";
 import AccountMenu from "./components/AccountMenu";
 import CheckoutSummaryCard from "./pages/CartProductSummery";
+import Termsandconditions from "./pages/Termsandconditions";
+import Shippingpolicy from "./pages/Shippingpolicy";
 
 
 function App() {
@@ -33,9 +35,10 @@ function App() {
         <Route path="/Dashboard" element={<Dasboard />} />
         <Route path="/Aboutus" element={<AboutUsPage />} />
         <Route path="/contact" element={<ContactUs />} />
-    
+        <Route path="/TermsAndConditions" element={<Termsandconditions />} />
         <Route path="/PaymentGateway" element={<PaymentGateway/>} />
         <Route path="/CartProductsSummery" element={<CheckoutSummaryCard/>} />
+        <Route path="/ShippingPolicy" element={<Shippingpolicy/>} />
         <Route
           path="/PaymentGateway/PaymentStatus/:id/:amount"
           element={<PaymentStatus />}
