@@ -4,17 +4,11 @@ import "./FooterWithCarousel.css";
 import Chatbot from "./Chatbot";
 import { useSelector } from "react-redux";
 const cities = [
-  "Bangalore",
-  "Udaipur",
-  "Jaipur",
-  "Ahmedabad",
-  "Surat",
-  "Pune",
-  "Gandhinagar",
-  "Mumbai",
-  "Delhi",
-  "Ranchi",
-  "Bihar",
+  "Delhi", "Gurgaon", "Faridabad", "Chandigarh", "Ghaziabad", "Noida",
+    "Kolkata", "Mumbai", "Pune", "Varanasi", "Mathura", "Patna",
+    "Meerut", "Jaipur", "Ranchi", "Lucknow", "Ahmedabad", "Dehradun",
+    "Jammu", "Gwalior", "Bhopal", "Indore", "Hyderabad", "Bengaluru",
+    "Mysore", "Allahabad"
 ];
 
 const FooterWithCarousel = () => {
@@ -22,7 +16,7 @@ const FooterWithCarousel = () => {
   return (
     <>
       <Chatbot />
-     
+
       <div className="brand-carousel-wrapper">
         <div className="brand-carousel">
           {[...cities, ...cities].map((city, index) => (
@@ -68,7 +62,23 @@ const FooterWithCarousel = () => {
                     Home
                   </a>
                 </li>
-
+                <li>
+                  <a
+                    href="/Aboutus"
+                    className="hover:text-white transition-colors duration-200"
+                  >
+                    About us
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="/contact"
+                    className="hover:text-white transition-colors duration-200"
+                  >
+                    Contact
+                  </a>
+                </li>
+                
                 <li>
                   <a
                     href="/PrivacyPolicy"
@@ -85,12 +95,21 @@ const FooterWithCarousel = () => {
                     Refund Cancellation Policy
                   </a>
                 </li>
+
                 <li>
                   <a
-                    href="/contact"
+                    href="/ShippingPolicy"
                     className="hover:text-white transition-colors duration-200"
                   >
-                    Contact
+                    Shipping Policy
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="/TermsAndConditions"
+                    className="hover:text-white transition-colors duration-200"
+                  >
+                    Terms & Conditions
                   </a>
                 </li>
               </ul>
