@@ -1,11 +1,11 @@
 import React from "react";
 
 import { ChevronLeft } from "lucide-react";
-import { selectSocialLinks } from "../store/socialLinks";
-import { useSelector } from "react-redux";
+// import { selectSocialLinks } from "../store/socialLinks";
+// import { useSelector } from "react-redux";
 
 const Termsandconditions = () => {
-  const links = useSelector(selectSocialLinks); // <-- Get data here
+//   const links = useSelector(selectSocialLinks); // <-- Get data here
 
   const handleGoBack = () => {
     window.history.back();
@@ -157,8 +157,5 @@ const Termsandconditions = () => {
   );
 };
 
-<<<<<<< HEAD
+
 export default Termsandconditions;
-=======
-export default Termsandconditions;
->>>>>>> 086c20ec925c0fe880af97e86afdc912bc2a51f6
