@@ -157,4 +157,8 @@ const Termsandconditions = () => {
   );
 };
 
+<<<<<<< HEAD
 export default Termsandconditions;
+=======
+export default Termsandconditions;
+>>>>>>> 086c20ec925c0fe880af97e86afdc912bc2a51f6

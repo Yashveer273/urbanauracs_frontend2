@@ -160,4 +160,8 @@ const Shippingpolicy = () => {
   );
 };
 
+<<<<<<< HEAD
 export default Shippingpolicy;
+=======
+export default Shippingpolicy;
+>>>>>>> 086c20ec925c0fe880af97e86afdc912bc2a51f6

@@ -81,7 +81,7 @@ const PaymentGateway = () => {
 console.log(response)
         if (status === "CoD") {
 
-          // window.location.href = url;
+          window.location.href = url;
           dispatch(setOrder(data));
           setMessage({
             type: "success",
