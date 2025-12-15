@@ -205,10 +205,10 @@ const ServiceDetailPopup = ({ service, onClose, vendor,userLocation }) => {
         />
 
         {/* Popup */}
-        <div className="popup-fade relative w-full max-w-4xl max-h-[75vh]  overflow-y-scroll rounded-2xl bg-gray-800 text-gray-200 shadow-2xl">
+        <div className="popup-fade relative w-full max-w-4xl max-h-[75vh]  overflow-y-scroll rounded-2xl bg-gray-800 text-white shadow-2xl">
           {/* Close button */}
           <button
-            className="absolute top-3 right-3 z-10 text-gray-400 hover:text-white transition-colors"
+            className="absolute top-3 right-3 z-10 text-white hover:text-white transition-colors"
             onClick={onClose}
           >
             <FaTimes size={28} />
@@ -225,20 +225,20 @@ const ServiceDetailPopup = ({ service, onClose, vendor,userLocation }) => {
 
             <div className=" h-130 overflow-y-scroll md:w-1/2 flex flex-col ">
               <div className="flex-1 p-4 md:p-6 custom-scroll">
-                <h2 className="text-xl md:text-2xl font-bold mb-2">
+                <h2 className="text-xl md:text-2xl font-bold mb-2 text-white">
                   {service.title}
                 </h2>
-                <p className="text-sm text-gray-400 mb-4">
+                <p className="text-sm text-white mb-4">
                   {service.description}
                 </p>
 
-                <div className="flex items-center space-x-4 text-xs text-gray-400 mb-4">
+                <div className="flex items-center space-x-4 text-xs text-white mb-4">
                   <span className="flex items-center">
                     <FaStar className="text-yellow-400 mr-1" />
                     {service.rating} ({service.reviews} reviews)
                   </span>
                   <span className="flex items-center">
-                    <FaClock className="text-gray-400 mr-1" />
+                    <FaClock className="text-white mr-1" />
                     {service.duration}
                   </span>
                 </div>
@@ -250,7 +250,7 @@ const ServiceDetailPopup = ({ service, onClose, vendor,userLocation }) => {
     ₹{service.price}
 
     {/* Original Price with strikethrough */}
-    <span className="text-gray-700 text-lg md:text-xl line-through">
+    <span className="text-white text-lg md:text-xl line-through">
       ₹{service.originalPrice}
     </span>
 
@@ -262,7 +262,7 @@ const ServiceDetailPopup = ({ service, onClose, vendor,userLocation }) => {
                   <h3 className="text-lg font-semibold text-white mb-1">
                     Inclusions:
                   </h3>
-                  <ul className="list-disc list-outside text-gray-300 text-sm space-y-1 ml-6 pl-2">
+                  <ul className="list-disc list-outside text-white text-sm space-y-1 ml-6 pl-2">
                     {(service.inclusions || []).map((item, index) => (
                       <li key={index}>{item}</li>
                     ))}
@@ -274,7 +274,7 @@ const ServiceDetailPopup = ({ service, onClose, vendor,userLocation }) => {
                     Exclusions:
                   </h3>{" "}
                   {/* Change list-inside to list-outside and adjust ml/pl */}
-                  <ul className="list-disc list-outside text-gray-300 text-sm space-y-1 ml-6 pl-2">
+                  <ul className="list-disc list-outside text-white text-sm space-y-1 ml-6 pl-2">
                     {(service.exclusions || []).map((item, index) => (
                       <li key={index}>{item}</li>
                     ))}
@@ -334,15 +334,15 @@ const ServiceDetailPopup = ({ service, onClose, vendor,userLocation }) => {
                 <div className="meta-left">
                   <div className="rating-duration">
                      <div className="service-header">
-                    <h3 className="service-title">{service.title}</h3>
-                    <p className="service-description">{service.description}</p>
+                    <h3 className="service-title" style={{color:"white"}}>{service.title}</h3>
+                    <p className="service-description" style={{color:"white"}}>{service.description}</p>
                   </div>
-                    <span className="rating">
-                      <FaStar className="star-icon" />
+                    <span className="rating"style={{color:"white", alignItems:"start"}}>
+                      <FaStar className="star-icon"/>
                       {service.rating} • {service.reviews} reviews
                     </span>
-                    <span className="duration">
-                      <FaClock className="clock-icon" /> {service.duration}
+                    <span className="duration" style={{color:"white"}}>
+                      <FaClock className="clock-icon" style={{color:"white", alignItems:"start"}} /> {service.duration}
                     </span>
                   </div>
       

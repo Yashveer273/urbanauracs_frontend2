@@ -1,29 +1,15 @@
 
-import React, { useRef, useState } from 'react';
+import React from 'react';
 import { FaArrowLeft, FaArrowRight } from 'react-icons/fa';
 import ServiceCard from './ServiceCard';
-import ViewAllPopup from './ViewAllPopup';
+
 import './VendorSection.css';
 
 const VendorSection = ({ vendor,userLocation }) => {
-  const [showPopup, setShowPopup] = useState(false);
-  const scrollRef = useRef(null);
 
-  const handleScroll = (direction) => {
-    const container = scrollRef.current;
-    const scrollAmount = 320 * 2;
 
-    if (direction === 'left') {
-      container.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
-    } else {
-      container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-    }
-  };
 
-  const handleViewAll = () => {
-    setShowPopup(true);
-  };
-
+  
   const servicesToRender = vendor?.services || [];
 
   if (!vendor || servicesToRender.length === 0) {
@@ -42,35 +28,10 @@ const VendorSection = ({ vendor,userLocation }) => {
             </p>
           </div>
 
-          <div className="view-scroll-controls">
-            <button className="view-all-main-btn" onClick={handleViewAll}>
-              View All
-            </button>
-            <button
-              onClick={() => handleScroll('left')}
-              className="arrow-btn-circle"
-            >
-              <FaArrowLeft />
-            </button>
-            <button
-              onClick={() => handleScroll('right')}
-              className="arrow-btn-circle"
-            >
-              <FaArrowRight />
-            </button>
-          </div>
         </div>
       </div>
-{showPopup && (
-        <ViewAllPopup
-        vendor={vendor}
-        userLocation={userLocation}
-          category={vendor.vendorName}
-          services={servicesToRender}
-          onClose={() => setShowPopup(false)}
-        />
-      )}
-      <div className="service-card-wrapper" ref={scrollRef}>
+
+      <div className="service-card-wrapper">
         
         {servicesToRender.map((service) => (
           <div key={service.id} className="service-card-slider">

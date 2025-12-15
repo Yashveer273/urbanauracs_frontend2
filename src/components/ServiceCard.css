@@ -6,89 +6,12 @@
 }
 
 .service-card {
-  width: 100%;
-  max-width: 360px;
   margin: 10px auto;
   border-radius: 8px;
-  overflow: hidden;
+  height: auto;
   transition: transform 0.3s ease;
 }
 
-.image-container {
-  position: relative;
-  overflow: hidden;
-  height: 300px;
-  border-radius: 8px;
-  width: 100%;
-}
-
-.service-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-  border-radius: 8px;
-}
-
-.frosted-overlay {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 70px;
-  background: rgba(255, 255, 255, 0.25);
-  backdrop-filter: blur(10px);
-  padding: 12px;
-  border-radius: 0 0 8px 8px;
-  transition: all 0.4s ease;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  z-index: 1;
-  overflow: hidden;
-}
-
-.service-card:hover .frosted-overlay {
-  height: 100%;
-  padding: 20px;
-  border-radius: 8px;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-}
-
-.service-header {
-  transition: all 0.4s ease;
-  text-align: left;
-  width: 100%;
-}
-
-.service-card:hover .service-header {
-  align-items: center;
-  justify-content: center;
-  display: flex;
-  flex-direction: column;
-}
-
-.frosted-overlay h3,
-.frosted-overlay p {
-  margin: 0;
-  color: #15171f;
-}
-
-.hover-actions {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 14px;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  margin-top: 20px;
-}
-
-.service-card:hover .hover-actions {
-  opacity: 1;
-}
 
 .add-cart-btn {
   background: #15171f;
@@ -102,23 +25,11 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: transform 0.3s ease;
-}
-.add-cart-btn:hover {
-  background:#f87559;
-  color: white;
-  transform: scale(1.1);
+  
 }
 
-.frosted-action-group {
-  display: flex;
-  flex-direction: row;
-  padding: 0;
-  gap: 1px;
-  border-radius: 40px;
-  overflow: hidden;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-}
+
+
 
 .btn-text {
   background-color: #15171f;
@@ -145,11 +56,11 @@
   font-size: 16px;
 }
 
-.frosted-action-group:hover .btn-text,
-.frosted-action-group:hover .btn-icon-wrapper {
+/* .frosted-action-group:hover .btn-text, */
+/* .frosted-action-group:hover .btn-icon-wrapper {
   background-color: #f87559;
   color: white;
-}
+} */
 
 .service-content {
   padding: 16px;
@@ -229,35 +140,78 @@
 
 .meta-right {
   display: flex;
-  align-items: center;
-  margin-top: 8px;
+  justify-content:space-around;
+
+
+  margin-top: 20px;
 }
 
-@media (max-width: 1024px) {
-  .service-card {
-    width: calc(50% - 20px);
-    max-width: none;
-  }
+.maingridbox {
+    border-radius: 10px;
+
+    padding: 7px;
+    background-color: #fff; /* ensures shadow is visible */
+
+    /* Box shadow */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease; /* smooth hover effect */
 }
 
-@media (max-width: 768px) {
-  .service-card {
-    width: 100%;
-    max-width: 100%;
-    margin: 10px 0;
-  }
+/* Optional: hover effect for elevation */
+.maingridbox:hover {
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+    transform: translateY(-2px);
 }
- .custom-scroll {
-      scrollbar-width: thin;
-      scrollbar-color: #444 #222;
-    }
-    .custom-scroll::-webkit-scrollbar {
-      width: 8px;
-    }
-    .custom-scroll::-webkit-scrollbar-track {
-      background: #222;
-    }
-    .custom-scroll::-webkit-scrollbar-thumb {
-      background-color: #444;
-      border-radius: 4px;
-    }
+
+.service-description {
+  font-size: 14px;
+  color: #000000;
+  line-height: 1.5;
+
+  /* IMPORTANT */
+  white-space: normal;        /* allows wrapping */
+  word-break: break-word;     /* breaks long words */
+  overflow-wrap: break-word;  /* modern support */
+}
+.service-image {
+  width: 350px;          /* ✅ FIXED WIDTH */
+  height: 210px; 
+  object-fit: cover;
+  
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+.half-image {
+          /* ✅ FIXED HEIGHT */
+   border-radius: 8px;
+  position: relative;
+  background: #000000;
+  overflow: hidden;
+}
+
+
+
+/* Skeleton Loader */
+.image-skeleton {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    #e5e7eb 25%,
+    #f3f4f6 37%,
+    #e5e7eb 63%
+  );
+  background-size: 400% 100%;
+  animation: shimmer 1.4s infinite ease;
+}
+
+@keyframes shimmer {
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+
+
+
+.service-image.loaded {
+  opacity: 1;
+}

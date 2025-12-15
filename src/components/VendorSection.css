@@ -108,12 +108,17 @@
 }
 
 .service-card-wrapper {
-  display: flex;
-  gap: 16px;
-  overflow-x: auto;
+  display: grid;
+   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+ 
+margin-top: 3vh;
+gap: 2vh;
+
+      /* or any height */
+  overflow-y: auto;
   scroll-behavior: smooth;
-  scrollbar-width: none;
 }
+
 
 .service-card-wrapper::-webkit-scrollbar {
   display: none;
@@ -122,6 +127,7 @@
 .service-card-slider {
   transition: transform 0.5s ease-in-out;
   min-width: 300px;
+  height: 400px;
 }
 .view-scroll-controls {
   display: flex;
