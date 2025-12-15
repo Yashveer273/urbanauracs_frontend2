@@ -179,7 +179,7 @@ export const handleBuy = async (data, action) => {
 
   // Step 3: Open Razorpay checkout
   const options = {
-    key: "rzp_live_RrmpX5BJpqKq3C", // <-- put your test key_id here
+    key:order.key, 
     amount: order.amount,
     currency: "INR",
     name: "UrbenAuraServices",
@@ -194,8 +194,6 @@ export const handleBuy = async (data, action) => {
     handler: async function (response) {
 
       try {
-       
-        // Send payment details + buyer info + message to backend
         const res = await axios.post(
           `${API_BASE_URL}/BuyService/verify-payment`,
           {
@@ -244,7 +242,8 @@ export const handlePaymentLeft = async (data, action) => {
       }
   // Step 3: Open Razorpay checkout
   const options = {
-    key: "rzp_live_RrmpX5BJpqKq3C", // <-- put your test key_id here
+     // <-- put your test key_id here
+    key:order.key, 
     amount: order.amount,
     currency: order.currency,
     name: "My Home Cleaning Services",
