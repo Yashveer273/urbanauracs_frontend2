@@ -3,7 +3,7 @@
   flex-direction: row;
   align-items: stretch;
   width: 100%;
-  max-width: 420px;
+  max-width: 100vh;
   min-height: 140px;
   border-radius: 12px;
   overflow: hidden;

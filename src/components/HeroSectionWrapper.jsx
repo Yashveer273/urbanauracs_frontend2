@@ -151,7 +151,31 @@ const BookingForm = ({ MyCity }) => {
       transition={{ duration: 0.6 }}
     >
       <div className="flex flex-col md:flex-col items-center gap-4">
-        {/* Service */}
+       
+
+        {/* Divider */}
+
+        {/* Booking City */}
+        <div className="w-full md:flex-1 flex items-center relative">
+          <div className="w-full">
+            <select
+              id="Bookinglocation"
+              value={BookingCity}
+              onChange={(e) => setBookingCity(e.target.value)}
+              className="w-full bg-transparent focus:outline-none font-semibold text-white placeholder-gray-500 border-b border-gray-600 pb-1 cursor-pointer relative z-10"
+            >
+              <option value="" disabled>
+                Select City
+              </option>
+              {BookingCities.map((city, index) => (
+                <option key={index} value={city} className="bg-[#2c2d34] text-white">
+                  {city}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+ {/* Service */}
         <div className="w-full md:flex-1 flex items-center relative">
           <div className="w-full">
             <select
@@ -176,30 +200,6 @@ const BookingForm = ({ MyCity }) => {
             </select>
           </div>
         </div>
-
-        {/* Divider */}
-
-        {/* Booking City */}
-        <div className="w-full md:flex-1 flex items-center relative">
-          <div className="w-full">
-            <select
-              id="Bookinglocation"
-              value={BookingCity}
-              onChange={(e) => setBookingCity(e.target.value)}
-              className="w-full bg-transparent focus:outline-none font-semibold text-white placeholder-gray-500 border-b border-gray-600 pb-1 cursor-pointer relative z-10"
-            >
-              <option value="" disabled>
-                Select City
-              </option>
-              {BookingCities.map((city, index) => (
-                <option key={index} value={city} className="bg-[#2c2d34] text-white">
-                  {city}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
         {/* Divider */}
       </div>
 

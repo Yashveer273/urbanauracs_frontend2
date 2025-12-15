@@ -61,8 +61,17 @@ const VendorSection = ({ vendor,userLocation }) => {
           </div>
         </div>
       </div>
-
+{showPopup && (
+        <ViewAllPopup
+        vendor={vendor}
+        userLocation={userLocation}
+          category={vendor.vendorName}
+          services={servicesToRender}
+          onClose={() => setShowPopup(false)}
+        />
+      )}
       <div className="service-card-wrapper" ref={scrollRef}>
+        
         {servicesToRender.map((service) => (
           <div key={service.id} className="service-card-slider">
             {/* The ServiceCard now receives the full service object as a prop */}
@@ -71,13 +80,7 @@ const VendorSection = ({ vendor,userLocation }) => {
         ))}
       </div>
 
-      {showPopup && (
-        <ViewAllPopup
-          category={vendor.vendorName}
-          services={servicesToRender}
-          onClose={() => setShowPopup(false)}
-        />
-      )}
+      
     </div>
   );
 };

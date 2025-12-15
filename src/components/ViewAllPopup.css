@@ -59,6 +59,6 @@
 @media (max-width: 768px) {
   .viewall-scrollable {
     grid-template-columns: 1fr;
-    max-height: 350px;
+    max-height: 100vh;
   }
 }
