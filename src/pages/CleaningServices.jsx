@@ -260,16 +260,18 @@ const callUpate=()=>{
 
       <div className="container mx-auto px-6 py-8">
         <div className=" bg-gray-100 mb-6 p-1 sm:p-2 flex items-center justify-center">
-          <div className="w-full max-w-lg space-y-[10px]">
-            <ReusableSearchAutocomplete
-              data={InitialSpells}
-              onItemSelected={handleAppItemSelect}
-            />
-            <ReusableFilterOnDescriptionSearchAutocomplete
-              data={filteredVendors}
-              onItemSelected={FilterOnDescription}
-            />
-          </div>
+          <div className="w-full max-w-lg flex flex-col gap-[10px] lg:flex-row lg:gap-[20px]">
+  <ReusableSearchAutocomplete
+    data={InitialSpells}
+    onItemSelected={handleAppItemSelect}
+    className="flex-1"
+  />
+  <ReusableFilterOnDescriptionSearchAutocomplete
+    data={filteredVendors}
+    onItemSelected={FilterOnDescription}
+    className="flex-1"
+  />
+</div>
         </div>
         <h1 className="text-3xl  font-bold text-center mb-3 capitalize">
           {serviceName.replace(/-/g, " ")} Services

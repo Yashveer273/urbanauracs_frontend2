@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useCallback } from "react";
 import { Search, X } from "lucide-react";
+import { Filter } from "lucide-react";
 
 const ReusableFilterOnDescriptionSearchAutocomplete = ({ data, onItemSelected }) => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -61,7 +62,7 @@ const ReusableFilterOnDescriptionSearchAutocomplete = ({ data, onItemSelected })
     <div className="w-full max-w-lg mx-auto relative">
       <div className="relative flex items-center shadow-xl rounded-xl focus-within:ring-4 focus-within:ring-[#f87559] transition-all duration-300 bg-white">
         <div className="absolute left-4 text-[#f87559] pointer-events-none">
-          <Search className="w-5 h-5" />
+          <Filter className="w-5 h-5" />
         </div>
 
         <input
