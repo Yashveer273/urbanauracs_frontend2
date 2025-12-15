@@ -1,74 +1,80 @@
- export function CalculateConvenienceFee(baseAmount) {
+// ------------------------------
+// Calculate Convenience Fee
+// ------------------------------
+export function CalculateConvenienceFee(baseAmount) {
   const base = Number(baseAmount) || 0;
 
-  // Step 1: Commission (not rounded)
+  // 1️⃣ Internal commission (25%) – NOT charged to customer
   const commissionFee = base * 0.25;
 
-  // Step 2: Other fees
-  const gst18 = commissionFee * 0.18;
-  const platformFee = commissionFee * 0.02;
+  // 2️⃣ Charges on commission
+  const gst18 = commissionFee * 0.18;       // 18% GST
+  const platformFee = commissionFee * 0.02; // 2% Platform fee
 
-  // Step 3: Convenience Fee (rounded)
+  // 3️⃣ Convenience Fee (what customer pays)
   const convenienceFee = Math.round(gst18 + platformFee);
 
-  // Step 4: Final total
-  const total = base + commissionFee + convenienceFee;
-  const TexFee = commissionFee + convenienceFee;
+  // 4️⃣ Final total payable by customer
+  const total = base + convenienceFee;
 
   return {
-    base,
-    commissionFee,
+    base,              // Order amount
+    commissionFee,     // Internal (admin only)
     gst18,
     platformFee,
-    convenienceFee,
-    total,
-    TexFee
+    convenienceFee,    // Customer visible (≈ 217)
+    total              // base + convenienceFee
   };
 }
+
+// ------------------------------
+// Calculate Total for ONE item
+// ------------------------------
 export function CalculateConveniencetotalFee(baseAmount) {
   const base = Number(baseAmount) || 0;
 
-  // Commission
   const commissionFee = base * 0.25;
-
-  // Other fees
   const gst18 = commissionFee * 0.18;
   const platformFee = commissionFee * 0.02;
 
-  // Convenience Fee
   const convenienceFee = Math.round(gst18 + platformFee);
 
-  // Final total
-  const total = base + commissionFee + convenienceFee;
-
-  return total;   // ⬅️ Return only total
+  // ✅ Customer pays ONLY this
+  return base + convenienceFee;
 }
 
-export  const CalculateGrandTotal = (items) => {
-    if (!Array.isArray(items) || items.length === 0) {
-        return 0;
-    }
+// ------------------------------
+// Grand Total (Cart)
+// ------------------------------
+export const CalculateGrandTotal = (items) => {
+  if (!Array.isArray(items) || items.length === 0) {
+    return 0;
+  }
 
-    let grandTotal = 0;
-    
-    // Sum the final calculated total for each item
-    items.forEach(item => {
-        grandTotal += CalculateConveniencetotalFee(item.price*item.quantity);
-    });
+  let grandTotal = 0;
 
-    return grandTotal;
+  items.forEach(item => {
+    const itemTotal = item.price * item.quantity;
+    grandTotal += CalculateConveniencetotalFee(itemTotal);
+  });
+
+  return grandTotal;
 };
+
+// ------------------------------
+// Grand Total (Invoice)
+// ------------------------------
 export const CalculateGrandTotalForInvoice = (items) => {
-    if (!Array.isArray(items) || items.length === 0) {
-        return 0;
-    }
+  if (!Array.isArray(items) || items.length === 0) {
+    return 0;
+  }
 
-    let grandTotal = 0;
-    
-    // Sum the final calculated total for each item
-    items.forEach(item => {
-        grandTotal += CalculateConveniencetotalFee(item.item_price*item.quantity);
-    });
+  let grandTotal = 0;
 
-    return grandTotal;
+  items.forEach(item => {
+    const itemTotal = item.item_price * item.quantity;
+    grandTotal += CalculateConveniencetotalFee(itemTotal);
+  });
+
+  return grandTotal;
 };

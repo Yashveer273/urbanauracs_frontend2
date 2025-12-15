@@ -158,41 +158,43 @@ export const getMyOrderHistory = async (userId, page = 1, limit = 10) => {
   }
 };
 
-const loadScript = (src) => {
-  return new Promise((resolve) => {
-    const script = document.createElement("script");
-    script.src = src;
-    script.onload = () => resolve(true);
-    script.onerror = () => resolve(false);
-    document.body.appendChild(script);
-  });
-};
+
 
 export const handleBuy = async (data, action) => {
   // Step 1: Load Razorpay SDK
-  const loaded = await loadScript(
-    "https://checkout.razorpay.com/v1/checkout.js"
-  );
-  if (!loaded) {
-    alert("Razorpay SDK failed to load. Are you online?");
-    return;
-  }
+
 
   // Step 2: Create order on backend
 
   const res = await axios.post(`${API_BASE_URL}/BuyService/create-order`, data);
   const order = res.data;
+   if (!window.Razorpay) {
+        await new Promise((resolve) => {
+          const script = document.createElement("script");
+          script.src = "https://checkout.razorpay.com/v1/checkout.js";
+          script.onload = resolve;
+          document.body.appendChild(script);
+        });
+      }
 
   // Step 3: Open Razorpay checkout
   const options = {
-    key: "rzp_test_Rp3tT245sBz1CU", // <-- put your test key_id here
+    key: "rzp_live_RrmpX5BJpqKq3C", // <-- put your test key_id here
     amount: order.amount,
-    currency: order.currency,
-    name: "My Home Cleaning Services",
+    currency: "INR",
+    name: "UrbenAuraServices",
     description: "Order Payment",
     order_id: order.id,
+     prefill: {
+      name: data.name,
+      email: data.user?.email,
+      contact: data.mobileNumber,
+    },
+    
     handler: async function (response) {
+
       try {
+       
         // Send payment details + buyer info + message to backend
         const res = await axios.post(
           `${API_BASE_URL}/BuyService/verify-payment`,
@@ -215,11 +217,8 @@ export const handleBuy = async (data, action) => {
         return err.response;
       }
     },
-    prefill: {
-      name: data.name,
-      contact: data.mobileNumber,
-    },
-    theme: { color: "#3399cc" },
+   
+    theme: { color: "#cc4f33ff" },
   };
 
   const rzp = new window.Razorpay(options);
@@ -228,23 +227,24 @@ export const handleBuy = async (data, action) => {
 
 
 export const handlePaymentLeft = async (data, action) => {
-  // Step 1: Load Razorpay SDK
-  const loaded = await loadScript(
-    "https://checkout.razorpay.com/v1/checkout.js"
-  );
-  if (!loaded) {
-    alert("Razorpay SDK failed to load. Are you online?");
-    return;
-  }
 
-  // Step 2: Create order on backend
+ 
+
+  // Step 1: Create order on backend
 
   const res = await axios.post(`${API_BASE_URL}/BuyService/handlePaymentLeft`, data);
   const order = res.data;
-
+ if (!window.Razorpay) {
+        await new Promise((resolve) => {
+          const script = document.createElement("script");
+          script.src = "https://checkout.razorpay.com/v1/checkout.js";
+          script.onload = resolve;
+          document.body.appendChild(script);
+        });
+      }
   // Step 3: Open Razorpay checkout
   const options = {
-    key: "rzp_test_Rp3tT245sBz1CU", // <-- put your test key_id here
+    key: "rzp_live_RrmpX5BJpqKq3C", // <-- put your test key_id here
     amount: order.amount,
     currency: order.currency,
     name: "My Home Cleaning Services",
@@ -278,7 +278,7 @@ export const handlePaymentLeft = async (data, action) => {
       name: data.name,
       contact: data.mobileNumber,
     },
-    theme: { color: "#3399cc" },
+    theme: { color: "#cc4f33ff" },
   };
 
   const rzp = new window.Razorpay(options);

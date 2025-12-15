@@ -63,7 +63,8 @@ const PaymentGateway = () => {
       date,
       orderId,
       discount,
-      appliedCoupon
+      appliedCoupon,
+      user
     };
 
     try {
