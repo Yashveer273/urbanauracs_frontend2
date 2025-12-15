@@ -21,6 +21,7 @@ import { loginUser } from "../store/userSlice";
 import { services } from "../data/ProductData";
 import { fetchProdDataDESC } from "../API";
 import ReusableSearchAutocomplete from "../components/SearchBox";
+import ReusableFilterOnDescriptionSearchAutocomplete from "../components/ReusableFilterOnDescriptionSearchAutocomplete";
 
 const CleaningService = () => {
   const { parameter } = useParams();
@@ -176,6 +177,13 @@ const callUpate=()=>{
      
       setAllVendors(selectedItem.data);
   };
+  const FilterOnDescription = (selectedItem) => {
+
+     
+     
+      console.log("Filtering on description:", selectedItem);
+      setFilteredVendors(selectedItem);
+  };
 
   return (
     <div className="service-page relative">
@@ -252,10 +260,14 @@ const callUpate=()=>{
 
       <div className="container mx-auto px-6 py-8">
         <div className=" bg-gray-100 mb-6 p-1 sm:p-2 flex items-center justify-center">
-          <div className="w-full max-w-lg">
+          <div className="w-full max-w-lg space-y-[10px]">
             <ReusableSearchAutocomplete
               data={InitialSpells}
               onItemSelected={handleAppItemSelect}
+            />
+            <ReusableFilterOnDescriptionSearchAutocomplete
+              data={filteredVendors}
+              onItemSelected={FilterOnDescription}
             />
           </div>
         </div>

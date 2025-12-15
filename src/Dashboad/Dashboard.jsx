@@ -431,8 +431,8 @@ const Dashboard = () => {
     rating: "",
     reviews: "",
     location: "",
-     vendorlocation: "",
-    vendor_id:""
+    vendorlocation: "",
+    vendor_id: "",
   });
   const [editingVendorId, setEditingVendorId] = useState(null);
 
@@ -453,7 +453,7 @@ const Dashboard = () => {
     inclusions: "",
     exclusions: "",
   });
-  
+
   const [editingServiceIdInVendor, setEditingServiceIdInVendor] =
     useState(null);
 
@@ -935,20 +935,19 @@ const Dashboard = () => {
   services.filter((service) =>
     service.ServiceName.toLowerCase().includes(searchTerm.toLowerCase())
   );
- 
 
   const passVender = (selectedVendor) => {
     console.log(selectedVendor);
-   
-       setVendorFormData({
-    vendorName: selectedVendor.vendorName,
-    vendorImage: selectedVendor.vendorImage,
-    rating: selectedVendor.rating,
-    reviews: selectedVendor.reviews,
-    vendorlocation: selectedVendor.vendorLocation,
-    vendor_id:selectedVendor._id,
-    location:vendorFormData.location
-  });
+
+    setVendorFormData({
+      vendorName: selectedVendor.vendorName,
+      vendorImage: selectedVendor.vendorImage,
+      rating: selectedVendor.rating,
+      reviews: selectedVendor.reviews,
+      vendorlocation: selectedVendor.vendorLocation,
+      vendor_id: selectedVendor._id,
+      location: vendorFormData.location,
+    });
   };
   // --------------------------------------------------------------------------------------
   const handleTabClick = (tabName) => {
@@ -1255,6 +1254,34 @@ const Dashboard = () => {
         return null;
     }
   };
+  const cities = [
+    "Delhi",
+    "Gurgaon",
+    "Faridabad",
+    "Chandigarh",
+    "Ghaziabad",
+    "Noida",
+    "Kolkata",
+    "Mumbai",
+    "Pune",
+    "Varanasi",
+    "Mathura",
+    "Patna",
+    "Meerut",
+    "Jaipur",
+    "Ranchi",
+    "Lucknow",
+    "Ahmedabad",
+    "Dehradun",
+    "Jammu",
+    "Gwalior",
+    "Bhopal",
+    "Indore",
+    "Hyderabad",
+    "Bengaluru",
+    "Mysore",
+    "Allahabad",
+  ];
 
   return isAuthenticated != true ? (
     <DashboardLogin />
@@ -1453,7 +1480,6 @@ const Dashboard = () => {
                   type="text"
                   placeholder="Vendor Image URL"
                   disabled={true}
-                 
                   value={vendorFormData.vendorImage}
                   onChange={(e) =>
                     setVendorFormData({
@@ -1463,7 +1489,7 @@ const Dashboard = () => {
                   }
                   className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
-                
+
                 <input
                   type="number"
                   step="0.1"
@@ -1491,9 +1517,10 @@ const Dashboard = () => {
                   }
                   className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
-                <input
-                  type="text"
-                  placeholder="Service available Location (e.g., Bengaluru, Karnataka)"
+
+                <select
+                  id="vendorLocation"
+                  name="vendorLocation"
                   value={vendorFormData.location}
                   onChange={(e) =>
                     setVendorFormData({
@@ -1501,8 +1528,20 @@ const Dashboard = () => {
                       location: e.target.value,
                     })
                   }
-                  className="p-3 border rounded-lg col-span-1 sm:col-span-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
+                  required
+                  className="mt-1 block w-full border border-gray-300 rounded-lg shadow-sm p-3 focus:ring-blue-500 focus:border-blue-500 transition duration-150 max-h-40 overflow-y-auto"
+                >
+                  <option value="">-- Select City --</option>
+                  {cities.map((city, index) => (
+                    <option
+                      key={index}
+                      value={city}
+                      className="bg-blue-900 text-white" // navy blue background + white text
+                    >
+                      {city}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div className="flex space-x-2 mt-4">
                 <button
