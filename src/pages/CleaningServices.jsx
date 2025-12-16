@@ -256,6 +256,8 @@ const CleaningService = () => {
               onItemSelected={handleAppItemSelect}
               className="flex-1"
             />
+            
+            
             <ReusableFilterOnDescriptionSearchAutocomplete
               data={allVendors}
               onItemSelected={FilterOnDescription}
