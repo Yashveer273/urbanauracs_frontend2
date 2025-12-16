@@ -22,6 +22,7 @@ import { services } from "../data/ProductData";
 import { fetchProdDataDESC } from "../API";
 import ReusableSearchAutocomplete from "../components/SearchBox";
 import ReusableFilterOnDescriptionSearchAutocomplete from "../components/ReusableFilterOnDescriptionSearchAutocomplete";
+import { all } from "axios";
 
 const CleaningService = () => {
   const { parameter } = useParams();
@@ -62,14 +63,14 @@ const CleaningService = () => {
             Product.location?.trim().toLowerCase().replace(/\s+/g, "") ===
             BookingCity.trim().toLowerCase().replace(/\s+/g, "")
         );
-   
-     
+
         const formattedServices = services.map((s, index) => ({
           id: index,
           name: s.ServiceName,
           data: s.data,
         }));
         setAllVendors(Data);
+        setFilteredVendors(Data);
         SetInitialSpells(formattedServices);
       }
     } else {
@@ -77,32 +78,28 @@ const CleaningService = () => {
       const Data = serviceData.data.filter(
         (Product) =>
           Product.location?.trim().toLowerCase().replace(/\s+/g, "") ===
-         appliedFilters.BookingCity.trim().toLowerCase().replace(/\s+/g, "")
+          appliedFilters.BookingCity.trim().toLowerCase().replace(/\s+/g, "")
       );
       const formattedServices = services.map((s, index) => ({
-          id: index,
-          name: s.ServiceName,
-          data: s.data,
-        }));
-        setAllVendors(Data);
-        SetInitialSpells(formattedServices);
-   
+        id: index,
+        name: s.ServiceName,
+        data: s.data,
+      }));
+      setAllVendors(Data);
+      setFilteredVendors(Data);
+      SetInitialSpells(formattedServices);
     }
   };
 
   useEffect(() => {
-
     callProductData();
   }, []);
-const callUpate=()=>{
-
+  const callUpate = () => {
     let vendorsToFilter = allVendors;
 
- 
     const activeBookingCities = appliedFilters.BookingCity || BookingCity;
 
     if (activeBookingCities) {
-    
       vendorsToFilter = vendorsToFilter.filter(
         (vendor) =>
           vendor.location?.toLowerCase().replace(/\s/g, "") ===
@@ -142,13 +139,12 @@ const callUpate=()=>{
       .filter((vendor) => vendor.services.length > 0);
 
     setFilteredVendors(vendorsToFilter);
-}
+  };
   useEffect(() => {
- callUpate();
-  }, [allVendors,appliedFilters]);
+    callUpate();
+  }, [allVendors, appliedFilters]);
 
   const handleApplyFilters = (filters) => {
-    
     setAppliedFilters(filters);
   };
 
@@ -172,17 +168,11 @@ const callUpate=()=>{
   const noVendorsAfterFilter =
     allVendors.length > 0 && filteredVendors.length === 0;
   const handleAppItemSelect = (selectedItem) => {
-
-     
-     
-      setAllVendors(selectedItem.data);
+    setAllVendors(selectedItem.data);
   };
   const FilterOnDescription = (selectedItem) => {
-
-     
-     
-      console.log("Filtering on description:", selectedItem);
-      setFilteredVendors(selectedItem);
+    console.log("Filtering on description:", selectedItem);
+    setFilteredVendors(selectedItem);
   };
 
   return (
@@ -261,17 +251,17 @@ const callUpate=()=>{
       <div className="container mx-auto px-6 py-8">
         <div className=" bg-gray-100 mb-6 p-1 sm:p-2 flex items-center justify-center">
           <div className="w-full max-w-lg flex flex-col gap-[10px] lg:flex-row lg:gap-[20px]">
-  <ReusableSearchAutocomplete
-    data={InitialSpells}
-    onItemSelected={handleAppItemSelect}
-    className="flex-1"
-  />
-  <ReusableFilterOnDescriptionSearchAutocomplete
-    data={filteredVendors}
-    onItemSelected={FilterOnDescription}
-    className="flex-1"
-  />
-</div>
+            <ReusableSearchAutocomplete
+              data={InitialSpells}
+              onItemSelected={handleAppItemSelect}
+              className="flex-1"
+            />
+            <ReusableFilterOnDescriptionSearchAutocomplete
+              data={allVendors}
+              onItemSelected={FilterOnDescription}
+              className="flex-1"
+            />
+          </div>
         </div>
         <h1 className="text-3xl  font-bold text-center mb-3 capitalize">
           {serviceName.replace(/-/g, " ")} Services
@@ -296,7 +286,6 @@ const callUpate=()=>{
           ))
         )}
       </div>
-
       <FooterWithCarousel />
     </div>
   );

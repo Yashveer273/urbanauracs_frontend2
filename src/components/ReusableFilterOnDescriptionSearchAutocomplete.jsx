@@ -2,7 +2,10 @@ import React, { useState, useMemo, useCallback } from "react";
 import { Search, X } from "lucide-react";
 import { Filter } from "lucide-react";
 
-const ReusableFilterOnDescriptionSearchAutocomplete = ({ data, onItemSelected }) => {
+const ReusableFilterOnDescriptionSearchAutocomplete = ({
+  data,
+  onItemSelected,
+}) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
@@ -99,9 +102,6 @@ const ReusableFilterOnDescriptionSearchAutocomplete = ({ data, onItemSelected })
                   >
                     <span className="font-medium text-gray-800">
                       {service.description}
-                    </span>
-                    <span className="text-sm text-gray-500">
-                      Vendor: {vendor.vendorName} | ₹{service.price}
                     </span>
                   </li>
                 ))
