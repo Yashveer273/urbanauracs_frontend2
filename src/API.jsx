@@ -176,20 +176,19 @@ export const handleBuy = async (data, action) => {
           document.body.appendChild(script);
         });
       }
-
+console.log(order);
   // Step 3: Open Razorpay checkout
   const options = {
-    key:order.key, 
-    amount: order.amount,
-    currency: "INR",
-    name: "UrbenAuraServices",
-    description: "Order Payment",
-    order_id: order.id,
-     prefill: {
-      name: data.name,
-      email: data.user?.email,
-      contact: data.mobileNumber,
-    },
+    key: order.key,
+  currency: "INR",
+  name: "UrbenAuraServices",
+  description: "Order Payment",
+  order_id: order.orderId,
+  prefill: {
+    name: data.name,
+    email: data.user?.email,
+    contact: data.mobileNumber,
+  },
     
     handler: async function (response) {
 
