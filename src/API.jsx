@@ -181,6 +181,7 @@ console.log(order);
   const options = {
     key: order.key,
   currency: "INR",
+  amount: order.amount, 
   name: "UrbenAuraServices",
   description: "Order Payment",
   order_id: order.orderId,
