@@ -240,7 +240,7 @@ export const handlePaymentLeft = async (data, action) => {
           document.body.appendChild(script);
         });
       }
-  // Step 3: Open Razorpay checkout
+  // Step 3: Open Razorpay checkout....
   const options = {
      // <-- put your test key_id here
     key:order.key, 
