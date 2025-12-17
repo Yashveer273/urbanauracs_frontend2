@@ -41,7 +41,7 @@ export default function AuthDashboard() {
   const [currentPage, setCurrentPage] = useState(1);
   const [update, setupdate] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const itemsPerPage = 1;
+  const itemsPerPage = 8;
 
   const [pageSnapshots, setPageSnapshots] = useState([]);
 
