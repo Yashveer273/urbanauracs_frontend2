@@ -267,6 +267,7 @@ const PaymentGateway = () => {
           <div className="flex flex-col gap-5  lg:flex-row lg:space-x-8">
             <CheckoutSummaryCard
               items={cartItems}
+              orderId={date}
               onProceedToPayment={handlePayment2}
             />
             <div className="flex-1 lg:max-w-[720px]">

@@ -35,7 +35,8 @@ export default function AuthDashboard() {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
-  const [filteredData, setFilteredData] = useState([]);
+  
+  const [currentData, setCurrentData] = useState([]);
 
   const [currentPage, setCurrentPage] = useState(1);
   const [update, setupdate] = useState(1);
@@ -87,169 +88,198 @@ export default function AuthDashboard() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const filterTable = () => {
- 
-    const filtered = authData.filter((user) => {
-      const nameMatch = user.username
-        .toLowerCase()
-        .includes(searchName.toLowerCase());
-      const emailMatch = user.email
-        .toLowerCase()
-        .includes(searchEmail.toLowerCase());
-      const pincodeMatch = user.pincode.includes(searchPincode);
-      const mobileMatch = user.mobileNumber.includes(searchMobile);
-      const userDate = new Date(user.createdAt);
+const filterTable = () => {
+  const filtered = authData.filter((user) => {
+    const nameMatch = user.username
+      ?.toLowerCase()
+      .includes(searchName.toLowerCase());
 
-      const dateMatch =
-        (!startDate || userDate >= new Date(startDate)) &&
-        (!endDate || userDate <= new Date(endDate));
-const ConfurmWhatsAppMobileNumber=user.ConfurmWhatsAppMobileNumber;
-      return (
-        nameMatch && emailMatch && pincodeMatch && mobileMatch && dateMatch && ConfurmWhatsAppMobileNumber && user 
-      );
-    });
+    const emailMatch = user.email
+      ?.toLowerCase()
+      .includes(searchEmail.toLowerCase());
 
-    setFilteredData(filtered);
-  };
+    const pincodeMatch = user.pincode?.includes(searchPincode || "");
+    const mobileMatch = user.mobileNumber?.includes(searchMobile || "");
+
+    const userDate = user.createdAt
+      ? new Date(user.createdAt)
+      : null;
+
+    const dateMatch =
+      (!startDate || (userDate && userDate >= new Date(startDate))) &&
+      (!endDate || (userDate && userDate <= new Date(endDate)));
+
+    return nameMatch && emailMatch && pincodeMatch && mobileMatch && dateMatch;
+  });
+
+  // ✅ NO slice here
+  setCurrentData(filtered);
+};
 
   // Function to process user data for the graphs
-  const processGraphData = () => {
-    // 1. Process data for the last 7 days graph
+ const processGraphData = async () => {
+  try {
+    const q = query(userRef, orderBy("created", "desc"));
+    const snapshot = await getDocs(q);
+
+    const allUsers = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    /* =======================
+       LAST 7 DAYS GRAPH
+    ======================== */
     const dailyRegistrations = {};
-    authData.forEach((user) => {
-      if (!user.created || !user.created.seconds) {
-        console.warn("Missing or invalid created timestamp:", user);
-        return;
-      }
 
-      const createdAt = new Date(user.created.seconds * 1000); // convert Firestore seconds → JS Date
-      const date = createdAt.toISOString().slice(0, 10); // format: YYYY-MM-DD
+    allUsers.forEach((user) => {
+      if (!user.created?.seconds) return;
 
-      dailyRegistrations[date] = (dailyRegistrations[date] || 0) + 1;
+      const createdAt = new Date(user.created.seconds * 1000);
+      const dateKey = createdAt.toISOString().slice(0, 10); // YYYY-MM-DD
+
+      dailyRegistrations[dateKey] =
+        (dailyRegistrations[dateKey] || 0) + 1;
     });
 
-    const sortedDates = Object.keys(dailyRegistrations).sort();
-    const last7Dates = sortedDates.slice(-7);
-    const last7DaysGraphData = last7Dates.map((date) => {
-      const d = new Date(date);
-      const day = d.getDate();
-      const month = d.getMonth() + 1; // Month is 0-indexed
-      return {
-        formattedDate: `${day}/${month}`, // Format for day and month
-        registrations: dailyRegistrations[date],
-      };
-    });
-    setLast7DaysData(last7DaysGraphData);
+    const last7DaysData = Object.keys(dailyRegistrations)
+      .sort()
+      .slice(-7)
+      .map((date) => {
+        const d = new Date(date);
+        return {
+          formattedDate: `${d.getDate()}/${d.getMonth() + 1}`,
+          registrations: dailyRegistrations[date],
+        };
+      });
 
-    // 2. Process data for the monthly progress graph
+    setLast7DaysData(last7DaysData);
+
+    /* =======================
+       MONTHLY GRAPH
+    ======================== */
     const today = new Date();
     const currentMonth = today.getMonth();
     const currentYear = today.getFullYear();
-    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+    const daysInMonth = new Date(
+      currentYear,
+      currentMonth + 1,
+      0
+    ).getDate();
 
-    // Set the title for the monthly graph
-    const monthName = today.toLocaleString("default", { month: "long" });
     setMonthlyGraphTitle(
-      `Registration Progress for ${monthName} ${currentYear}`
+      `Registration Progress for ${today.toLocaleString("default", {
+        month: "long",
+      })} ${currentYear}`
     );
 
-    // Create an array for all days of the current month, initialized to 0
-    const monthlyGraphData = Array.from({ length: daysInMonth }, (_, i) => {
-      const day = i + 1;
-      return {
-        formattedDate: `${day}`,
+    const monthlyGraphData = Array.from(
+      { length: daysInMonth },
+      (_, i) => ({
+        formattedDate: `${i + 1}`,
         registrations: 0,
-      };
-    });
+      })
+    );
 
-    authData.forEach((user) => {
-      const userDate = new Date(user.createdAt);
+    allUsers.forEach((user) => {
+      if (!user.created?.seconds) return;
+
+      const date = new Date(user.created.seconds * 1000);
+
       if (
-        userDate.getMonth() === currentMonth &&
-        userDate.getFullYear() === currentYear
+        date.getMonth() === currentMonth &&
+        date.getFullYear() === currentYear
       ) {
-        const day = userDate.getDate();
-        // Find the correct day in our initialized array and add the registration count
-        const dayData = monthlyGraphData.find(
-          (d) => parseInt(d.formattedDate) === day
-        );
-        if (dayData) {
-          dayData.registrations += 1;
-        }
+        monthlyGraphData[date.getDate() - 1].registrations += 1;
       }
     });
+
     setMonthlyRegistrationsData(monthlyGraphData);
-  };
+  } catch (error) {
+    console.error("Graph processing error:", error);
+  }
+};
 
-  const fetchUsers = async (page) => {
-    try {
-      const userRef = collection(firestore, "User");
-      let q;
+ const userRef = collection(firestore, "User");
+const fetchUsers = async (page) => {
+  try {
+   
+    let q;
 
-      if (page === 1) {
-        // ✅ Sort by 'created' descending (newest first)
-        q = query(userRef, orderBy("created", "desc"), limit(itemsPerPage));
-      } else {
-        const prevCursor = pageSnapshots[page - 2];
-        if (!prevCursor) return;
-
-        // ✅ Continue pagination after previous page’s last document
-        q = query(
-          userRef,
-          orderBy("created", "desc"),
-          startAfter(prevCursor),
-          limit(itemsPerPage)
-        );
+    if (page == 1) {
+      q = query(userRef, orderBy("created", "desc"), limit(itemsPerPage));
+    } else {
+    
+      const prevCursor = pageSnapshots[page - 2];
+      if (!prevCursor) {
+        
+        setCurrentPage(1);
+        return;
       }
 
-      const snapshot = await getDocs(q);
-     
-      const newUsers = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-
- 
-      setAuthData(newUsers);
-
-      // ✅ Save last document snapshot for pagination cursor
-      const lastDoc = snapshot.docs[snapshot.docs.length - 1];
-      if (lastDoc) {
-        const newPageSnapshots = [...pageSnapshots];
-        newPageSnapshots[page - 1] = lastDoc;
-        setPageSnapshots(newPageSnapshots);
-      }
-    } catch (error) {
-      console.error("❌ Error fetching paginated users:", error);
+      q = query(
+        userRef,
+        orderBy("created", "desc"),
+        startAfter(prevCursor),
+        limit(itemsPerPage)
+      );
     }
-  };
 
-  useEffect(() => {
-    fetchUsers(currentPage);
-  }, [update]);
+    const snapshot = await getDocs(q);
+    
+    if (snapshot.empty) {
+
+      setAuthData([]);
+      return;
+    }
+
+    const newUsers = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    setAuthData(newUsers);
+
+    // Store the last document of THIS page to use for the NEXT page
+    const lastDoc = snapshot.docs[snapshot.docs.length - 1];
+    if (lastDoc) {
+      setPageSnapshots((prev) => {
+        const updated = [...prev];
+        updated[page - 1] = lastDoc; // Stores cursor for the page after this one
+        return updated;
+      });
+    }
+  } catch (error) {
+    console.error("❌ Error:", error);
+  }
+};
+
+useEffect(() => {
+  fetchUsers(currentPage);
+}, [currentPage]); // Added currentPage here
 
   // 🔹 Pagination Controls
   const handleNext = () => setCurrentPage((prev) => prev + 1);
   const handlePrev = () => setCurrentPage((prev) => Math.max(prev - 1, 1));
  
-  useEffect(() => {
-    if (authData.length > 0) {
-      filterTable();
-      processGraphData();
-    }
-  }, [
-    authData,
-    searchName,
-    searchEmail,
-    searchPincode,
-    searchMobile,
-    currentPage,
-  ]);
+useEffect(() => {
+  filterTable();
+  processGraphData();
+}, [
+  authData,
+  searchName,
+  searchEmail,
+  searchPincode,
+  searchMobile,
+  startDate,
+  endDate,
+]);
 
-  // Pagination logic to calculate data for the current page
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentData = filteredData.slice(startIndex, endIndex);
+
+ 
+
+
+
   useEffect(() => {
     const getTotalPages = async () => {
       const snapshot = await getCountFromServer(collection(firestore, "User"));
@@ -258,36 +288,7 @@ const ConfurmWhatsAppMobileNumber=user.ConfurmWhatsAppMobileNumber;
     };
     getTotalPages();
   }, []);
-  const getVisiblePages = () => {
-    const delta = 2; // how many pages to show around current
-    const range = [];
-    const rangeWithDots = [];
-    let l;
-
-    for (let i = 1; i <= totalPages; i++) {
-      if (
-        i === 1 ||
-        i === totalPages ||
-        (i >= currentPage - delta && i <= currentPage + delta)
-      ) {
-        range.push(i);
-      }
-    }
-
-    for (let i of range) {
-      if (l) {
-        if (i - l === 2) {
-          rangeWithDots.push(l + 1);
-        } else if (i - l !== 1) {
-          rangeWithDots.push("...");
-        }
-      }
-      rangeWithDots.push(i);
-      l = i;
-    }
-
-    return rangeWithDots;
-  };
+ 
 
   // Render the component
   return (
@@ -540,28 +541,7 @@ const ConfurmWhatsAppMobileNumber=user.ConfurmWhatsAppMobileNumber;
               Previous
             </button>
 
-            {getVisiblePages().map((page, index) =>
-              page === "..." ? (
-                <span key={index} className="px-3 py-2 text-gray-500">
-                  ...
-                </span>
-              ) : (
-                <button
-                  key={page}
-                  onClick={() => {
-                    setCurrentPage(page);
-                    fetchUsers(page);
-                  }}
-                  className={`px-4 py-2 rounded-xl transition-colors duration-200 ${
-                    currentPage === page
-                      ? "bg-blue-600 text-white"
-                      : "bg-white text-gray-800 hover:bg-gray-200"
-                  }`}
-                >
-                  {page}
-                </button>
-              )
-            )}
+       
 
             <button
               onClick={handleNext}

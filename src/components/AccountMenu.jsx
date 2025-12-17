@@ -14,7 +14,7 @@ import {
 import { clearCart } from "../store/CartSlice";
 
 import { getMyOrderHistory, handlePaymentLeft } from "../API";
-import { CalculateConveniencetotalFee } from "./TexFee";
+import { CalculateConvenienceFee, CalculateConveniencetotalFee } from "./TexFee";
 
 const AccountMenu = () => {
   const [history, setHistory] = useState([]);
@@ -340,11 +340,16 @@ quantity:item?.quantity,
                               <td className="py-1 font-semibold w-28">Price</td>
                               <td className="py-1">₹{itm.itemPrice}</td>
                             </tr>
+                           
+                            
                             <tr className="border-b">
                               <td className="py-1 font-semibold w-28">Quantity</td>
                               <td className="py-1">{itm.quantity}</td>
                             </tr>
-                            
+                             <tr className="border-b">
+                              <td className="py-1 font-semibold w-28">Convenience Fee</td>
+                              <td className="py-1">₹{CalculateConvenienceFee(itm.itemPrice*itm.quantity ).convenienceFee}</td>
+                            </tr>
  <tr className="border-b">
                               <td className="py-1 font-semibold w-28">Price after Convenience</td>
                               <td className="py-1">₹{CalculateConveniencetotalFee(itm.itemPrice*itm.quantity )}</td>

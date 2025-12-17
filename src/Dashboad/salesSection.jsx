@@ -19,7 +19,7 @@ import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import { API_BASE_URL, updateSale, updateStatusOrCommentDB } from "../API";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { CalculateConveniencetotalFee } from "../components/TexFee";
+import { CalculateConvenienceFee, CalculateConveniencetotalFee } from "../components/TexFee";
 
 export default function SalesSection() {
   const [salesData, setSalesData] = useState([]);
@@ -390,6 +390,7 @@ product_info.cart.map((item) =>
 
   const tableHeaders = [
     "S_orderId",
+    "Order Id",
     "Edit",
     
     "User Name",
@@ -543,6 +544,7 @@ product_info.cart.map((item) =>
                 currentData.map((sale, i) => (
                   <tr key={i} className="hover:bg-gray-50 border-b">
                     <td className="py-4 px-6">{sale.S_orderId}</td>
+                    <td className="py-4 px-6"> {sale.orderId}</td>
                     <td className="py-4 px-6">
                       <button
                         className="bg-blue-600 text-white cursor-pointer px-3 py-1 rounded-md"
@@ -719,8 +721,10 @@ product_info.cart.map((item) =>
                       "Booking Time",
                       "Booking Address",
                       "Duration",
-                      "Item Price","Quantity","Item Price*Quantity",
-                      "After Convenience Fee",
+                      "Item Price",
+                      "Quantity",
+                      "Item Price*Quantity",
+                      "Convenience Fee",
                       "Total",
                      
                       "Status",
@@ -759,6 +763,8 @@ product_info.cart.map((item) =>
                       <td className="py-4 px-6">₹{item.item_price}</td>
                       <td className="py-4 px-6">{item.quantity  }</td>
                       <td className="py-4 px-6">₹{item.item_price*item.quantity  }</td>
+                      <td className="py-4 px-6">₹{CalculateConvenienceFee(item.item_price*item.quantity ).convenienceFee }</td>
+                      
                       <td className="py-4 px-6">₹{CalculateConveniencetotalFee(item.item_price*item.quantity)  }</td>
                       
                     

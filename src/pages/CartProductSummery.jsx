@@ -20,8 +20,9 @@ const ProductSummaryItem = ({ item }) => {
   // Calculate total price for the item quantity after fee
   const itemTotalBasePrice = item.price * item.quantity;
   const feeDetails = CalculateConvenienceFee(itemTotalBasePrice);
+   
   const totalAfterFee = feeDetails.total;
-
+console.log(item)
   return (
     <div className="new-item-card">
       {/* MOBILE HEADER: Image and Title container */}
@@ -49,8 +50,12 @@ const ProductSummaryItem = ({ item }) => {
       
       {/* REST OF CONTENT (Hidden on desktop in this structure) */}
       <div className="new-item-content">
-        {/* GRID DETAILS */}
+             {/* Description field needs to span two columns to look correct */}
+           {/* GRID DETAILS */}
         <div className="new-item-grid">
+          <span className="label">Description:</span>
+          <span className="value description col-span-1">{item.description}</span>
+       
           <span className="label">Booking Date:</span>
           <span className="value">{item.bookingDate}</span>
 
@@ -62,16 +67,11 @@ const ProductSummaryItem = ({ item }) => {
 
           <span className="label">Duration:</span>
           <span className="value">{item.duration}</span>
-
-          <span className="label">Product ID:</span>
-          <span className="value">{item.productId}</span>
-
           <span className="label">Quantity:</span>
           <span className="value">{item.quantity}</span>
 
-          {/* Description field needs to span two columns to look correct */}
-          <span className="label">Description:</span>
-          <span className="value description col-span-1">{item.description}</span>
+         <span className="label">Convenience Fee:</span>
+          <span className="value">{CalculateConvenienceFee(item.price*item.quantity).convenienceFee}</span>
         </div>
 
         {/* PRICE BLOCK - Layout adjusted based on screen size (column on mobile, row on PC) */}
@@ -88,7 +88,7 @@ const ProductSummaryItem = ({ item }) => {
       {/* RIGHT SIDE TOTAL */}
       <div className="new-item-right-price">
         {/* Label is intentionally long to wrap and is right-aligned */}
-        <span className="fee-label">After Convenience Fee Including GST</span>
+        <span className="fee-label">After Convenience Fee</span>
         <span className="fee-value">
           {formatCurrency(totalAfterFee)}
         </span>
@@ -100,7 +100,7 @@ const ProductSummaryItem = ({ item }) => {
 /* ----------------------------------------------------------
     MAIN COMPONENT: SUMMARY CARD
 ---------------------------------------------------------- */
-const CheckoutSummaryCard = ({ items }) => {
+const CheckoutSummaryCard = ({ items,orderId }) => {
   const finalTotal = useMemo(() => {
     let total = 0;
     items.forEach((item) => {
@@ -448,10 +448,13 @@ const CheckoutSummaryCard = ({ items }) => {
           <h3 className="section-title">
             Selected Services ({items.length})
           </h3>
+           <h4 className="mb-4">
+            Order Id:- <h2>{orderId}</h2> 
+          </h4>
 
           <div className="item-list-container">
             {items.map((item, index) => (
-              <ProductSummaryItem item={item} key={index} />
+              <ProductSummaryItem item={item} key={index} orderId={orderId} />
             ))}
           </div>
         </div>
