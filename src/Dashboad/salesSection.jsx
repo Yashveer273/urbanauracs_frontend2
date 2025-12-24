@@ -180,19 +180,31 @@ export default function SalesSection() {
   };
   const openEditRowCard = (sale) => {
     setEditingRow(sale.id);
+
+    const total = sale?.product_info?.cart?.reduce(
+      (sum, item) =>
+        sum +
+        Number(
+          item.item_price * item.quantity +
+            CalculateConvenienceFee(item.item_price * item.quantity)
+              .convenienceFee
+        ),
+      0
+    );
+
+    console.log("Total price:", total);
+
     setRowForm({
       orderId: sale.orderId,
       name: sale.name || "",
-      email: sale.email || "",
+      // email: sale.email || "",
       phone: sale.phone_number || "",
       WhatsApp_Mobile_Number: sale.ConfurmWhatsAppMobileNumber || "",
-      product:
-        sale.product_info?.cart?.map((item) => item.product_name).join(", ") ||
-        "",
-      pincode: sale.pincode || "",
-      location: sale.user_location || "",
-      totalPrice: sale.total_price || "",
-      payableAmount: sale.payableAmount || "",
+
+      // pincode: sale.pincode || "",
+      discount: sale.discount || "",
+
+      // payableAmount: total - sale.payedAmount || "",
       payedAmount: sale.payedAmount || "",
 
       dateTime: sale.date_time
@@ -202,20 +214,16 @@ export default function SalesSection() {
   };
   const saveEditedRow = async () => {
     try {
-      let payable = {
+      let updateSalesData = {
         name: rowForm.name,
-        email: rowForm.email,
+
         phone_number: rowForm.phone,
-        ConfurmWhatsAppMobileNumber: rowForm.ConfurmWhatsAppMobileNumber,
-        pincode: rowForm.pincode,
-        user_location: rowForm.location,
-        total_price: Number(rowForm.totalPrice),
-        payableAmount: Number(rowForm.payableAmount),
-        payedAmount: Number(rowForm.payedAmount),
+        ConfurmWhatsAppMobileNumber: rowForm.WhatsApp_Mobile_Number,
+        discount: rowForm.discount,
         date_time: new Date(rowForm.dateTime).toISOString(),
       };
-      const response = await updateSale(rowForm.orderId, payable);
-      if (response.success != 200) {
+      const response = await updateSale(rowForm.orderId, updateSalesData);
+      if (response.status != 200) {
         alert(response.data.message);
 
         return;
@@ -223,7 +231,7 @@ export default function SalesSection() {
 
       const saleRef = doc(firestore, "sales", editingRow);
 
-      await setDoc(saleRef, payable, { merge: true });
+      await setDoc(saleRef, updateSalesData, { merge: true });
 
       setSalesData((prev) =>
         prev.map((s) =>
@@ -231,14 +239,10 @@ export default function SalesSection() {
             ? {
                 ...s,
                 name: rowForm.name,
-                email: rowForm.email,
+
                 phone_number: rowForm.phone,
-                WhatsApp_Mobile_Number: rowForm.ConfurmWhatsAppMobileNumber,
-                pincode: rowForm.pincode,
-                user_location: rowForm.location,
-                total_price: Number(rowForm.totalPrice),
-                payableAmount: Number(rowForm.payableAmount),
-                payedAmount: Number(rowForm.payedAmount),
+                WhatsApp_Mobile_Number: rowForm.WhatsApp_Mobile_Number,
+                discount: rowForm.discount,
                 date_time: new Date(rowForm.dateTime).toISOString(),
               }
             : s
@@ -246,6 +250,7 @@ export default function SalesSection() {
       );
 
       setEditingRow(null);
+      alert("Sale updated successfully");
     } catch (e) {
       console.error("Error updating row:", e);
     }
@@ -258,7 +263,6 @@ export default function SalesSection() {
   });
   const [isEditCartModalOpen, setIsEditCartModalOpen] = useState(false);
   const openEditCartModal = (item, index, saleId) => {
-    console.log(item, index, saleId);
     setEditingCartProduct({
       saleId,
       productIndex: index,
@@ -271,13 +275,6 @@ export default function SalesSection() {
   const saveCartEdit = async (data) => {
     try {
       const saleId = data.saleId;
-
-      console.log("🛠 Sending update:", data.productData, saleId);
-      console.log(
-        data.productData,
-        saleId,
-        selectedProductInfo.userData.userId
-      );
       const res = await axios.put(
         `${API_BASE_URL}/editSalesItem/${saleId}/cart`,
         {
@@ -300,36 +297,24 @@ export default function SalesSection() {
     }
     try {
       const saleId = data.saleId;
-
-      console.log(
-        data.productData,
-        saleId,
-        selectedProductInfo.userData.userId
-      );
       const saleRef = doc(firestore, "sales", saleId);
-
       const saleSnap = await getDoc(saleRef);
       if (!saleSnap.exists()) {
         console.error("Sale not found");
         return;
       }
-
       if (!saleSnap.exists()) {
         console.error("❌ Sale not found in Firestore");
         return;
       }
-
       const saleData = saleSnap.data();
-      console.log("📦 saleData:", saleData);
       const updatedCart = saleData.product_info.cart.map((item) =>
         item.product_purchase_id === data.productData.product_purchase_id
-          ? { ...item, ...data.productData } // merge updates
+          ? { ...item, ...data.productData }
           : item
       );
 
-      await updateDoc(saleRef, { cart: updatedCart });
-
-      console.log("✅ Cart item updated successfully");
+      await updateDoc(saleRef, { product_info: { cart: updatedCart } });
       setIsEditCartModalOpen(false);
       setModalOpen(true);
     } catch (err) {
@@ -409,11 +394,11 @@ export default function SalesSection() {
     "Edit",
 
     "User Name",
-    
+
     "Phone",
- 
+
     "Details",
-   
+
     "Total Price",
     "Discount",
     "Payable Amount",
@@ -569,9 +554,11 @@ export default function SalesSection() {
                     </td>
 
                     <td className="py-4 px-2">{sale.name}</td>
-                  
-                    <td className="py-4 px-2">{sale.phone_number}<br/> /W {sale.ConfurmWhatsAppMobileNumber}</td>
-                  
+
+                    <td className="py-4 px-2">
+                      {sale.phone_number}
+                      <br /> /W {sale.ConfurmWhatsAppMobileNumber}
+                    </td>
 
                     <td className="py-4 px-2">
                       <button
@@ -581,11 +568,40 @@ export default function SalesSection() {
                         View Details
                       </button>
                     </td>
-                
-                  
-                    <td className="py-4 px-2">₹{sale.total_price}</td>
-                    <td className="py-4 px-2">₹{sale.discount}</td>
-                    <td className="py-4 px-2">₹{sale.payableAmount}</td>
+
+                    <td className="py-4 px-2">
+                      ₹
+                      {sale?.product_info?.cart?.reduce(
+                        (sum, item) =>
+                          sum +
+                          Number(
+                            item.item_price * item.quantity +
+                              CalculateConvenienceFee(
+                                item.item_price * item.quantity
+                              ).convenienceFee
+                          ),
+                        0
+                      )}
+                    </td>
+                    <td className="py-4 px-2">
+                      ₹{Number(sale?.discount || 0)}
+                    </td>
+                    <td className="py-4 px-2">
+                      ₹
+                      {sale?.product_info?.cart?.reduce(
+                        (sum, item) =>
+                          sum +
+                          Number(
+                            item.item_price * item.quantity +
+                              CalculateConvenienceFee(
+                                item.item_price * item.quantity
+                              ).convenienceFee
+                          ),
+                        0
+                      ) -
+                        Number(sale?.discount || 0) -
+                        Number(sale?.payedAmount || 0)}
+                    </td>
                     <td className="py-4 px-2">₹{sale.payedAmount}</td>
 
                     <td className="py-4 px-2">
@@ -698,148 +714,148 @@ export default function SalesSection() {
           </div>
         )}
         {modalOpen && selectedProductInfo && (
-        <div
-          className="mt-10"
-          onClick={closeModal}
-        >
-          <div
-            className={`table-container bg-white p-6 rounded-xl shadow-md overflow-x-auto ${
-              showModalContent ? " opacity-100" : " opacity-0"
-            }`}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <span
-              onClick={closeModal}
-              className=" text-3xl font-bold text-gray-400 cursor-pointer"
+          <div className="mt-10" onClick={closeModal}>
+            <div
+              className={`table-container bg-white p-6 rounded-xl shadow-md overflow-x-auto ${
+                showModalContent ? " opacity-100" : " opacity-0"
+              }`}
+              onClick={(e) => e.stopPropagation()}
             >
-              &times;
-            </span>
-            <h3 className="text-2xl font-bold mb-4">Product Details</h3>
-           <div className="overflow-y-auto max-h-[70vh]">
-  <table className="w-full table-auto border-collapse">
-    <thead>
-      <tr className="bg-gray-100 text-gray-600 uppercase text-sm">
-        {[
-          "Item ID",
-          "Item Details",
-          "Booking Date/ Time",
-          "Booking Address",
-          "Item Price",
-          "Quantity",
-          "Item Price*Quantity",
-          "Convenience Fee",
-          "Total",
-          "Status",
-          "Comment",
-          "Edit",
-        ].map((h) => (
-          <th key={h} className="py-3 px-6">
-            {h}
-          </th>
-        ))}
-      </tr>
-    </thead>
-
-    <tbody>
-      {selectedProductInfo.cart.map((item, i) => (
-        <tr key={i} className="hover:bg-gray-50 border-b">
-          <td className="py-4 px-6">{item.product_purchase_id}</td>
-          <td className="py-4 px-6">{item.product_name}</td>
-
-          {/* ✅ Auto-adjust width Booking Date / Time */}
-          <td className="py-4 px-4 whitespace-nowrap text-sm">
-            {item.location_booking_time}
-            <br />
-            {item.SelectedServiceTime}
-          </td>
-
-          <td className="py-4 px-6">{item.bookingAddress}</td>
-
-          <td className="py-4 px-6">₹{item.item_price}</td>
-          <td className="py-4 px-6">{item.quantity}</td>
-          <td className="py-4 px-6">
-            ₹{item.item_price * item.quantity}
-          </td>
-
-          <td className="py-4 px-6">
-            ₹
-            {
-              CalculateConvenienceFee(
-                item.item_price * item.quantity
-              ).convenienceFee
-            }
-          </td>
-
-          <td className="py-4 px-6">
-            ₹
-            {CalculateConveniencetotalFee(
-              item.item_price * item.quantity
-            )}
-          </td>
-
-          {/* Status Button */}
-          <td className="py-4 px-6">
-            <button
-              onClick={() =>
-                openStatusCard(
-                  selectedProductInfo.id,
-                  item.status || "Started",
-                  item.comment || "",
-                  true,
-                  i
-                )
-              }
-              className="text-blue-600 hover:underline"
-            >
-              {item.status || "Started"}
-            </button>
-          </td>
-
-          {/* Comment Button */}
-          <td className="py-4 px-6">
-            {item.comment && (
-              <button
-                className="text-green-600 hover:underline"
-                onClick={() =>
-                  setViewComment({
-                    saleId: selectedProductInfo.id,
-                    productIndex: i,
-                  })
-                }
+              <span
+                onClick={closeModal}
+                className=" text-3xl font-bold text-gray-400 cursor-pointer"
               >
-                View Comment
-              </button>
-            )}
-          </td>
+                &times;
+              </span>
+              <h3 className="text-2xl font-bold mb-4">Product Details</h3>
+              <div className="overflow-y-auto max-h-[70vh]">
+                <table className="w-full table-auto border-collapse">
+                  <thead>
+                    <tr className="bg-gray-100 text-gray-600 uppercase text-sm">
+                      {[
+                        "Item ID",
+                        "Item Details",
+                        "Booking Date/ Time",
+                        "Booking Address",
+                        "Item Price",
+                        "Quantity",
+                        "Item Price*Quantity",
+                        "Convenience Fee",
+                        "Total",
+                        "Status",
+                        "Comment",
+                        "Edit",
+                      ].map((h) => (
+                        <th key={h} className="py-3 px-6">
+                          {h}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
 
-          {/* Edit Button */}
-          <td className="py-4 px-6">
-            <button
-              className="text-indigo-600 hover:text-indigo-800 font-medium"
-              onClick={() =>
-                openEditCartModal(item, i, selectedProductInfo.id)
-              }
-            >
-              Edit
-            </button>
-          </td>
-        </tr>
-      ))}
-    </tbody>
-  </table>
-</div>
+                  <tbody>
+                    {selectedProductInfo.cart.map((item, i) => (
+                      <tr key={i} className="hover:bg-gray-50 border-b">
+                        <td className="py-4 px-6">
+                          {item.product_purchase_id}
+                        </td>
+                        <td className="py-4 px-6">{item.product_name}</td>
 
-            <AddSalesItem
-              userData={selectedProductInfo.userData}
-              selectedProductInfo={selectedProductInfo}
-            />
+                        {/* ✅ Auto-adjust width Booking Date / Time */}
+                        <td className="py-4 px-4 whitespace-nowrap text-sm">
+                          {item.location_booking_time}
+                          <br />
+                          {item.SelectedServiceTime}
+                        </td>
+
+                        <td className="py-4 px-6">{item.bookingAddress}</td>
+
+                        <td className="py-4 px-6">₹{item.item_price}</td>
+                        <td className="py-4 px-6">{item.quantity}</td>
+                        <td className="py-4 px-6">
+                          ₹{item.item_price * item.quantity}
+                        </td>
+
+                        <td className="py-4 px-6">
+                          ₹
+                          {
+                            CalculateConvenienceFee(
+                              item.item_price * item.quantity
+                            ).convenienceFee
+                          }
+                        </td>
+
+                        <td className="py-4 px-6">
+                          ₹
+                          {item.item_price * item.quantity +
+                            CalculateConvenienceFee(
+                              item.item_price * item.quantity
+                            ).convenienceFee}
+                        </td>
+
+                        {/* Status Button */}
+                        <td className="py-4 px-6">
+                          <button
+                            onClick={() =>
+                              openStatusCard(
+                                selectedProductInfo.id,
+                                item.status || "Started",
+                                item.comment || "",
+                                true,
+                                i
+                              )
+                            }
+                            className="text-blue-600 hover:underline"
+                          >
+                            {item.status || "Started"}
+                          </button>
+                        </td>
+
+                        {/* Comment Button */}
+                        <td className="py-4 px-6">
+                          {item.comment && (
+                            <button
+                              className="text-green-600 hover:underline"
+                              onClick={() =>
+                                setViewComment({
+                                  saleId: selectedProductInfo.id,
+                                  productIndex: i,
+                                })
+                              }
+                            >
+                              View Comment
+                            </button>
+                          )}
+                        </td>
+
+                        {/* Edit Button */}
+                        <td className="py-4 px-6">
+                          <button
+                            className="text-indigo-600 hover:text-indigo-800 font-medium"
+                            onClick={() =>
+                              openEditCartModal(item, i, selectedProductInfo.id)
+                            }
+                          >
+                            Edit
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <AddSalesItem
+                userData={selectedProductInfo.userData}
+                selectedProductInfo={selectedProductInfo}
+              />
+            </div>
           </div>
-        </div>
-      )}
+        )}
       </main>
 
       {/* Modal */}
-      
+
       {editingStatus.saleId && (
         <div className="fixed inset-0 z-100 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white p-6 rounded-xl w-80 shadow-lg">
@@ -923,14 +939,13 @@ export default function SalesSection() {
             <h3 className="text-xl font-bold mb-4">Edit Sale</h3>
             {[
               "name",
-              "email",
+              // "email",
               "phone",
               "WhatsApp_Mobile_Number",
-              "product",
-              "pincode",
-              "location",
-              "totalPrice",
-              "payableAmount",
+
+              // "pincode",
+              "discount",
+
               "payedAmount",
               "dateTime",
             ].map((field) => (
@@ -943,11 +958,23 @@ export default function SalesSection() {
                     : field.charAt(0).toUpperCase() + field.slice(1)}
                 </label>
                 <input
-                  type={field === "dateTime" ? "datetime-local" : "text"}
+                  type={
+                    field === "dateTime"
+                      ? "datetime-local"
+                      : field === "discount" || field === "payedAmount"
+                      ? "number"
+                      : "text"
+                  }
                   className="border p-2 w-full rounded-md"
                   value={rowForm[field]}
                   onChange={(e) =>
-                    setRowForm((prev) => ({ ...prev, [field]: e.target.value }))
+                    setRowForm((prev) => ({
+                      ...prev,
+                      [field]:
+                        field === "discount" || field === "payedAmount"
+                          ? Number(e.target.value)
+                          : e.target.value,
+                    }))
                   }
                 />
               </div>
@@ -1083,93 +1110,66 @@ export default function SalesSection() {
               }
               className="w-full border px-3 py-2 mb-3 rounded"
             />
-
-            {/* Duration */}
-            <label className="block text-sm font-medium mb-1">Duration</label>
+            {/* --------------------------------------------------------------------------------------------------------------------------------- */}
+            <label className="block text-sm font-medium mb-1">Item Price</label>
             <input
-              type="text"
-              value={editingCartProduct?.productData?.duration || ""}
+              type="number"
+              value={editingCartProduct?.productData?.item_price}
               onChange={(e) =>
                 setEditingCartProduct((prev) => ({
                   ...prev,
                   productData: {
                     ...prev.productData,
-                    duration: e.target.value,
+                    item_price: Number(e.target.value),
                   },
                 }))
               }
               className="w-full border px-3 py-2 mb-3 rounded"
             />
-
-            {/* Vendor Location */}
+            <label className="block text-sm font-medium mb-1">Quantity</label>
+            <input
+              type="number"
+              value={editingCartProduct?.productData?.quantity}
+              onChange={(e) =>
+                setEditingCartProduct((prev) => ({
+                  ...prev,
+                  productData: {
+                    ...prev.productData,
+                    quantity: Number(e.target.value),
+                  },
+                }))
+              }
+              className="w-full border px-3 py-2 mb-3 rounded"
+            />
             <label className="block text-sm font-medium mb-1">
-              Vendor Location
+              Convenience Fee
             </label>
             <input
-              type="text"
+              type="number"
               value={
-                editingCartProduct?.productData?.vendor_details
-                  ?.vendorLocation || ""
+                CalculateConvenienceFee(
+                  editingCartProduct?.productData?.item_price *
+                    editingCartProduct?.productData?.quantity
+                ).convenienceFee
               }
-              onChange={(e) =>
-                setEditingCartProduct((prev) => ({
-                  ...prev,
-                  productData: {
-                    ...prev.productData,
-                    vendor_details: {
-                      ...prev.productData.vendor_details,
-                      vendorLocation: e.target.value,
-                    },
-                  },
-                }))
-              }
+              disabled={true}
               className="w-full border px-3 py-2 mb-3 rounded"
             />
 
-            {/* Vendor ID */}
-            <label className="block text-sm font-medium mb-1">Vendor ID</label>
-            <input
-              type="text"
-              value={
-                editingCartProduct?.productData?.vendor_details?.vendor_id || ""
-              }
-              onChange={(e) =>
-                setEditingCartProduct((prev) => ({
-                  ...prev,
-                  productData: {
-                    ...prev.productData,
-                    vendor_details: {
-                      ...prev.productData.vendor_details,
-                      vendor_id: e.target.value,
-                    },
-                  },
-                }))
-              }
-              className="w-full border px-3 py-2 mb-3 rounded"
-            />
-
-            {/* Vendor Name */}
             <label className="block text-sm font-medium mb-1">
-              Vendor Name
+              Total Price
             </label>
             <input
-              type="text"
+              type="number"
               value={
-                editingCartProduct?.productData?.vendor_details?.vendor_name ||
-                ""
+                (editingCartProduct?.productData?.item_price +
+                  CalculateConvenienceFee(
+                    editingCartProduct?.productData?.item_price *
+                      editingCartProduct?.productData?.quantity
+                  ).convenienceFee) *
+                editingCartProduct?.productData?.quantity
               }
-              onChange={(e) =>
-                setEditingCartProduct((prev) => ({
-                  ...prev,
-                  productData: {
-                    ...prev.productData,
-                    vendor_details: {
-                      ...prev.productData.vendor_details,
-                      vendor_name: e.target.value,
-                    },
-                  },
-                }))
-              }
+              disabled={true}
               className="w-full border px-3 py-2 mb-3 rounded"
             />
 
