@@ -273,7 +273,7 @@ console.log(state)
               marginLeft: "150px",
             }}
           >
-            <img src="/logo.jpg" style={{ height: "100px" }} />
+            <img src="/stamp.png" style={{ height: "100px" }} />
           </div>
         </div>
 

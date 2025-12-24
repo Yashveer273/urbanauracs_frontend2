@@ -107,7 +107,7 @@ const AddSalesItem = ({ userData,selectedProductInfo }) => {
 
     // Generate a new product_purchase_id based on parentId, item_price, and timestamp
     const timestamp = Date.now();
-    const generatedPurchaseId = `TXN_${userData.phone_number}_${timestamp}`;
+   
 
     // Generate the description string based on form data
     const generatedDescription = `${newItem.product_name} with tag "${newItem.tag}" for ${newItem.duration} on ${newItem.location_booking_time}`;
@@ -116,7 +116,7 @@ const AddSalesItem = ({ userData,selectedProductInfo }) => {
     const itemToSubmit = {
       ...newItem,
       description: generatedDescription,
-      product_purchase_id: generatedPurchaseId,
+      product_purchase_id: timestamp,
 
     };
 

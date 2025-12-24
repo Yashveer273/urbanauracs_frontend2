@@ -72,9 +72,7 @@ const PaymentSuccess = () => {
               originalPrice: item.originalPrice,
               description: item.description,
               duration: item.duration,
-              product_purchase_id: `${user?.mobileNumber}_${
-                item.price
-              }_${Date.now()}`,
+              product_purchase_id: Date.now(),
               bookingAddress: item.bookingAddress,
               og_product_id: item.productId,
               product_name: item.title,
