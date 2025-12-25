@@ -10,21 +10,21 @@ import { CalculateConvenienceFee } from "../components/TexFee";
 const AddSalesItem = ({ userData,selectedProductInfo }) => {
   // Array of available products for the dropdown menu.
   const products = [
-    { product_name: "Deep Cleaning", og_product_id: 102, tag: "2 BATHROOMS" },
-    { product_name: "Other", og_product_id: 102, tag: "Other" },
-    { product_name: "Pest Control", og_product_id: 201, tag: "APARTMENT" },
+    { product_name: "Deep Cleaning", og_product_id: 102, description: "2 BATHROOMS" },
+    { product_name: "Other", og_product_id: 102, description: "Other" },
+    { product_name: "Pest Control", og_product_id: 201, description: "APARTMENT" },
     {
       product_name: "Sofa Cleaning",
       og_product_id: 305,
-      tag: "FABRIC & LEATHER",
+      description: "FABRIC & LEATHER",
     },
     {
       product_name: "Appliance Repair",
       og_product_id: 410,
-      tag: "MAJOR APPLIANCES",
+      description: "MAJOR APPLIANCES",
     },
-    { product_name: "Deep Cleaning", og_product_id: 102, tag: "1 BHK" },
-    { product_name: "Pest Control", og_product_id: 201, tag: "VILLA" },
+    { product_name: "Deep Cleaning", og_product_id: 102, description: "1 BHK" },
+    { product_name: "Pest Control", og_product_id: 201, description: "VILLA" },
   ];
 
   // State to control the visibility of the modal popup.
@@ -35,12 +35,12 @@ const AddSalesItem = ({ userData,selectedProductInfo }) => {
     description: "",
     duration: "",
     item_price: "",
-
+quantity:0,
     og_product_id: "",
     originalPrice: "",
     product_name: "",
     product_purchase_id: "",
-    tag: "",
+
     discount: "",
     customServiceNote: "",
     bookingAddress:userData.bookingAddress??"",
@@ -50,12 +50,14 @@ const AddSalesItem = ({ userData,selectedProductInfo }) => {
       vendorlocation: "",
       vendor_id: "",
       vendorName: "",
+      
     },
   };
 
   // State for managing the form input values.
   const [newItem, setNewItem] = useState(initialFormData);
   const [afterConvenienceFee, setAfterConvenienceFee] = useState(0);
+  const [total, setTotal] = useState(0);
 
   // Opens the modal when the "Add New" button is clicked.
   const handleOpenModal = () => {
@@ -82,7 +84,7 @@ const AddSalesItem = ({ userData,selectedProductInfo }) => {
         updatedItem = {
           ...updatedItem,
           og_product_id: selectedProduct.og_product_id,
-          tag: selectedProduct.tag,
+          description: selectedProduct.description,
         };
       }
     }
@@ -109,13 +111,11 @@ const AddSalesItem = ({ userData,selectedProductInfo }) => {
     const timestamp = Date.now();
    
 
-    // Generate the description string based on form data
-    const generatedDescription = `${newItem.product_name} with tag "${newItem.tag}" for ${newItem.duration} on ${newItem.location_booking_time}`;
-
+   
     // Create the final item object to be submitted/logged
     const itemToSubmit = {
       ...newItem,
-      description: generatedDescription,
+    
       product_purchase_id: timestamp,
 
     };
@@ -143,9 +143,10 @@ const AddSalesItem = ({ userData,selectedProductInfo }) => {
 
   };
   const passVender = (selectedVendor) => {
+   
     const data = {
-      vendor_name: selectedVendor.vendorName,
-    vendorLocation:selectedVendor.vendorLocation,
+      vendorName: selectedVendor.vendorName,
+    vendorlocation:selectedVendor.vendorLocation,
   
       vendor_id: selectedVendor._id,
     };
@@ -242,6 +243,17 @@ const timeSlots = [
                     onChange={handleInputChange}
                     className="mt-1 block w-full px-4 py-2 bg-zinc-100 border border-zinc-300 rounded-xl shadow-sm focus:ring-zinc-500 focus:border-zinc-500"
                   />
+                  <label className="block text-sm font-medium text-zinc-700">
+                   Quantity 
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    name="quantity"
+                    value={newItem.quantity}
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full px-4 py-2 bg-zinc-100 border border-zinc-300 rounded-xl shadow-sm focus:ring-zinc-500 focus:border-zinc-500"
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-zinc-700">
@@ -263,13 +275,44 @@ const timeSlots = [
                     type="number"
                     name="item_price"
             
-                    value={newItem.item_price}
+                    value={newItem.item_price }
                     readOnly
                     disabled
                     className="mt-1 block w-full px-4 py-2 bg-zinc-200 border border-zinc-300 rounded-xl shadow-sm cursor-not-allowed"
                   />
                   
                 </div>
+
+ <div><label className="block text-sm font-medium text-zinc-700">
+                      Total Price (₹)
+                  </label>
+                 
+                 <input
+  type="number"
+  name="item_price"
+   value={total}
+                
+  readOnly
+  disabled
+  className="mt-1 block w-full px-4 py-2 bg-zinc-200 border border-zinc-300 rounded-xl shadow-sm cursor-not-allowed"
+/>
+
+<button
+  type="button"
+  onClick={() => {
+      const Total=(newItem.item_price * newItem.quantity)+CalculateConvenienceFee(newItem.item_price*newItem.quantity).convenienceFee ;
+                
+    setTotal(Total);
+  }}
+  className="px-3 py-1.5 bg-blue-600 text-white text-sm rounded-lg mt-2 cursor-pointer active:scale-95 transition"
+>
+  See Total Amount
+</button>
+
+
+                  </div>
+
+
                 <div><label className="block text-sm font-medium text-zinc-700">
                     Charges Fee (₹)
                   </label>
@@ -286,8 +329,8 @@ const timeSlots = [
 <button
   type="button"
   onClick={() => {
-    const feeAdded = CalculateConvenienceFee(newItem.item_price);
-    setAfterConvenienceFee(feeAdded.TexFee);
+    const feeAdded = CalculateConvenienceFee(newItem.item_price*newItem.quantity).convenienceFee;
+    setAfterConvenienceFee(feeAdded);
   }}
   className="px-3 py-1.5 bg-blue-600 text-white text-sm rounded-lg mt-2 cursor-pointer active:scale-95 transition"
 >
@@ -399,11 +442,11 @@ const timeSlots = [
                 </div>
               <div>
                 <label className="block text-sm font-medium text-zinc-700">
-                  Custom Service Note
+                  Description
                 </label>
                 <textarea
-                  name="customServiceNote"
-                  value={newItem.customServiceNote}
+                  name="description"
+                  value={newItem.description}
                   onChange={handleInputChange}
                   rows="3"
                   className="mt-1 block w-full px-4 py-2 bg-zinc-100 border border-zinc-300 rounded-xl shadow-sm focus:ring-zinc-500 focus:border-zinc-500"

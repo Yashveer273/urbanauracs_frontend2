@@ -36,10 +36,20 @@ export default function SalesSection() {
   const [filteredData, setFilteredData] = useState([]);
   const [filters, setFilters] = useState({
     name: "",
-    email: "",
-    phone: "",
+    status: "",
+    phone: null,
     product: "",
+    orderId: null,
+    resPerson: "",
+    onDate: "",
+    dateX_To: "",
+    dateY: "",
+    dateMode: "", // "single" | "range"
+    responsible:""
+
   });
+  const normalizeDate = (date) => new Date(date).toISOString().split("T")[0];
+
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 4;
   const responsiblePersons = ["Alice", "Bob", "Charlie", "David"];
@@ -85,18 +95,9 @@ export default function SalesSection() {
 
   // Filters & Graph
   useEffect(() => {
-    const filtered = salesData.filter(
-      (sale) =>
-        sale.name?.toLowerCase().includes(filters.name.toLowerCase()) &&
-        sale.email?.toLowerCase().includes(filters.email.toLowerCase()) &&
-        sale.product_info?.cart?.some((item) =>
-          item.product_name
-            ?.toLowerCase()
-            .includes(filters.product.toLowerCase())
-        )
-    );
+    
 
-    setFilteredData(filtered);
+    setFilteredData(salesData);
 
     const daily = {},
       monthly = {};
@@ -132,9 +133,91 @@ export default function SalesSection() {
         sales: monthly[day],
       }));
 
+
     setLast7DaysData(last7);
     setMonthlySalesData(monthlyGraph);
-  }, [salesData, filters]);
+    
+  }, [salesData]);
+
+  const clearFilters = () => {
+    const reset = {
+      name: "",
+      status: "",
+      phone: "",
+      product: "",
+      orderId: "",
+      resPerson: "",
+      onDate: "",
+      dateX_To: "",
+      dateY: "",
+      dateMode: "",
+      responsible:""
+    };
+
+    setFilters(reset);
+    setFilteredData(salesData);
+  };
+
+  const applyFilters = () => {
+    const result = salesData.filter((sale) => {
+      const saleDate = normalizeDate(sale.date_time);
+
+      // TEXT FILTERS
+      if (
+        filters.phone &&
+        !sale.phone_number?.toString().includes(filters.phone)
+      )
+        return false;
+
+      if (
+        filters.name &&
+        !sale.name?.toLowerCase().includes(filters.name.toLowerCase())
+      )
+        return false;
+        if (
+        filters.responsible &&
+        !sale.responsible?.toLowerCase().includes(filters.responsible.toLowerCase())
+      )
+        return false;
+
+      if (filters.status) {
+        const saleStatus = sale.status?.toLowerCase() || "";
+
+        const filterStatus = filters.status?.toLowerCase();
+
+        if (filterStatus === "pending") {
+          // allow empty or pending
+          if (saleStatus !== "" && !saleStatus.includes("pending")) {
+            return false;
+          }
+        } else if (filterStatus) {
+          // normal status filter
+          if (!saleStatus.includes(filterStatus)) {
+            return false;
+          }
+        }
+      }
+
+      if (filters.orderId && !sale.orderId?.includes(filters.orderId))
+        return false;
+
+      // SINGLE DATE (onDate)
+      if (filters.dateMode === "single" && filters.onDate) {
+        return saleDate === filters.onDate;
+      }
+
+      // DATE RANGE (X → Y)
+      if (filters.dateMode === "range" && filters.dateX_To && filters.dateY) {
+        return saleDate >= filters.dateX_To && saleDate <= filters.dateY;
+      }
+          if (filters.responsible && !sale.orderId?.includes(filters.orderId))
+        return false;
+
+      return true;
+    });
+
+    setFilteredData(result);
+  };
 
   const currentData = filteredData.slice(
     (currentPage - 1) * itemsPerPage,
@@ -410,7 +493,7 @@ export default function SalesSection() {
     "create Invoice",
   ];
   const orderStatusOptions = [
-    "Received",
+    "Pending",
     "Confirmed",
     "Started",
     "Completed",
@@ -485,28 +568,124 @@ export default function SalesSection() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 p-4 bg-white rounded-xl shadow-md">
-          {["phone"].map((f) => (
+        <div className="bg-white rounded-lg shadow-sm p-3 mb-4">
+          {/* ROW 1 — TEXT + SINGLE DATE */}
+          <div className="grid grid-cols-2 md:grid-cols-6 gap-2 mb-2">
             <input
-              key={f}
-              type={f === "phone" ? "number" : "text"}
-              placeholder={`Search by ${
-                f.charAt(0).toUpperCase() + f.slice(1)
-              }`}
-              value={filters[f]}
+              type="number"
+              placeholder="Phone"
+              value={filters.phone}
               onChange={(e) =>
-                setFilters((prev) => ({ ...prev, [f]: e.target.value }))
+                setFilters((p) => ({ ...p, phone: Number(e.target.value) }))
               }
-              className="p-3 border rounded-xl"
+              className="p-2 border rounded-md text-sm"
             />
-          ))}
-          <button
-            onClick={() => {}}
-            className="bg-blue-600 text-white p-3 rounded-xl"
-          >
-            Search
-          </button>
+
+            <input
+              type="text"
+              placeholder="Name"
+              value={filters.name}
+              onChange={(e) =>
+                setFilters((p) => ({ ...p, name: e.target.value }))
+              }
+              className="p-2 border rounded-md text-sm"
+            />
+
+            <input
+              type="text"
+              placeholder="Order ID"
+              value={filters.orderId}
+              onChange={(e) =>
+                setFilters((p) => ({ ...p, orderId: Number(e.target.value) }))
+              }
+              className="p-2 border rounded-md text-sm"
+            />
+
+            <input
+              type="text"
+              placeholder="Status"
+              value={filters.status}
+              onChange={(e) =>
+                setFilters((p) => ({ ...p, status: e.target.value }))
+              }
+              className="p-2 border rounded-md text-sm"
+            />
+
+            <input
+              type="text"
+              placeholder="Responsible Person"
+              value={filters.responsible}
+              onChange={(e) =>
+                setFilters((p) => ({ ...p, responsible : e.target.value }))
+              }
+              className="p-2 border rounded-md text-sm"
+            />
+            <input
+              type="date"
+              value={filters.onDate}
+              onChange={(e) =>
+                setFilters((p) => ({
+                  ...p,
+                  onDate: e.target.value,
+                  dateX_To: "",
+                  dateY: "",
+                  dateMode: "single",
+                }))
+              }
+              className="p-2 border rounded-md text-sm"
+            />
+
+            <button
+              onClick={applyFilters}
+              className="p-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700"
+            >
+              Apply
+            </button>
+          </div>
+
+          {/* ROW 2 — DATE RANGE + CLEAR */}
+          <div className="grid grid-cols-2 md:grid-cols-6 gap-2">
+            <input
+              type="date"
+              value={filters.dateX_To}
+              onChange={(e) =>
+                setFilters((p) => ({
+                  ...p,
+                  dateX_To: e.target.value,
+                  onDate: "",
+                  dateMode: "range",
+                }))
+              }
+              className="p-2 border rounded-md text-sm"
+            />
+
+            <input
+              type="date"
+              value={filters.dateY}
+              onChange={(e) =>
+                setFilters((p) => ({
+                  ...p,
+                  dateY: e.target.value,
+                  onDate: "",
+                  dateMode: "range",
+                }))
+              }
+              className="p-2 border rounded-md text-sm"
+            />
+
+            <div className="hidden md:block" />
+            <div className="hidden md:block" />
+            <div className="hidden md:block" />
+
+            <button
+              onClick={clearFilters}
+              className="p-2 bg-gray-100 rounded-md text-sm hover:bg-gray-200"
+            >
+              Clear
+            </button>
+          </div>
         </div>
+
         <div className="fixed bottom-4 right-4 flex space-x-2">
           {/* Left (scroll left) */}
           <button
@@ -612,13 +791,13 @@ export default function SalesSection() {
                         onClick={() =>
                           openStatusCard(
                             sale.id,
-                            sale.status || "Received",
+                            sale.status || "Pending",
                             sale.comment || ""
                           )
                         }
                         className="text-blue-600 cursor-pointer"
                       >
-                        {sale.status || "Received"}
+                        {sale.status || "Pending"}
                       </button>
                     </td>
                     <td className="py-4 px-2 ">
@@ -727,12 +906,13 @@ export default function SalesSection() {
               >
                 &times;
               </span>
-              <h3 className="text-2xl font-bold mb-4">Product Details</h3>
+              <h3 className="text-2xl font-bold mb-4">Product Details of {selectedProductInfo.userData.phone_number}</h3>
               <div className="overflow-y-auto max-h-[70vh]">
                 <table className="w-full table-auto border-collapse">
                   <thead>
                     <tr className="bg-gray-100 text-gray-600 uppercase text-sm">
                       {[
+                        
                         "Item ID",
                         "Item Details",
                         "Booking Date/ Time",
@@ -756,10 +936,13 @@ export default function SalesSection() {
                   <tbody>
                     {selectedProductInfo.cart.map((item, i) => (
                       <tr key={i} className="hover:bg-gray-50 border-b">
-                        <td className="py-4 px-6">
+                        <td className="py-6 px-6">
                           {item.product_purchase_id}
                         </td>
-                        <td className="py-4 px-6">{item.product_name}</td>
+                       <td className="py-4 px-6 max-w-[260px] break-words whitespace-normal">
+  <div className="font-medium">{item.product_name}</div>
+  <div className="text-sm text-gray-500">{item.description}</div>
+</td>
 
                         {/* ✅ Auto-adjust width Booking Date / Time */}
                         <td className="py-4 px-4 whitespace-nowrap text-sm">

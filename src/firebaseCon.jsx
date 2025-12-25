@@ -11,6 +11,16 @@ const firebaseConfig = {
   measurementId: "G-7LNS22RP2N"
 };
 
+// const firebaseConfig = {
+//   apiKey: "AIzaSyC4BCKtcLrSoQTvhenfNjRAIoe57TvUWT4",
+//   authDomain: "urban-aura-services-b690a.firebaseapp.com",
+//   projectId: "urban-aura-services-b690a",
+//   storageBucket: "urban-aura-services-b690a.firebasestorage.app",
+//   messagingSenderId: "255632842124",
+//   appId: "1:255632842124:web:24cd94ce8656098fa74aa9",
+//   measurementId: "G-CMLRRSLQ12"
+// };
+
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 

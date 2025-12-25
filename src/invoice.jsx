@@ -5,6 +5,7 @@ import { useLocation } from "react-router-dom";
 import "./invoice.css";
 import { API_BASE_URL } from "./API";
 import {
+  CalculateConvenienceFee,
   CalculateConveniencetotalFee,
   CalculateGrandTotalForInvoice,
 } from "./components/TexFee";
@@ -61,13 +62,9 @@ export default function Invoice() {
       console.error("Download failed:", err);
     }
   };
-console.log(state)
- 
+  console.log(state);
 
-  const discountAmount = state.discount
- 
-
-
+  const discountAmount = state.discount;
 
   return (
     <div style={{ background: "#f5f5f5", minHeight: "100vh", padding: "20px" }}>
@@ -133,6 +130,8 @@ console.log(state)
             <h2>Invoice</h2>
             <p>Invoice No: {state.S_orderId}</p>
             <p>Date: {new Date().toLocaleDateString()}</p>
+            <p>Order Id: {state.orderId}</p>
+            
           </div>
         </div>
 
@@ -150,9 +149,7 @@ console.log(state)
           <p style={{ height: "35px", overflow: "hidden" }}>
             <b>Phone: </b> {state.phone_number}
           </p>
-          <p style={{ height: "35px", overflow: "hidden" }}>
-            <b>Email: </b> {state.email}
-          </p>
+          
         </div>
 
         {/* Services Table */}
@@ -164,15 +161,17 @@ console.log(state)
           }}
         >
           <thead>
-            <tr>
+            <tr>  
+              <th className="table-cell-wrap">Service Id</th>
               <th className="table-cell-wrap">Description</th>
-              <th className="table-cell-wrap">P.Id</th>
-              <th className="table-cell-wrap">Quantity</th>
-              <th className="table-cell-wrap">Date</th>
+            
+              
+          
               <th className="table-cell-wrap">Booking Date</th>
               <th className="table-cell-wrap">Booking Add.</th>
-              <th className="table-cell-wrap">Duration</th>
-              <th className="table-cell-wrap">Item Price</th>
+<th className="table-cell-wrap">Quantity</th>    <th className="table-cell-wrap">Service Charge</th>
+              <th className="table-cell-wrap">Conven. Fee</th>
+              <th className="table-cell-wrap">Total Charge</th>
             </tr>
           </thead>
 
@@ -184,24 +183,36 @@ console.log(state)
                   style={{ cursor: "pointer" }} // 👈 makes the row clickable
                   onClick={() => console.log("Clicked:", item)} // optional
                 >
+                    <td className="table-cell-wrap">{item.product_purchase_id}</td>
                   <td className="table-cell-wrap">
                     {item.product_name} <br />
                     <small>{item.description}</small>
                   </td>
-                  <td className="table-cell-wrap">{item.og_product_id}</td>
-                  <td className="table-cell-wrap">{item.quantity}</td>
-                  <td className="table-cell-wrap">
-                    {new Date().toLocaleDateString()}
-                  </td>
+                
+              
+                
                   <td className="table-cell-wrap">
                     {item.location_booking_time}
                   </td>
                   <td className="table-cell-wrap">
                     {item.bookingAddress ?? "non"}
                   </td>
-                  <td className="table-cell-wrap">{item.duration}</td>
+                      <td className="table-cell-wrap">{item.quantity}</td>
+                      <td className="table-cell-wrap">
+                    ₹{item.item_price}
+                  </td>
                   <td className="table-cell-wrap">
-                    ₹{CalculateConveniencetotalFee(item.item_price*item.quantity)}
+                    
+                   ₹{
+                      CalculateConvenienceFee(item.item_price * item.quantity)
+                        .convenienceFee
+                    }
+                  </td>
+                    
+                  <td className="table-cell-wrap">
+                    ₹{CalculateConveniencetotalFee(
+                      item.item_price * item.quantity
+                    )}
                   </td>
                 </tr>
               ))
@@ -243,15 +254,34 @@ console.log(state)
             }}
           >
             <p>
-              <strong>Sub Total:{CalculateGrandTotalForInvoice(cart)}</strong>
+              <strong>
+                Sub Total:
+                {cart?.reduce(
+                  (sum, item) =>
+                    sum +
+                    Number(
+                      item.item_price * item.quantity +
+                        CalculateConvenienceFee(item.item_price * item.quantity)
+                          .convenienceFee
+                    ),
+                  0
+                )}
+              </strong>
             </p>
-            <p>
-              Discount: ₹{discountAmount}
-            </p>
+            <p>Discount: ₹{discountAmount}</p>
 
             <h3>
               <strong>Grand Total:</strong> ₹
-              {state.total_price}
+              {cart?.reduce(
+                (sum, item) =>
+                  sum +
+                  Number(
+                    item.item_price * item.quantity +
+                      CalculateConvenienceFee(item.item_price * item.quantity)
+                        .convenienceFee
+                  ),
+                0
+              ) - Number(discountAmount)}
             </h3>
           </div>
 
@@ -339,8 +369,6 @@ console.log(state)
           </p>
           <p>3. For any queries, contact us at.</p>
         </div>
-
-        
       </div>
 
       {/* Download Button */}

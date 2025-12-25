@@ -30,13 +30,24 @@ const AccountMenu = () => {
       const formatted = res.data.orders.map((order) => {
         console.log(order)
         const cartItems = order?.product_info?.cart || [];
-
+        const totalFee = order?.product_info?.cart?.reduce(
+                        (sum, item) =>
+                          sum +
+                          Number(
+                            item.item_price * item.quantity +
+                              CalculateConvenienceFee(
+                                item.item_price * item.quantity
+                              ).convenienceFee
+                          ),
+                        0
+                      );
+                               
         return {
           orderSubmittedDate: order?.date_time,
           order_id: order?.orderId,
           payableAmount: order?.payableAmount,
           paidAmount: order?.payedAmount,
-          totalPrice: order?.total_price,
+          totalPrice: totalFee,
 
           status: order?.status || "Pending",
 
@@ -57,6 +68,7 @@ const AccountMenu = () => {
 quantity:item?.quantity,
             product_purchase_id: item?.product_purchase_id,
             itemPrice: item?.item_price,
+            
             bookingDate: item?.location_booking_time,
             serviceTime: item?.SelectedServiceTime,
             description: item?.description,
@@ -75,6 +87,7 @@ quantity:item?.quantity,
   useEffect(() => {
     if (user.userId) {
       callOrderHistory();
+      
     }
   }, [user]);
   const formatDate = (isoDate) => {
@@ -127,6 +140,7 @@ quantity:item?.quantity,
     }
   };
   return (
+   
     <>
       <div className="relative w-[100%] h-[100vh]  bg-white  shadow-2xl overflow-hidden animate-fadeIn flex flex-col">
         <div className="relative bg-gradient-to-r from-[#f87559] to-orange-500 text-white p-6 flex flex-col items-start">
@@ -251,18 +265,18 @@ quantity:item?.quantity,
                       <div className="bg-gray-50 p-2 rounded-md">
                         <p className="text-gray-500 text-xs">Payable Amount</p>
                         <p className="font-semibold text-gray-800 text-base">
-                          ₹{order.payableAmount}
+                          ₹{order.totalPrice-order.paidAmount}
                         </p>
                         <button
-                          disabled={order.payableAmount == 0}
+                          disabled={order.totalPrice-order.paidAmount == 0}
                           onClick={async () => {
-                            if (order.payableAmount == 0) return;
+                            if (order.totalPrice-order.paidAmount == 0) return;
 
                             const date = Date.now();
                             await handlePaymentLeft(
                               {
                                 name: user.name,
-                                amount: order.payableAmount,
+                                amount: order.totalPrice-order.paidAmount,
                                 order_id: order.order_id,
                                 user: user,
                                 transectionId: `${date}`,
@@ -272,15 +286,15 @@ quantity:item?.quantity,
                           }}
                           className={`font-semibold px-4 py-2 rounded-md shadow transition-all duration-200
                               ${
-                                order.payableAmount === 0
+                                order.totalPrice-order.paidAmount === 0
                                 ? "bg-green-500 text-white cursor-not-allowed"
                                  : "bg-orange-500 hover:bg-orange-600 text-white"
                                   }
                                 `}
                         >
-                          {order.payableAmount === 0
+                          {order.totalPrice-order.paidAmount === 0
                             ? "Complete"
-                            : `Pay Now ₹${order.payableAmount}`}
+                            : `Pay Now ₹${order.totalPrice-order.paidAmount}`}
                         </button>
                       </div>
                    
