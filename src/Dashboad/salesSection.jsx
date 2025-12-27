@@ -83,8 +83,8 @@ export default function SalesSection() {
   const [tagAccess, setTagAccess] = useState([]);
   // ------------------------------------------------------------------
   const checkAuth = () => {
-    const token = localStorage.getItem("dashauthToken");
-    const dashtagAccess = localStorage.getItem("dashtagAccess");
+    const token = localStorage.getItem("urbanauraservicesdashauthToken");
+    const dashtagAccess = localStorage.getItem("urbanauraservicesdashtagAccess");
 
     if (token) {
   

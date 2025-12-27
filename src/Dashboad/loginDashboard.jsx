@@ -17,11 +17,8 @@ export default function DashboardLogin() {
 
       if (res.data.token) {
         // Save token + role + username in localStorage
-        localStorage.setItem("dashauthToken", res.data.token);
-        localStorage.setItem("dashtagAccess", res.data.user.tagAccess);
-        localStorage.setItem("dashusername", res.data.user.username);
-        localStorage.setItem("dashid", res.data.user.id);
-
+        localStorage.setItem("urbanauraservicesdashauthToken", res.data.token);
+        localStorage.setItem("urbanauraservicesdashtagAccess", res.data.user.tagAccess);
         setMessage(`✅ Welcome ${res.data.user.username} (${res.data.user.tagAccess})`);
         setTimeout(() => {
           window.location.href = "/dashboard";

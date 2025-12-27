@@ -265,8 +265,10 @@ const Dashboard = () => {
   const [tagAccess, setTagAccess] = useState([]);
   // ------------------------------------------------------------------
   const checkAuth = () => {
-    const token = localStorage.getItem("dashauthToken");
-    const dashtagAccess = localStorage.getItem("dashtagAccess");
+    const token = localStorage.getItem("urbanauraservicesdashauthToken");
+    const dashtagAccess = localStorage.getItem(
+      "urbanauraservicesdashtagAccess"
+    );
 
     if (token) {
       setIsAuthenticated(true);
@@ -305,13 +307,11 @@ const Dashboard = () => {
     </div>
   );
   const handleLogout = () => {
-    localStorage.removeItem("dashauthToken");
-    localStorage.removeItem("tagAccess");
-    localStorage.removeItem("username");
-    localStorage.removeItem("id");
-    setIsAuthenticated(false);
+    localStorage.removeItem("urbanauraservicesdashauthToken");
+    localStorage.removeItem("urbanauraservicesdashtagAccess");
+    window.location.reload();
   };
-  // ---------------------------------------------------------------
+
   const SaveSubmit = async (FDBservices, newService) => {
     console.log(newService);
     try {
@@ -1008,7 +1008,7 @@ const Dashboard = () => {
       case "sales":
         return (
           <div className="flex flex-col items-center justify-center h-full p-8">
-            {tagAccess.includes("Sales") || tagAccess.includes("Admin")? (
+            {tagAccess.includes("Sales") || tagAccess.includes("Admin") ? (
               <SalesSection />
             ) : (
               <LockedBox
@@ -1033,12 +1033,11 @@ const Dashboard = () => {
         );
       case "Coupon-Manager":
         return (
-          
           <div className="">
             {tagAccess.includes("Coupon Manager") ||
             tagAccess.includes("Admin") ? (
               <div className=" flex">
-                   <CouponManager />
+                <CouponManager />
               </div>
             ) : (
               <LockedBox
@@ -1095,7 +1094,6 @@ const Dashboard = () => {
         return null;
     }
   };
- 
 
   return isAuthenticated != true ? (
     <DashboardLogin />
@@ -1223,17 +1221,18 @@ const Dashboard = () => {
                   Dashboard Controller
                 </a>
               </li>
-              <li className="mb-2">
-                <a
-                  href="#"
-                  onClick={() => handleLogout}
-                  className="w-full flex items-center justify-center p-3 rounded-lg text-red-500 hover:bg-red-100 transition-colors duration-200"
-                >
-                  <LogOutIcon className="w-5 h-5 mr-2" />
-                  Logout
-                </a>
-              </li>
             </ul>
+            <button
+              onClick={handleLogout}
+              className="
+    flex items-center px-5 py-2 bg-red-500 text-white font-semibold rounded-lg
+    shadow-md hover:bg-red-600 hover:shadow-lg transition-all duration-200
+    focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-1
+  "
+            >
+              <LogOutIcon className="w-5 h-5 mr-2" />
+              Logout
+            </button>
           </nav>
         </div>
       </aside>
