@@ -1,24 +1,50 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { useLocation } from "react-router-dom";
 import "./invoice.css";
-import { API_BASE_URL } from "./API";
+import { API_BASE_URL, sendToVenderUserPersonwhatsapp } from "./API";
+import { doc, setDoc } from "firebase/firestore";
+import { firestore } from "./firebaseCon";
 import {
   CalculateConvenienceFee,
   CalculateConveniencetotalFee,
-  CalculateGrandTotalForInvoice,
 } from "./components/TexFee";
+import { FaPaperPlane, FaPenFancy, FaSyncAlt } from "react-icons/fa";
+import { GetVenderData } from "./Dashboad/GetVenderData";
+import SendToVendorPopup from "./components/SendToVendorPopup";
+import { normalizeDate } from "./Dashboad/utility";
 export default function Invoice() {
   const invoiceRef = useRef();
   const location = useLocation();
   const { state } = location;
+  const [invoiceUrl, setInvoiceUrl] = useState("");
+  const [loading, setLoading] = useState(false);
+
   const cart = state?.product_info?.cart || [];
+
+  const openEditRowCard = async (sale) => {
+    try {
+      console.log("Updating sale:", sale);
+      let updateSalesData = {
+        invoice: invoiceUrl,
+        generatedInvoiceDate_time: Date.now(),
+      };
+      const saleRef = doc(firestore, "sales", sale.id);
+      await setDoc(saleRef, updateSalesData, { merge: true });
+    } catch (err) {
+      console.log("Error updating sale:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const downloadPDF = async () => {
     const input = invoiceRef.current;
     if (!input) return;
 
     try {
+      setLoading(true);
       const canvas = await html2canvas(input, {
         scale: 2,
         useCORS: true,
@@ -58,13 +84,19 @@ export default function Invoice() {
 
       const result = await response.json();
       console.log("Uploaded:", result.url);
+      setInvoiceUrl(result.url);
     } catch (err) {
       console.error("Download failed:", err);
+    } finally {
+      setLoading(false);
     }
   };
   console.log(state);
 
   const discountAmount = state.discount;
+  const [sendToOpen, setSendToOpen] = useState(false);
+ 
+
 
   return (
     <div style={{ background: "#f5f5f5", minHeight: "100vh", padding: "20px" }}>
@@ -131,7 +163,6 @@ export default function Invoice() {
             <p>Invoice No: {state.S_orderId}</p>
             <p>Date: {new Date().toLocaleDateString()}</p>
             <p>Order Id: {state.orderId}</p>
-            
           </div>
         </div>
 
@@ -149,7 +180,6 @@ export default function Invoice() {
           <p style={{ height: "35px", overflow: "hidden" }}>
             <b>Phone: </b> {state.phone_number}
           </p>
-          
         </div>
 
         {/* Services Table */}
@@ -161,15 +191,13 @@ export default function Invoice() {
           }}
         >
           <thead>
-            <tr>  
+            <tr>
               <th className="table-cell-wrap">Service Id</th>
               <th className="table-cell-wrap">Description</th>
-            
-              
-          
               <th className="table-cell-wrap">Booking Date</th>
               <th className="table-cell-wrap">Booking Add.</th>
-<th className="table-cell-wrap">Quantity</th>    <th className="table-cell-wrap">Service Charge</th>
+              <th className="table-cell-wrap">Quantity</th>{" "}
+              <th className="table-cell-wrap">Service Charge</th>
               <th className="table-cell-wrap">Conven. Fee</th>
               <th className="table-cell-wrap">Total Charge</th>
             </tr>
@@ -183,34 +211,33 @@ export default function Invoice() {
                   style={{ cursor: "pointer" }} // 👈 makes the row clickable
                   onClick={() => console.log("Clicked:", item)} // optional
                 >
-                    <td className="table-cell-wrap">{item.product_purchase_id}</td>
+                  <td className="table-cell-wrap">
+                    {item.product_purchase_id}
+                  </td>
                   <td className="table-cell-wrap">
                     {item.product_name} <br />
                     <small>{item.description}</small>
                   </td>
-                
-              
-                
+
                   <td className="table-cell-wrap">
                     {item.location_booking_time}
                   </td>
                   <td className="table-cell-wrap">
                     {item.bookingAddress ?? "non"}
                   </td>
-                      <td className="table-cell-wrap">{item.quantity}</td>
-                      <td className="table-cell-wrap">
-                    ₹{item.item_price}
-                  </td>
+                  <td className="table-cell-wrap">{item.quantity}</td>
+                  <td className="table-cell-wrap">₹{item.item_price}</td>
                   <td className="table-cell-wrap">
-                    
-                   ₹{
+                    ₹
+                    {
                       CalculateConvenienceFee(item.item_price * item.quantity)
                         .convenienceFee
                     }
                   </td>
-                    
+
                   <td className="table-cell-wrap">
-                    ₹{CalculateConveniencetotalFee(
+                    ₹
+                    {CalculateConveniencetotalFee(
                       item.item_price * item.quantity
                     )}
                   </td>
@@ -370,22 +397,85 @@ export default function Invoice() {
           <p>3. For any queries, contact us at.</p>
         </div>
       </div>
+    
+ <SendToVendorPopup
 
-      {/* Download Button */}
-      <div style={{ textAlign: "center", marginTop: "20px" }}>
+        open={sendToOpen}
+        onClose={() => setSendToOpen(false)}
+        userNumber={state.phone_number|| ""}
+      
+        onSend={async(numbersPayload) => {
+          console.log("SEND PAYLOAD:", numbersPayload);
+        const userMsg=  `Hi from urbanauracs.com this is your invoice generated on ${ normalizeDate(state.date_time) } ${state.invoice}`;
+ 
+      const res=  await  sendToVenderUserPersonwhatsapp(numbersPayload,{venederMsg:userMsg,userMsg});
+console.log(res);
+if (res?.status === "success" && res?.results?.length) {
+    const successMessages = res.results
+      .map(r => `✔ ${r.number}: ${r.response?.message}`)
+      .join("\n");
+
+    alert(successMessages); // or toast.success(...)
+    setSendToOpen(false);
+  }
+        }}
+      />
+
+      <div className="flex justify-center gap-2 mt-4">
         <button
           onClick={downloadPDF}
+          disabled={loading}
           style={{
             padding: "10px 20px",
-            background: "#1976d2",
+            background: loading ? "#90caf9" : "#1976d2",
             color: "#fff",
             border: "none",
             borderRadius: "5px",
-            cursor: "pointer",
+            cursor: loading ? "not-allowed" : "pointer",
+            opacity: loading ? 0.7 : 1,
           }}
         >
-          Download PDF
+          {loading ? "Generating..." : "Download PDF"}
         </button>
+
+        {invoiceUrl && (
+          <button
+            onClick={() => openEditRowCard(state)}
+            disabled={loading}
+            style={{
+              padding: "10px 20px",
+              background: loading ? "#7ae59b" : "#19d247ff",
+              color: "#fff",
+              border: "none",
+              borderRadius: "5px",
+              cursor: loading ? "not-allowed" : "pointer",
+              opacity: loading ? 0.7 : 1,
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+            }}
+          >
+            {loading ? "Updating..." : "Update"}
+          </button>
+        )}
+
+        {state.invoice ? (
+          <button
+            className="center"
+            onClick={() => setSendToOpen(true)}
+            style={{
+              padding: "10px 20px",
+              background: "#d2bd19ff",
+              color: "#000000ff",
+              border: "none",
+              borderRadius: "5px",
+              cursor: "pointer",
+              alignItems: "center",
+            }}
+          >
+            Send
+          </button>
+        ) : null}
       </div>
     </div>
   );

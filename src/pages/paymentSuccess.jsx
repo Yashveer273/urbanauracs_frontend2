@@ -49,7 +49,7 @@ const PaymentSuccess = () => {
 
         const payload = {
           email: user?.email,
-          name: user?.name || "Guest",
+          name: user?.name ,
           userId: user?.userId,
           phone_number: user?.mobileNumber,
           oGtotal_price: total_price,
@@ -59,7 +59,7 @@ const PaymentSuccess = () => {
           appliedCoupon:order.discount,
           left_amount: order.left_amount,
           pincode: user?.pincode,
-          user_location: user?.location || "Unknown",
+          user_location: user?.location ,
           status: "",
           date_time: new Date().toISOString(),
           ConfurmWhatsAppMobileNumber: user?.ConfurmWhatsAppMobileNumber,
@@ -115,7 +115,7 @@ const PaymentSuccess = () => {
     };
 
     saveOrder();
-  }, [id, amount, order, cart, user, dispatch]);
+  }, [id, amount, order, cart, user, dispatch, total_price]);
 
   const statusMap = {
     pending: {
@@ -140,7 +140,9 @@ const PaymentSuccess = () => {
   };
 
   return (
-    <div
+    <>
+   <div className="min-h-screen flex items-center justify-center">
+      <div
       className={`${
         status === "success"
           ? ""
@@ -181,7 +183,9 @@ const PaymentSuccess = () => {
           )}
         </motion.div>
       </AnimatePresence>
-    </div>
+    </div></div>
+    </>
+    
   );
 };
 

@@ -23,13 +23,20 @@ import {
 import { firestore } from "../firebaseCon";
 import AddSalesItem from "./AddSalesItem";
 import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
-import { API_BASE_URL, updateSale, updateStatusOrCommentDB } from "../API";
+import {
+  API_BASE_URL,
+  fetchdashAuth,
+
+  updateSale,
+  updateStatusOrCommentDB,
+} from "../API";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import {
   CalculateConvenienceFee,
   CalculateConveniencetotalFee,
 } from "../components/TexFee";
+import { normalizeDate } from "./utility";
 
 export default function SalesSection() {
   const [salesData, setSalesData] = useState([]);
@@ -45,14 +52,12 @@ export default function SalesSection() {
     dateX_To: "",
     dateY: "",
     dateMode: "", // "single" | "range"
-    responsible:""
-
+    responsible: "",
   });
-  const normalizeDate = (date) => new Date(date).toISOString().split("T")[0];
 
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 4;
-  const responsiblePersons = ["Alice", "Bob", "Charlie", "David"];
+
   const [editingRow, setEditingRow] = useState(null);
   const [rowForm, setRowForm] = useState({});
 
@@ -65,6 +70,7 @@ export default function SalesSection() {
   });
 
   const [last7DaysData, setLast7DaysData] = useState([]);
+  const [responsiblePersons, setResponsiblePersons] = useState([]);
   const [monthlySalesData, setMonthlySalesData] = useState([]);
   const [editingStatus, setEditingStatus] = useState({
     saleId: null,
@@ -73,6 +79,24 @@ export default function SalesSection() {
   const [tempStatus, setTempStatus] = useState("");
   const [tempComment, setTempComment] = useState("");
   const navigate = useNavigate();
+ 
+  const [tagAccess, setTagAccess] = useState([]);
+  // ------------------------------------------------------------------
+  const checkAuth = () => {
+    const token = localStorage.getItem("dashauthToken");
+    const dashtagAccess = localStorage.getItem("dashtagAccess");
+
+    if (token) {
+  
+      setTagAccess(dashtagAccess ? dashtagAccess.split(",") : []);
+
+    
+    } else {
+ 
+      setTagAccess([]);
+    }
+  };
+
   // Fetch sales
   useEffect(() => {
     const unsubscribe = onSnapshot(
@@ -87,16 +111,21 @@ export default function SalesSection() {
 
         setSalesData(newSales);
         setCurrentPage(1);
-      }
+      },
+      checkAuth(),
+      getResponsiblePersion()
     );
 
     return () => unsubscribe();
   }, []);
-
-  // Filters & Graph
+  const getResponsiblePersion = async () => {
+    const res = await fetchdashAuth();
+    if (res.data) {
+      setResponsiblePersons(res.data);
+    }
+  };
+  // Filters & Graph}
   useEffect(() => {
-    
-
     setFilteredData(salesData);
 
     const daily = {},
@@ -133,10 +162,8 @@ export default function SalesSection() {
         sales: monthly[day],
       }));
 
-
     setLast7DaysData(last7);
     setMonthlySalesData(monthlyGraph);
-    
   }, [salesData]);
 
   const clearFilters = () => {
@@ -151,7 +178,7 @@ export default function SalesSection() {
       dateX_To: "",
       dateY: "",
       dateMode: "",
-      responsible:""
+      responsible: "",
     };
 
     setFilters(reset);
@@ -174,9 +201,11 @@ export default function SalesSection() {
         !sale.name?.toLowerCase().includes(filters.name.toLowerCase())
       )
         return false;
-        if (
+      if (
         filters.responsible &&
-        !sale.responsible?.toLowerCase().includes(filters.responsible.toLowerCase())
+        !sale.responsible
+          ?.toLowerCase()
+          .includes(filters.responsible.toLowerCase())
       )
         return false;
 
@@ -210,7 +239,7 @@ export default function SalesSection() {
       if (filters.dateMode === "range" && filters.dateX_To && filters.dateY) {
         return saleDate >= filters.dateX_To && saleDate <= filters.dateY;
       }
-          if (filters.responsible && !sale.orderId?.includes(filters.orderId))
+      if (filters.responsible && !sale.orderId?.includes(filters.orderId))
         return false;
 
       return true;
@@ -264,7 +293,7 @@ export default function SalesSection() {
   const openEditRowCard = (sale) => {
     setEditingRow(sale.id);
 
-    const total = sale?.product_info?.cart?.reduce(
+    sale?.product_info?.cart?.reduce(
       (sum, item) =>
         sum +
         Number(
@@ -274,8 +303,6 @@ export default function SalesSection() {
         ),
       0
     );
-
-    console.log("Total price:", total);
 
     setRowForm({
       orderId: sale.orderId,
@@ -482,11 +509,11 @@ export default function SalesSection() {
 
     "Details",
 
-    "Total Price",
+    "Total Amount",
     "Discount",
-    "Payable Amount",
-    "Payed Amount",
-    "Date/Time",
+    "Balance Amount",
+    "Paid Amount",
+    "Booking Date/Time",
     "Status",
     "Responsible",
     "Comment",
@@ -616,7 +643,7 @@ export default function SalesSection() {
               placeholder="Responsible Person"
               value={filters.responsible}
               onChange={(e) =>
-                setFilters((p) => ({ ...p, responsible : e.target.value }))
+                setFilters((p) => ({ ...p, responsible: e.target.value }))
               }
               className="p-2 border rounded-md text-sm"
             />
@@ -784,7 +811,9 @@ export default function SalesSection() {
                     <td className="py-4 px-2">₹{sale.payedAmount}</td>
 
                     <td className="py-4 px-2">
-                      {new Date(sale.date_time).toLocaleString()}
+                      {normalizeDate(sale.date_time)}
+                      <br />
+                      {new Date(sale.date_time).toLocaleTimeString()}
                     </td>
                     <td className="py-4 px-2">
                       <button
@@ -800,22 +829,40 @@ export default function SalesSection() {
                         {sale.status || "Pending"}
                       </button>
                     </td>
-                    <td className="py-4 px-2 ">
-                      <select
-                        value={sale.responsible || ""}
-                        onChange={(e) =>
-                          updateResponsiblePerson(sale.id, e.target.value)
-                        }
-                        className="border rounded-md p-2"
-                      >
-                        <option value="">Select</option>
-                        {responsiblePersons.map((person) => (
-                          <option key={person} value={person}>
-                            {person}
-                          </option>
-                        ))}
-                      </select>
-                    </td>
+                  <td className="py-4 px-2">
+  {responsiblePersons && responsiblePersons.length > 0 ? (
+    tagAccess?.includes("Admin") ? (
+      <select
+        value={sale.responsible || ""}
+        onChange={(e) =>
+          updateResponsiblePerson(sale.id, e.target.value)
+        }
+        className="
+          w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white
+          focus:outline-none focus:ring-2 focus:ring-blue-500
+        "
+      >
+        {responsiblePersons.map((person) => (
+          <option
+            key={person._id}
+            value={person.ResponsiblePersonName}
+          >
+            {person.ResponsiblePersonName}
+          </option>
+        ))}
+      </select>
+    ) : (
+      <span className="text-sm font-medium text-gray-700">
+        {sale.responsible || "—"}
+      </span>
+    )
+  ) : (
+    <span className="text-sm text-red-500 italic">
+      Responsible Person data not available
+    </span>
+  )}
+</td>
+
 
                     <td className="py-4">
                       {sale.comment && (
@@ -906,20 +953,21 @@ export default function SalesSection() {
               >
                 &times;
               </span>
-              <h3 className="text-2xl font-bold mb-4">Product Details of {selectedProductInfo.userData.phone_number}</h3>
+              <h3 className="text-2xl font-bold mb-4">
+                Product Details of {selectedProductInfo.userData.phone_number}
+              </h3>
               <div className="overflow-y-auto max-h-[70vh]">
                 <table className="w-full table-auto border-collapse">
                   <thead>
                     <tr className="bg-gray-100 text-gray-600 uppercase text-sm">
                       {[
-                        
-                        "Item ID",
-                        "Item Details",
-                        "Booking Date/ Time",
+                        "Service ID",
+                        "Service Details",
+                        "Service Date/ Time",
                         "Booking Address",
-                        "Item Price",
+                        "Order Amount",
                         "Quantity",
-                        "Item Price*Quantity",
+                        "Order Amount*Quantity",
                         "Convenience Fee",
                         "Total",
                         "Status",
@@ -939,10 +987,12 @@ export default function SalesSection() {
                         <td className="py-6 px-6">
                           {item.product_purchase_id}
                         </td>
-                       <td className="py-4 px-6 max-w-[260px] break-words whitespace-normal">
-  <div className="font-medium">{item.product_name}</div>
-  <div className="text-sm text-gray-500">{item.description}</div>
-</td>
+                        <td className="py-4 px-6 max-w-[260px] break-words whitespace-normal">
+                          <div className="font-medium">{item.product_name}</div>
+                          <div className="text-sm text-gray-500">
+                            {item.description}
+                          </div>
+                        </td>
 
                         {/* ✅ Auto-adjust width Booking Date / Time */}
                         <td className="py-4 px-4 whitespace-nowrap text-sm">

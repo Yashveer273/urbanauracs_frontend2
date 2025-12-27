@@ -22,6 +22,8 @@ import SocialLinksManager from "./socialMedia";
 import VandersSection from "./VandersSection";
 import { User } from "lucide-react";
 import { GetVenderData } from "./GetVenderData";
+import ServiceManager from "./ServiceManager";
+import { cities } from "./utility";
 
 // Icons from Lucide React....
 const HomeIcon = () => (
@@ -261,7 +263,7 @@ const Dashboard = () => {
   const [FDBservices, setFDBServices] = useState([]);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [tagAccess, setTagAccess] = useState([]);
-
+  // ------------------------------------------------------------------
   const checkAuth = () => {
     const token = localStorage.getItem("dashauthToken");
     const dashtagAccess = localStorage.getItem("dashtagAccess");
@@ -964,7 +966,7 @@ const Dashboard = () => {
         return (
           <div className="flex flex-col items-center justify-center h-full p-8">
             {/* <AuthDashboard /> */}
-            {tagAccess.includes("Users") ? (
+            {tagAccess.includes("Users") || tagAccess.includes("Admin") ? (
               <AuthDashboard />
             ) : (
               <LockedBox
@@ -978,213 +980,23 @@ const Dashboard = () => {
       case "services":
         return (
           <>
-            {tagAccess.includes("Services") ? (
-              <>
-                {!selectedService && (
-                  <div className="max-w-4xl mx-auto transition-opacity duration-500 ease-in-out">
-                    <h2 className="text-3xl font-bold text-gray-800 mb-6">
-                      Service Categories
-                    </h2>
-                    <p className="text-gray-500 mb-6">
-                      Select a category from the side menu to view and manage
-                      vendors.
-                    </p>
-                    <div className="bg-white p-6 rounded-xl shadow-lg mb-8">
-                      <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4">
-                        <input
-                          type="text"
-                          className="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                          placeholder="Enter new service name..."
-                          value={newServiceName}
-                          onChange={(e) => setNewServiceName(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                              handleCreateService();
-                            }
-                          }}
-                        />
-                        <button
-                          onClick={handleCreateService}
-                          className="w-full sm:w-auto px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 transition-colors duration-200"
-                        >
-                          <PlusIcon className="inline-block mr-2" />
-                          Add New Service
-                        </button>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {services.map((service) => (
-                        <div
-                          key={service.id}
-                          className="bg-white p-6 rounded-xl shadow-md flex flex-col justify-between cursor-pointer transform hover:scale-105 transition-transform duration-200"
-                          onClick={() => handleSelectService(service)}
-                        >
-                          {editingServiceId === service.id ? (
-                            <input
-                              type="text"
-                              value={newServiceName}
-                              onChange={(e) =>
-                                setNewServiceName(e.target.value)
-                              }
-                              onClick={(e) => e.stopPropagation()}
-                              onKeyDown={(e) => {
-                                if (e.key === "Enter") {
-                                  handleSaveEdit(service.id, newServiceName);
-                                }
-                              }}
-                              className="w-full p-2 border rounded mb-4"
-                              autoFocus
-                            />
-                          ) : (
-                            <h3 className="text-xl font-semibold text-gray-700 mb-4 truncate">
-                              {service.ServiceName}
-                              {service.data.length === 0 && (
-                                <span className="ml-2 text-xs bg-red-300 text-red-800 px-2 py-1 rounded-full">
-                                  Draft
-                                </span>
-                              )}
-                            </h3>
-                          )}
-
-                          <div className="flex space-x-2 mt-auto">
-                            {editingServiceId === service.id ? (
-                              <>
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleSaveEdit(service.id, newServiceName);
-                                  }}
-                                  className="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg shadow-sm hover:bg-green-600 transition-colors duration-200 flex items-center justify-center"
-                                >
-                                  Save
-                                </button>
-
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setEditingServiceId(null); // Cancel edit mode
-                                    setNewServiceName(""); // Clear input
-                                  }}
-                                  className="flex-1 px-4 py-2 bg-gray-400 text-white rounded-lg shadow-sm hover:bg-gray-500 transition-colors duration-200 flex items-center justify-center"
-                                >
-                                  Cancel
-                                </button>
-                              </>
-                            ) : (
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setEditingServiceId(service.id);
-                                  setNewServiceName(service.ServiceName);
-                                }}
-                                className="flex-1 px-4 py-2 bg-yellow-400 text-gray-800 rounded-lg shadow-sm hover:bg-yellow-500 transition-colors duration-200 flex items-center justify-center"
-                              >
-                                <EditIcon className="mr-1" />
-                                Edit
-                              </button>
-                            )}
-
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteService(service.id);
-                              }}
-                              className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg shadow-sm hover:bg-red-600 transition-colors duration-200 flex items-center justify-center"
-                            >
-                              <TrashIcon className="mr-1" />
-                              Delete
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {selectedService && (
-                  <div className="max-w-4xl mx-auto transition-opacity duration-500 ease-in-out">
-                    <button
-                      onClick={handleClosePanel} // this sets selectedService back to null
-                      className="mb-4 px-4 py-2 bg-gray-300 text-gray-800 rounded-lg shadow hover:bg-gray-400 transition"
-                    >
-                      ← Back
-                    </button>
-                    <h2 className="text-3xl font-bold text-gray-800 mb-6">
-                      Vendors for {selectedService.ServiceName}
-                    </h2>
-                    {selectedService.data.length > 0 ? (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                        {selectedService.data.map((vendor) => (
-                          <div
-                            key={vendor.vendorId}
-                            className="bg-white p-6 rounded-xl shadow-md flex flex-col cursor-pointer transform hover:scale-105 transition-transform duration-200"
-                            onClick={() => handleSelectVendor(vendor)}
-                          >
-                            <img
-                              src={
-                                vendor.vendorImage &&
-                                vendor.vendorImage.trim() !== ""
-                                  ? vendor.vendorImage
-                                  : "https://via.placeholder.com/400x200?text=No+Image"
-                              }
-                              alt={vendor.vendorName || "Vendor"}
-                              className="w-full h-40 object-cover rounded-lg mb-4"
-                            />
-
-                            <h3 className="text-xl font-semibold text-gray-700 truncate">
-                              {vendor.vendorName}
-                              {vendor.services.length === 0 && (
-                                <span className="ml-2 text-xs bg-red-300 text-red-800 px-2 py-1 rounded-full">
-                                  Draft
-                                </span>
-                              )}
-                            </h3>
-                            <p className="text-sm text-gray-500 truncate">
-                              {vendor.location}
-                            </p>
-                            <div className="flex items-center space-x-2 mt-2">
-                              <span className="text-yellow-500 text-lg">★</span>
-                              <span className="font-bold text-gray-700">
-                                {vendor.rating}
-                              </span>
-                              <span className="text-gray-500">
-                                ({vendor.reviews} reviews)
-                              </span>
-                            </div>
-                            <div className="flex space-x-2 mt-4">
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleEditVendor(vendor);
-                                }}
-                                className="flex-1 px-4 py-2 bg-yellow-400 text-gray-800 rounded-lg shadow-sm hover:bg-yellow-500 transition-colors duration-200 flex items-center justify-center"
-                              >
-                                <EditIcon className="mr-1" />
-                                Edit
-                              </button>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleDeleteVendor(vendor.vendorId);
-                                }}
-                                className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg shadow-sm hover:bg-red-600 transition-colors duration-200 flex items-center justify-center"
-                              >
-                                <TrashIcon className="mr-1" />
-                                Delete
-                              </button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-gray-500 text-center mt-10">
-                        No vendors available for this service. Click the add
-                        button below to get started!
-                      </p>
-                    )}
-                  </div>
-                )}
-              </>
+            {tagAccess.includes("Services") || tagAccess.includes("Admin") ? (
+              <ServiceManager
+                services={services}
+                selectedService={selectedService}
+                newServiceName={newServiceName}
+                editingServiceId={editingServiceId}
+                setNewServiceName={setNewServiceName}
+                setEditingServiceId={setEditingServiceId}
+                handleCreateService={handleCreateService}
+                handleSelectService={handleSelectService}
+                handleSaveEdit={handleSaveEdit}
+                handleDeleteService={handleDeleteService}
+                handleClosePanel={handleClosePanel}
+                handleSelectVendor={handleSelectVendor}
+                handleEditVendor={handleEditVendor}
+                handleDeleteVendor={handleDeleteVendor}
+              />
             ) : (
               <LockedBox
                 className="flex justify-center items-center h-screen"
@@ -1196,7 +1008,7 @@ const Dashboard = () => {
       case "sales":
         return (
           <div className="flex flex-col items-center justify-center h-full p-8">
-            {tagAccess.includes("Sales") ? (
+            {tagAccess.includes("Sales") || tagAccess.includes("Admin")? (
               <SalesSection />
             ) : (
               <LockedBox
@@ -1209,7 +1021,7 @@ const Dashboard = () => {
       case "Ticket":
         return (
           <div className="">
-            {tagAccess.includes("Ticket") ? (
+            {tagAccess.includes("Ticket") || tagAccess.includes("Admin") ? (
               <TicketDashboard />
             ) : (
               <LockedBox
@@ -1221,21 +1033,50 @@ const Dashboard = () => {
         );
       case "Coupon-Manager":
         return (
+          
           <div className="">
-            <CouponManager />
+            {tagAccess.includes("Coupon Manager") ||
+            tagAccess.includes("Admin") ? (
+              <div className=" flex">
+                   <CouponManager />
+              </div>
+            ) : (
+              <LockedBox
+                className="flex justify-center items-center h-screen"
+                label="Users"
+              />
+            )}
           </div>
         );
       case "Website-Content":
         return (
-          <div className=" flex">
-            <HomeCarousalAssetController />
-            <SocialLinksManager />
+          <div className="">
+            {tagAccess.includes("Website Content") ||
+            tagAccess.includes("Admin") ? (
+              <div className=" flex">
+                <HomeCarousalAssetController />
+                <SocialLinksManager />
+              </div>
+            ) : (
+              <LockedBox
+                className="flex justify-center items-center h-screen"
+                label="Users"
+              />
+            )}
           </div>
         );
       case "VandersSection":
         return (
-          <div className=" flex">
-            <VandersSection />
+          <div className="">
+            {tagAccess.includes("Venders Section") ||
+            tagAccess.includes("Admin") ? (
+              <VandersSection />
+            ) : (
+              <LockedBox
+                className="flex justify-center items-center h-screen"
+                label="Users"
+              />
+            )}
           </div>
         );
       case "dashboard-controller":
@@ -1254,34 +1095,7 @@ const Dashboard = () => {
         return null;
     }
   };
-  const cities = [
-    "Delhi",
-    "Gurgaon",
-    "Faridabad",
-    "Chandigarh",
-    "Ghaziabad",
-    "Noida",
-    "Kolkata",
-    "Mumbai",
-    "Pune",
-    "Varanasi",
-    "Mathura",
-    "Patna",
-    "Meerut",
-    "Jaipur",
-    "Ranchi",
-    "Lucknow",
-    "Ahmedabad",
-    "Dehradun",
-    "Jammu",
-    "Gwalior",
-    "Bhopal",
-    "Indore",
-    "Hyderabad",
-    "Bengaluru",
-    "Mysore",
-    "Allahabad",
-  ];
+ 
 
   return isAuthenticated != true ? (
     <DashboardLogin />

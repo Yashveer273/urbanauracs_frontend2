@@ -5,7 +5,6 @@ import { collection, doc, getDoc, getDocs } from "firebase/firestore";
 export const API_BASE_URL = "https://urbanaurabzcs.xyz";
 // export const API_BASE_URL = "http://localhost:8000";
 
-
 export const fetchImages = async () => {
   try {
     const sliderDocRef = doc(firestore, "homeCleaningSlider", "mainDoc");
@@ -80,7 +79,12 @@ export const fetchSocialLinks = async () => {
     return [];
   }
 };
+export const fetchdashAuth = async () => {
 
+ const res = await axios.get(`${API_BASE_URL}/api/get-dashAuth`);
+ return res;
+}
+  
 export const fetchProdDataDESC = async () => {
   try {
     const snapshot = await getDocs(
@@ -282,4 +286,37 @@ export const handlePaymentLeft = async (data, action) => {
 
   const rzp = new window.Razorpay(options);
   rzp.open();
+};
+
+
+ export const sendToSingelPersonWhatsAppMessage = async (mobile, msg) => {
+  try {
+    const response = await axios.get("http://localhost:8000/sendToSingelPerson-whatsapp", {
+      params: { mobile, msg }
+    });
+
+    console.log("WhatsApp response:", response.data);
+    return response.data;
+
+  } catch (error) {
+    console.error("Error sending WhatsApp message:", error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const sendToVenderUserPersonwhatsapp = async (numbersPayload,msgPayload) => {
+  try {
+    // Map payload
+   
+
+    // Call backend endpoint
+    const response = await axios.post(`${API_BASE_URL}/sendToVender-User-Person-whatsapp`, {numbersPayload,msgPayload});
+
+    console.log("WhatsApp API response:", response.data);
+    return response.data;
+
+  } catch (error) {
+    console.error("Error sending WhatsApp numbers:", error.response?.data || error.message);
+    return error;
+  }
 };

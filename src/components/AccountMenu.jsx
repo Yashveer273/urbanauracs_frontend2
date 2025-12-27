@@ -13,8 +13,11 @@ import {
 } from "react-icons/fa";
 import { clearCart } from "../store/CartSlice";
 
-import { getMyOrderHistory, handlePaymentLeft } from "../API";
-import { CalculateConvenienceFee, CalculateConveniencetotalFee } from "./TexFee";
+import { getMyOrderHistory } from "../API";
+import {
+  CalculateConvenienceFee,
+  CalculateConveniencetotalFee,
+} from "./TexFee";
 
 const AccountMenu = () => {
   const [history, setHistory] = useState([]);
@@ -28,20 +31,19 @@ const AccountMenu = () => {
 
     if (res?.status === 200 && res.data.orders?.length > 0) {
       const formatted = res.data.orders.map((order) => {
-        console.log(order)
+        console.log(order);
         const cartItems = order?.product_info?.cart || [];
         const totalFee = order?.product_info?.cart?.reduce(
-                        (sum, item) =>
-                          sum +
-                          Number(
-                            item.item_price * item.quantity +
-                              CalculateConvenienceFee(
-                                item.item_price * item.quantity
-                              ).convenienceFee
-                          ),
-                        0
-                      );
-                               
+          (sum, item) =>
+            sum +
+            Number(
+              item.item_price * item.quantity +
+                CalculateConvenienceFee(item.item_price * item.quantity)
+                  .convenienceFee
+            ),
+          0
+        );
+
         return {
           orderSubmittedDate: order?.date_time,
           order_id: order?.orderId,
@@ -65,10 +67,11 @@ const AccountMenu = () => {
             productName: item?.product_name,
             tag: item?.tag,
             duration: item?.duration,
-quantity:item?.quantity,
+            quantity: item?.quantity,
             product_purchase_id: item?.product_purchase_id,
             itemPrice: item?.item_price,
-            
+            product_name: item?.product_name,
+            bookingAddress: item?.bookingAddress,
             bookingDate: item?.location_booking_time,
             serviceTime: item?.SelectedServiceTime,
             description: item?.description,
@@ -87,7 +90,6 @@ quantity:item?.quantity,
   useEffect(() => {
     if (user.userId) {
       callOrderHistory();
-      
     }
   }, [user]);
   const formatDate = (isoDate) => {
@@ -129,18 +131,17 @@ quantity:item?.quantity,
     document.body.removeChild(textarea);
   };
 
-  const action = (res, data) => {
-    console.log(res, data);
-    if (res.data.status == "success") {
-      if (user.userId) {
-        callOrderHistory();
-      }
-    } else {
-      alert(res.data.message);
-    }
-  };
+  // const action = (res, data) => {
+  //   console.log(res, data);
+  //   if (res.data.status == "success") {
+  //     if (user.userId) {
+  //       callOrderHistory();
+  //     }
+  //   } else {
+  //     alert(res.data.message);
+  //   }
+  // };
   return (
-   
     <>
       <div className="relative w-[100%] h-[100vh]  bg-white  shadow-2xl overflow-hidden animate-fadeIn flex flex-col">
         <div className="relative bg-gradient-to-r from-[#f87559] to-orange-500 text-white p-6 flex flex-col items-start">
@@ -260,8 +261,7 @@ quantity:item?.quantity,
 
                   {/* Billing */}
                   <div className="grid grid-cols-2 gap-2 mb-3 text-sm">
-                   
-                     
+                    {/*                      
                       <div className="bg-gray-50 p-2 rounded-md">
                         <p className="text-gray-500 text-xs">Payable Amount</p>
                         <p className="font-semibold text-gray-800 text-base">
@@ -296,8 +296,7 @@ quantity:item?.quantity,
                             ? "Complete"
                             : `Pay Now ₹${order.totalPrice-order.paidAmount}`}
                         </button>
-                      </div>
-                   
+                      </div> */}
 
                     <div className="bg-gray-50 p-2 rounded-md">
                       <p className="text-gray-500 text-xs">Paid Amount</p>
@@ -325,14 +324,21 @@ quantity:item?.quantity,
                         <table className="w-full text-xs text-gray-600 border-collapse">
                           <tbody>
                             {/* Description + Tag */}
+                            {/* Duration */}
+                            <tr className="border-b">
+                              <td className="py-1 font-semibold w-28">
+                                Address
+                              </td>
+                              <td className="py-1">{itm.bookingAddress}</td>
+                            </tr>
                             <tr className="border-b">
                               <td className="py-1 font-semibold w-28 align-top">
-                                Description
+                                Service Details
                               </td>
 
                               <td className="py-1 align-top">
                                 <p className="text-xs text-gray-500 max-w-[250px] break-words">
-                                   {itm.description}
+                                  {itm.product_name} - {itm.description}
                                 </p>
 
                                 <span className="text-blue-600 ml-1">
@@ -354,19 +360,36 @@ quantity:item?.quantity,
                               <td className="py-1 font-semibold w-28">Price</td>
                               <td className="py-1">₹{itm.itemPrice}</td>
                             </tr>
-                           
-                            
+
                             <tr className="border-b">
-                              <td className="py-1 font-semibold w-28">Quantity</td>
+                              <td className="py-1 font-semibold w-28">
+                                Quantity
+                              </td>
                               <td className="py-1">{itm.quantity}</td>
                             </tr>
-                             <tr className="border-b">
-                              <td className="py-1 font-semibold w-28">Convenience Fee</td>
-                              <td className="py-1">₹{CalculateConvenienceFee(itm.itemPrice*itm.quantity ).convenienceFee}</td>
+                            <tr className="border-b">
+                              <td className="py-1 font-semibold w-28">
+                                Convenience Fee
+                              </td>
+                              <td className="py-1">
+                                ₹
+                                {
+                                  CalculateConvenienceFee(
+                                    itm.itemPrice * itm.quantity
+                                  ).convenienceFee
+                                }
+                              </td>
                             </tr>
- <tr className="border-b">
-                              <td className="py-1 font-semibold w-28">Price after Convenience</td>
-                              <td className="py-1">₹{CalculateConveniencetotalFee(itm.itemPrice*itm.quantity )}</td>
+                            <tr className="border-b">
+                              <td className="py-1 font-semibold w-28">
+                                Price after Convenience
+                              </td>
+                              <td className="py-1">
+                                ₹
+                                {CalculateConveniencetotalFee(
+                                  itm.itemPrice * itm.quantity
+                                )}
+                              </td>
                             </tr>
                             {/* Booking Date */}
                             <tr className="border-b">

@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { API_BASE_URL } from '../API';
+import { API_BASE_URL, fetchdashAuth } from '../API';
 
 const DashboardContrller = () => {
   // --- State Variables ---
   const [userId, setUserId] = useState('');
   const [password, setPassword] = useState('');
+  const [ResponsiblePersonName, setResponsiblePersonName] = useState('');
   const [selectedTags, setSelectedTags] = useState([]);
   const [users, setUsers] = useState([]);
   const [message, setMessage] = useState({ text: '', type: '' });
@@ -31,7 +32,7 @@ const DashboardContrller = () => {
 
   const fetchUsers = async () => {
     try {
-      const res = await axios.get(`${API_BASE_URL}/api/get-dashAuth`);
+      const res = await fetchdashAuth();
       setUsers(res.data);
     } catch (error) {
       console.error(error);
@@ -61,7 +62,10 @@ const DashboardContrller = () => {
       showMessage("Password cannot be empty.", 'error');
       return;
     }
-
+ if (!ResponsiblePersonName.trim() && !isEditing) {
+      showMessage("Password cannot be empty.", 'error');
+      return;
+    }
     if (selectedTags.length === 0) {
       showMessage("Please select at least one access tag.", 'error');
       return;
@@ -78,6 +82,8 @@ const DashboardContrller = () => {
           id: userId,
           pass: password,
           tagAccess: selectedTags.join(","),
+          ResponsiblePersonName:ResponsiblePersonName
+
         });
         showMessage(`Permissions for ${userId} created successfully!`, 'success');
       }
@@ -92,6 +98,7 @@ const DashboardContrller = () => {
 
   const handleEdit = (user) => {
     setUserId(user.id);
+    setResponsiblePersonName(user.ResponsiblePersonName);
     setSelectedTags(user.tagAccess.split(",")); // backend stores as string
     setIsEditing(true);
     showMessage(`Now editing permissions for user: ${user.id}`, 'info');
@@ -142,6 +149,19 @@ const DashboardContrller = () => {
               disabled={isEditing}
               required
             />
+          </div> 
+          <div className="mb-4">
+            <label htmlFor="ResponsiblePersonName" className="block text-gray-700 font-medium mb-2">Responsible Person Name</label>
+            <input
+              type="text"
+              id="ResponsiblePersonName"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-800 transition-colors"
+              placeholder="Enter Responsible Person Name"
+              value={ResponsiblePersonName}
+              onChange={(e) => setResponsiblePersonName(e.target.value)}
+              disabled={isEditing}
+              required
+            />
           </div>
           {!isEditing && (
             <div className="mb-4">
@@ -160,7 +180,7 @@ const DashboardContrller = () => {
           <div className="mb-6">
             <label className="block text-gray-700 font-medium mb-2">Select Access Tags</label>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-              {['Users', 'Sales', 'Services', 'Website Content', 'Ticket'].map(tag => (
+              {['Users', 'Sales', 'Services', 'Website Content', 'Ticket',"Venders Section","Coupon Manager"].map(tag => (
                 <label key={tag} className="flex items-center space-x-2 text-gray-700">
                   <input
                     type="checkbox"
@@ -198,6 +218,7 @@ const DashboardContrller = () => {
             <thead className="bg-gray-200">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">User ID</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Responsible Person Name</th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Access Tags</th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
               </tr>
@@ -207,6 +228,7 @@ const DashboardContrller = () => {
                 users.map(user => (
                   <tr key={user._id} className="hover:bg-purple-50 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{user.id}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{user.ResponsiblePersonName}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.tagAccess}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <button onClick={() => handleEdit(user)} className="text-purple-800 hover:text-purple-900 mr-4">Edit</button>
