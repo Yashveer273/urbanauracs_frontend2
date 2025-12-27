@@ -26,7 +26,6 @@ import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
 import {
   API_BASE_URL,
   fetchdashAuth,
-
   updateSale,
   updateStatusOrCommentDB,
 } from "../API";
@@ -36,7 +35,7 @@ import {
   CalculateConvenienceFee,
   CalculateConveniencetotalFee,
 } from "../components/TexFee";
-import { normalizeDate } from "./utility";
+import { handleCopy, normalizeDate } from "./utility";
 
 export default function SalesSection() {
   const [salesData, setSalesData] = useState([]);
@@ -79,20 +78,18 @@ export default function SalesSection() {
   const [tempStatus, setTempStatus] = useState("");
   const [tempComment, setTempComment] = useState("");
   const navigate = useNavigate();
- 
+
   const [tagAccess, setTagAccess] = useState([]);
   // ------------------------------------------------------------------
   const checkAuth = () => {
     const token = localStorage.getItem("urbanauraservicesdashauthToken");
-    const dashtagAccess = localStorage.getItem("urbanauraservicesdashtagAccess");
+    const dashtagAccess = localStorage.getItem(
+      "urbanauraservicesdashtagAccess"
+    );
 
     if (token) {
-  
       setTagAccess(dashtagAccess ? dashtagAccess.split(",") : []);
-
-    
     } else {
- 
       setTagAccess([]);
     }
   };
@@ -829,40 +826,39 @@ export default function SalesSection() {
                         {sale.status || "Pending"}
                       </button>
                     </td>
-                  <td className="py-4 px-2">
-  {responsiblePersons && responsiblePersons.length > 0 ? (
-    tagAccess?.includes("Admin") ? (
-      <select
-        value={sale.responsible || ""}
-        onChange={(e) =>
-          updateResponsiblePerson(sale.id, e.target.value)
-        }
-        className="
+                    <td className="py-4 px-2">
+                      {responsiblePersons && responsiblePersons.length > 0 ? (
+                        tagAccess?.includes("Admin") ? (
+                          <select
+                            value={sale.responsible || ""}
+                            onChange={(e) =>
+                              updateResponsiblePerson(sale.id, e.target.value)
+                            }
+                            className="
           w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white
           focus:outline-none focus:ring-2 focus:ring-blue-500
         "
-      >
-        {responsiblePersons.map((person) => (
-          <option
-            key={person._id}
-            value={person.ResponsiblePersonName}
-          >
-            {person.ResponsiblePersonName}
-          </option>
-        ))}
-      </select>
-    ) : (
-      <span className="text-sm font-medium text-gray-700">
-        {sale.responsible || "—"}
-      </span>
-    )
-  ) : (
-    <span className="text-sm text-red-500 italic">
-      Responsible Person data not available
-    </span>
-  )}
-</td>
-
+                          >
+                            {responsiblePersons.map((person) => (
+                              <option
+                                key={person._id}
+                                value={person.ResponsiblePersonName}
+                              >
+                                {person.ResponsiblePersonName}
+                              </option>
+                            ))}
+                          </select>
+                        ) : (
+                          <span className="text-sm font-medium text-gray-700">
+                            {sale.responsible || "—"}
+                          </span>
+                        )
+                      ) : (
+                        <span className="text-sm text-red-500 italic">
+                          Responsible Person data not available
+                        </span>
+                      )}
+                    </td>
 
                     <td className="py-4">
                       {sale.comment && (
@@ -973,6 +969,7 @@ export default function SalesSection() {
                         "Status",
                         "Comment",
                         "Edit",
+                        "Copy",
                       ].map((h) => (
                         <th key={h} className="py-3 px-6">
                           {h}
@@ -1070,6 +1067,49 @@ export default function SalesSection() {
                             }
                           >
                             Edit
+                          </button>
+                        </td>
+
+                        <td className="py-4 px-6">
+                          <button
+                            className="text-indigo-600 hover:text-indigo-800 font-medium"
+                            onClick={() =>
+                              handleCopy(
+                                [
+                                  "Service ID",
+                                  "Service Details",
+                                  "Service Date/Time",
+                                  "Booking Address",
+                                  "Order Amount",
+                                  "Quantity",
+                                  "Order Amount*Quantity",
+                                  "Convenience Fee",
+                                  "Total",
+                                ],
+                                [
+                                  `${item.product_purchase_id}`,
+                                  `${item.product_name} || ${item.description}`,
+                                  `${item.location_booking_time} || ${item.SelectedServiceTime} `,
+                                  `${item.bookingAddress}`,
+                                  `₹${item.item_price}`,
+                                  `${item.quantity}`,
+                                  `₹${item.item_price * item.quantity}`,
+                                  `₹${
+                                    CalculateConvenienceFee(
+                                      item.item_price * item.quantity
+                                    ).convenienceFee
+                                  }`,
+                                  `₹${
+                                    item.item_price * item.quantity +
+                                    CalculateConvenienceFee(
+                                      item.item_price * item.quantity
+                                    ).convenienceFee
+                                  }`,
+                                ]
+                              )
+                            }
+                          >
+                            Copy
                           </button>
                         </td>
                       </tr>
