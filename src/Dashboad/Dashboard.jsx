@@ -1034,7 +1034,7 @@ const Dashboard = () => {
           case "Export-Sales":
         return (
           <div className="">
-            {tagAccess.includes("Export Manager") ||
+            {tagAccess.includes("Xl File Manager") ||
             tagAccess.includes("Admin") ? (
               <div className="flex">
                 {/* This is the component we just coded */}

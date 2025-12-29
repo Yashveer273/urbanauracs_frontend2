@@ -36,6 +36,7 @@ import {
   CalculateConveniencetotalFee,
 } from "../components/TexFee";
 import { handleCopy, normalizeDate } from "./utility";
+import WhatsAppChatBox from "./whatsappchatopener";
 
 export default function SalesSection() {
   const [salesData, setSalesData] = useState([]);
@@ -727,6 +728,7 @@ export default function SalesSection() {
             <FiChevronRight size={20} />
           </button>
         </div>
+       < WhatsAppChatBox/>
         <div
           className="table-container bg-white p-6 rounded-xl shadow-md overflow-x-auto"
           ref={tableContainerRef}
@@ -762,6 +764,7 @@ export default function SalesSection() {
                       {sale.phone_number}
                       <br /> /W {sale.ConfurmWhatsAppMobileNumber}
                     </td>
+
 
                     <td className="py-4 px-2">
                       <button

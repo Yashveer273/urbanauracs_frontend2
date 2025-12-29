@@ -48,3 +48,24 @@ export const handleCopy = async (header, body) => {
   await navigator.clipboard.writeText(formattedText);
   alert("Copied to clipboard ✅");
 };
+  export function openWhatsApp(e) {
+  const number = e.target
+    .closest("td")
+    .querySelector("input")
+    .value;
+
+  if (!number) {
+    alert("Enter WhatsApp number");
+    return;
+  }
+
+  const phone = number.replace(/\D/g, "");
+
+  if (phone.length < 10) {
+    alert("Invalid WhatsApp number");
+    return;
+  }
+
+  window.open(`https://wa.me/${phone}`, "_blank");
+}
+

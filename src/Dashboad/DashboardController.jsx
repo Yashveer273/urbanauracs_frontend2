@@ -180,7 +180,7 @@ const DashboardContrller = () => {
           <div className="mb-6">
             <label className="block text-gray-700 font-medium mb-2">Select Access Tags</label>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-              {['Users', 'Sales', 'Services', 'Website Content', 'Ticket',"Venders Section","Coupon Manager"].map(tag => (
+              {['Users', 'Sales', 'Services', 'Website Content', 'Ticket',"Venders Section","Coupon Manager","Xl File Manager"].map(tag => (
                 <label key={tag} className="flex items-center space-x-2 text-gray-700">
                   <input
                     type="checkbox"
