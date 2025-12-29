@@ -25,7 +25,7 @@ import { GetVenderData } from "./GetVenderData";
 import ServiceManager from "./ServiceManager";
 import { cities } from "./utility";
 
-// Icons from Lucide React....
+import ExportSalesData from "./exportSalesData";
 const HomeIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -1031,6 +1031,23 @@ const Dashboard = () => {
             )}
           </div>
         );
+          case "Export-Sales":
+        return (
+          <div className="">
+            {tagAccess.includes("Export Manager") ||
+            tagAccess.includes("Admin") ? (
+              <div className="flex">
+                {/* This is the component we just coded */}
+                <ExportSalesData />
+              </div>
+            ) : (
+              <LockedBox
+                className="flex justify-center items-center h-screen"
+                label="Export Sales Data"
+              />
+            )}
+          </div>
+        );
       case "Coupon-Manager":
         return (
           <div className="">
@@ -1135,6 +1152,20 @@ const Dashboard = () => {
                 >
                   <Package2Icon className="w-5 h-5 mr-3" />
                   Services
+                </a>
+              </li>
+                <li className="mb-2">
+                <a
+                  href="#"
+                  onClick={() => handleTabClick("Export-Sales")}
+                  className={`flex items-center p-3 rounded-lg transition-colors duration-200 ${
+                    activeTab === "Export-Sales"
+                      ? "bg-indigo-100 text-indigo-700"
+                      : "text-gray-600 hover:bg-gray-200"
+                  }`}
+                >
+                  <FileTextIcon className="w-5 h-5 mr-3" />
+                  Export Sales Data
                 </a>
               </li>
               <li className="mb-2">

@@ -18,7 +18,7 @@ import AccountMenu from "./components/AccountMenu";
 import CheckoutSummaryCard from "./pages/CartProductSummery";
 import Termsandconditions from "./pages/Termsandconditions";
 import Shippingpolicy from "./pages/Shippingpolicy";
-
+import ExportSalesData from "./Dashboad/exportSalesData";
 
 function App() {
 
@@ -39,6 +39,7 @@ function App() {
         <Route path="/PaymentGateway" element={<PaymentGateway/>} />
         <Route path="/CartProductsSummery" element={<CheckoutSummaryCard/>} />
         <Route path="/ShippingPolicy" element={<Shippingpolicy/>} />
+         <Route path="/exportsalesdata" element={<ExportSalesData />} />
         <Route
           path="/PaymentGateway/PaymentStatus/:id/:amount"
           element={<PaymentStatus />}
