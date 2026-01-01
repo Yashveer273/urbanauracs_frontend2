@@ -49,7 +49,7 @@ const PaymentSuccess = () => {
 
         const payload = {
           email: user?.email,
-          name: user?.name ,
+          name: user?.username,
           userId: user?.userId,
           phone_number: user?.mobileNumber,
           oGtotal_price: total_price,
