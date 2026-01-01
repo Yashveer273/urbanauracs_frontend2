@@ -268,7 +268,7 @@ const AuthPopup = ({ onClose }) => {
       // Send OTP via API
       const response = await otpsend(
         formData.mobileNumber,
-        `Your OTP is: ${Gotp}`,
+        Gotp,
         "Signup"
       );
 
