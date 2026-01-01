@@ -37,6 +37,23 @@ export const updateStatusOrCommentDB = async ( status,orderId) => {
     throw error;
   }
 };
+export const updateServiceStatusOrCommentDB = async ( saleId,product_purchase_id, status) => {
+
+
+  try {
+    const response = await axios.post(
+      `${API_BASE_URL}/sales/updateServiceStatus`,
+      {orderId:saleId,product_purchase_id, status}
+    );
+    return response.data;
+  } catch (error) {
+    console.error(
+      "Error updating user:",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};
 
 
 export const updateUser = async (userId, updateData) => {

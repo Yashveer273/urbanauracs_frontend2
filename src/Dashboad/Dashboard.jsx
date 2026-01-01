@@ -1474,6 +1474,9 @@ const Dashboard = () => {
                   <h3 className="text-xl font-semibold text-gray-700 truncate">
                     {service.title}
                   </h3>
+                   <h3 className="text-xl font-semibold text-gray-700 truncate">
+                    {service.description}
+                  </h3>
                   <p className="text-sm text-gray-500 truncate">
                     {selectedVendor.location}
                   </p>

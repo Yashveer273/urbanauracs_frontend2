@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useParams, } from "react-router-dom";
-
+import { nanoid } from "nanoid";
 import axios from "axios";
 // eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from "framer-motion";
@@ -72,7 +72,7 @@ const PaymentSuccess = () => {
               originalPrice: item.originalPrice,
               description: item.description,
               duration: item.duration,
-              product_purchase_id: Date.now(),
+              product_purchase_id: nanoid(8),
               bookingAddress: item.bookingAddress,
               og_product_id: item.productId,
               product_name: item.title,

@@ -69,6 +69,7 @@ const AccountMenu = () => {
             duration: item?.duration,
             quantity: item?.quantity,
             product_purchase_id: item?.product_purchase_id,
+            status:item?.status,
             itemPrice: item?.item_price,
             product_name: item?.product_name,
             bookingAddress: item?.bookingAddress,
@@ -242,21 +243,6 @@ const AccountMenu = () => {
                       </p>
                     </div>
 
-                    <span
-                      className={`px-3 py-1 text-xs rounded-full font-semibold 
-            ${
-              order.status === "Completed"
-                ? "bg-green-100 text-green-700"
-                : order.status === "Rejected"
-                ? "bg-red-100 text-red-700"
-                : order.status === "Ongoing"
-                ? "bg-blue-100 text-blue-700"
-                : "bg-gray-100 text-gray-700"
-            }
-          `}
-                    >
-                      {order.status}
-                    </span>
                   </div>
 
                   {/* Billing */}
@@ -319,6 +305,21 @@ const AccountMenu = () => {
                         <h4 className="font-semibold text-gray-900 text-sm mb-2">
                           {itm.productName}
                         </h4>
+                        <samp
+  className={`px-2 py-1 rounded text-sm font-medium
+    ${
+      !itm.status || itm.status === ""
+        ? "bg-yellow-100 text-yellow-800"
+        : itm.status === "Completed"
+        ? "bg-green-100 text-green-800"
+        : itm.status === "Cancelled"
+        ? "bg-red-100 text-red-800"
+        : "bg-gray-100 text-gray-800"
+    }`}
+>
+  {itm.status && itm.status !== "" ? itm.status : "Pending"}
+</samp>
+
 
                         {/* Table View */}
                         <table className="w-full text-xs text-gray-600 border-collapse">

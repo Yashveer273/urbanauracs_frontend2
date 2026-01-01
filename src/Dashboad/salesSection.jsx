@@ -27,6 +27,7 @@ import {
   API_BASE_URL,
   fetchdashAuth,
   updateSale,
+  updateServiceStatusOrCommentDB,
   updateStatusOrCommentDB,
 } from "../API";
 import { useNavigate } from "react-router-dom";
@@ -81,6 +82,7 @@ export default function SalesSection() {
   const navigate = useNavigate();
 
   const [tagAccess, setTagAccess] = useState([]);
+  const [saleDataTem, setsaleDataTem] = useState(null);
   // ------------------------------------------------------------------
   const checkAuth = () => {
     const token = localStorage.getItem("urbanauraservicesdashauthToken");
@@ -253,6 +255,7 @@ export default function SalesSection() {
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
 
   const showProductInfo = (sale) => {
+setsaleDataTem(sale);
     setSelectedProductInfo({
       ...sale.product_info,
       id: sale.id,
@@ -439,6 +442,7 @@ export default function SalesSection() {
   ) => {
     try {
       const saleRef = doc(firestore, "sales", saleId);
+
       if (isProduct) {
         const updatedCart = selectedProductInfo.cart.map((p, idx) =>
           idx === index ? { ...p, status: newStatus, comment: newComment } : p
@@ -495,6 +499,79 @@ export default function SalesSection() {
     setTempStatus("");
     setTempComment("");
   };
+  // -----------------------------------------------
+  const openServiceStatusCard = (
+    orderId,
+    serviceId,
+    currentStatus,
+    currentComment = "",
+    isProduct = false,
+    index = null
+  ) => {
+    setEditingStatus({ saleId: orderId, serviceId, isProduct, index });
+    setTempStatus(currentStatus);
+    setTempComment(currentComment);
+  };
+  const saveServiceStatusCard = async () => {
+    const { saleId, isProduct, serviceId, index } = editingStatus;
+   
+    if (!tempComment.trim()) {
+      return alert("Comment is required");
+    }
+    
+    await updateServiceStatusOrComment(  
+      saleId,
+      serviceId,
+      tempStatus,
+      tempComment,
+      isProduct,
+      index
+    );
+    setEditingStatus({ saleId: null, productIndex: null,serviceId:null });
+    setTempStatus("");
+    setTempComment("");
+  };
+  const updateServiceStatusOrComment = async (
+  saleId,
+  serviceId,
+  newStatus,
+  newComment = "",
+  
+) => {
+  
+  try {
+    const saleRef = doc(firestore, "sales", saleId);
+
+
+    
+
+      const updatedCart = selectedProductInfo.cart.map((p) =>
+        p.product_purchase_id === serviceId
+          ? { ...p, status: newStatus, comment: newComment }
+          : p
+      );
+
+      // 🔹 Update Firestore (nested merge-safe)
+      await setDoc(
+        saleRef,
+        {
+          product_info: {
+            cart: updatedCart,
+          },
+        },
+        { merge: true }
+      );
+    
+      let data=saleDataTem;
+      data.product_info.cart=updatedCart;
+      
+  showProductInfo(data);
+    await updateServiceStatusOrCommentDB( saleId,  serviceId,newStatus);
+  } catch (e) {
+    console.error("❌ Error updating:", e);
+  }
+};
+
 
   const tableHeaders = [
     "S OrderId",
@@ -728,7 +805,7 @@ export default function SalesSection() {
             <FiChevronRight size={20} />
           </button>
         </div>
-       < WhatsAppChatBox/>
+        <WhatsAppChatBox />
         <div
           className="table-container bg-white p-6 rounded-xl shadow-md overflow-x-auto"
           ref={tableContainerRef}
@@ -764,8 +841,6 @@ export default function SalesSection() {
                       {sale.phone_number}
                       <br /> /W {sale.ConfurmWhatsAppMobileNumber}
                     </td>
-
-
                     <td className="py-4 px-2">
                       <button
                         onClick={() => showProductInfo(sale)}
@@ -1030,8 +1105,9 @@ export default function SalesSection() {
                         <td className="py-4 px-6">
                           <button
                             onClick={() =>
-                              openStatusCard(
+                              openServiceStatusCard(
                                 selectedProductInfo.id,
+                                item.product_purchase_id,
                                 item.status || "Started",
                                 item.comment || "",
                                 true,
@@ -1175,6 +1251,51 @@ export default function SalesSection() {
           </div>
         </div>
       )}
+
+      {editingStatus.serviceId && (
+        <div className="fixed inset-0 z-100 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-6 rounded-xl w-80 shadow-lg">
+            <h3 className="text-xl font-bold mb-4">Update Status</h3>
+            <select
+              className="border p-2 w-full mb-4"
+              value={tempStatus}
+              onChange={(e) => setTempStatus(e.target.value)}
+            >
+              {(editingStatus.isProduct
+                ? productStatusOptions
+                : orderStatusOptions
+              ).map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+            <textarea
+              placeholder="Add comment (required)"
+              className="border p-2 w-full mb-4"
+              value={tempComment}
+              onChange={(e) => setTempComment(e.target.value)}
+            />
+            <div className="flex justify-end space-x-2">
+              <button
+                className="px-4 py-2 rounded-xl bg-gray-300"
+                onClick={() =>
+                  setEditingStatus({ saleId: null, productIndex: null })
+                }
+              >
+                Cancel
+              </button>
+              <button
+                className="px-4 py-2 rounded-xl bg-blue-600 text-white"
+                onClick={saveServiceStatusCard}
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {viewComment.saleId && (
         <div
           className="fixed inset-0 z-100 flex items-center justify-center bg-black bg-opacity-50"

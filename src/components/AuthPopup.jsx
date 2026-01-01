@@ -201,7 +201,7 @@ const AuthPopup = ({ onClose }) => {
         // Send OTP via API
         const response = await otpsend(
           mobileNumber,
-          `Your OTP is: ${Gotp}`,
+          Gotp,
           "Login"
         );
 
@@ -664,12 +664,8 @@ const AuthPopup = ({ onClose }) => {
               {showOtpInput && (
                 <div className="relative flex flex-col items-center space-y-4">
                   <p className="text-gray-300">
-                    Enter the OTP sent to your{" "}
-                    {isLoginView
-                      ? loginMethod === "email"
-                        ? "email"
-                        : "mobile number"
-                      : "email/mobile"}
+                    Enter the OTP sent to your
+                    mobile number
                     .
                   </p>
                   <div className="relative w-full">

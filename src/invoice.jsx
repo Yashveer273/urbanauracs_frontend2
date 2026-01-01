@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { useLocation } from "react-router-dom";
@@ -19,19 +19,24 @@ export default function Invoice() {
   const location = useLocation();
   const { state } = location;
   const [invoiceUrl, setInvoiceUrl] = useState("");
+  const [showSendInvoice, setshowSendInvoice] = useState({});
   const [loading, setLoading] = useState(false);
 
   const cart = state?.product_info?.cart || [];
 
   const openEditRowCard = async (sale) => {
     try {
-      console.log("Updating sale:", sale);
-      let updateSalesData = {
+      (sale.invoice = invoiceUrl),
+        (sale.generatedInvoiceDate_time = Date.now()),
+        console.log("Updating sale:", sale);
+      const saleRef = doc(firestore, "sales", sale.id);
+
+      await setDoc(saleRef, sale, { merge: true });
+
+      setshowSendInvoice({
         invoice: invoiceUrl,
         generatedInvoiceDate_time: Date.now(),
-      };
-      const saleRef = doc(firestore, "sales", sale.id);
-      await setDoc(saleRef, updateSalesData, { merge: true });
+      });
     } catch (err) {
       console.log("Error updating sale:", err);
     } finally {
@@ -92,12 +97,19 @@ export default function Invoice() {
     }
   };
   console.log(state);
-
+ 
+  
   const discountAmount = state.discount;
   const [sendToOpen, setSendToOpen] = useState(false);
- 
-
-
+  const saveInvoice2=()=>{
+     setshowSendInvoice({
+    invoice: state.invoice,
+    generatedInvoiceDate_time: state.generatedInvoiceDate_time??"",
+  });
+  }
+useEffect(()=>{
+   saveInvoice2();
+  },[])
   return (
     <div style={{ background: "#f5f5f5", minHeight: "100vh", padding: "20px" }}>
       <div
@@ -397,27 +409,30 @@ export default function Invoice() {
           <p>3. For any queries, contact us at.</p>
         </div>
       </div>
-    
- <SendToVendorPopup
 
+      <SendToVendorPopup
         open={sendToOpen}
         onClose={() => setSendToOpen(false)}
-        userNumber={state.phone_number|| ""}
-      
-        onSend={async(numbersPayload) => {
+        userNumber={state.phone_number || ""}
+        onSend={async (numbersPayload) => {
           console.log("SEND PAYLOAD:", numbersPayload);
-        const userMsg=  `Hi from urbanauracs.com this is your invoice generated on ${ normalizeDate(state.date_time) } ${state.invoice}`;
- 
-      const res=  await  sendToVenderUserPersonwhatsapp(numbersPayload,{venederMsg:userMsg,userMsg});
-console.log(res);
-if (res?.status === "success" && res?.results?.length) {
-    const successMessages = res.results
-      .map(r => `✔ ${r.number}: ${r.response?.message}`)
-      .join("\n");
+          const userMsg = `Hi from urbanauracs.com this is your invoice generated on ${normalizeDate(
+            showSendInvoice.generatedInvoiceDate_time
+          )} ${state.invoice}`;
 
-    alert(successMessages); // or toast.success(...)
-    setSendToOpen(false);
-  }
+          const res = await sendToVenderUserPersonwhatsapp(numbersPayload, {
+            venederMsg: userMsg,
+            userMsg,
+          });
+          console.log(res);
+          if (res?.status === "success" && res?.results?.length) {
+            const successMessages = res.results
+              .map((r) => `✔ ${r.number}: ${r.response?.message}`)
+              .join("\n");
+
+            alert(successMessages); // or toast.success(...)
+            setSendToOpen(false);
+          }
         }}
       />
 
@@ -440,7 +455,7 @@ if (res?.status === "success" && res?.results?.length) {
 
         {invoiceUrl && (
           <button
-            onClick={() => openEditRowCard(state)}
+            onClick={() => {openEditRowCard(state);alert("invoce updated")}}
             disabled={loading}
             style={{
               padding: "10px 20px",
@@ -459,7 +474,7 @@ if (res?.status === "success" && res?.results?.length) {
           </button>
         )}
 
-        {state.invoice ? (
+        {state.invoice || showSendInvoice ? (
           <button
             className="center"
             onClick={() => setSendToOpen(true)}
