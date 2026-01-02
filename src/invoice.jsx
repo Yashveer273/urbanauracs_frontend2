@@ -13,7 +13,7 @@ import {
 import { FaPaperPlane, FaPenFancy, FaSyncAlt } from "react-icons/fa";
 import { GetVenderData } from "./Dashboad/GetVenderData";
 import SendToVendorPopup from "./components/SendToVendorPopup";
-import { normalizeDate } from "./Dashboad/utility";
+import { normalizeDate, uploadInvoice } from "./Dashboad/utility";
 export default function Invoice() {
   const invoiceRef = useRef();
   const location = useLocation();
@@ -72,24 +72,13 @@ export default function Invoice() {
         pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
         heightLeft -= pageHeight;
       }
-      const date = Date.now();
-      const fileName = `InvoiceS_Order${state.S_orderId}_${date}.pdf`;
+    
+    
       // pdf.save(fileName);
       const pdfBlob = pdf.output("blob");
-      const formData = new FormData();
-
-      formData.append("file", pdfBlob, fileName);
-      const response = await fetch(
-        `${API_BASE_URL}/upload-invoice?userId=${state.phone_number}`,
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
-
-      const result = await response.json();
-      console.log("Uploaded:", result.url);
-      setInvoiceUrl(result.url);
+    const invoiceUrl = await uploadInvoice(pdfBlob, state);
+      console.log("Uploaded:", invoiceUrl);
+      setInvoiceUrl(invoiceUrl);
     } catch (err) {
       console.error("Download failed:", err);
     } finally {

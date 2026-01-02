@@ -1,3 +1,6 @@
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import { storage } from "../firebaseCon";
+
 export const cities = [
   "Delhi",
   "Gurgaon",
@@ -69,3 +72,32 @@ export const handleCopy = async (header, body) => {
   window.open(`https://wa.me/${phone}`, "_blank");
 }
 
+
+
+ export const uploadInvoice = async (pdfBlob, ) => {
+  try {
+    const date = Date.now();
+    const fileName = `${date}.pdf`;
+
+    // 🔹 Storage path (like Firestore collection)
+    const storageRef = ref(
+      storage,
+      `/${fileName}`
+    );
+
+    // 🔹 Upload PDF
+    await uploadBytes(storageRef, pdfBlob, {
+      contentType: "application/pdf",
+    });
+
+    // 🔹 Get download URL
+    const downloadURL = await getDownloadURL(storageRef);
+
+    console.log("✅ Invoice URL:", downloadURL);
+
+    return downloadURL;
+  } catch (error) {
+    console.error("❌ Upload failed:", error);
+    throw error;
+  }
+};
