@@ -97,19 +97,77 @@ export default function Invoice() {
     }
   };
   console.log(state);
- 
-  
+
   const discountAmount = state.discount;
   const [sendToOpen, setSendToOpen] = useState(false);
-  const saveInvoice2=()=>{
-     setshowSendInvoice({
-    invoice: state.invoice,
-    generatedInvoiceDate_time: state.generatedInvoiceDate_time??"",
-  });
-  }
-useEffect(()=>{
-   saveInvoice2();
-  },[])
+  const saveInvoice2 = () => {
+    setshowSendInvoice({
+      invoice: state.invoice,
+      generatedInvoiceDate_time: state.generatedInvoiceDate_time ?? "",
+    });
+  };
+  useEffect(() => {
+    saveInvoice2();
+  }, []);
+  const numberToIndianWords = (num) => {
+    if (num === 0) return "zero";
+
+    const a = [
+      "",
+      "one ",
+      "two ",
+      "three ",
+      "four ",
+      "five ",
+      "six ",
+      "seven ",
+      "eight ",
+      "nine ",
+      "ten ",
+      "eleven ",
+      "twelve ",
+      "thirteen ",
+      "fourteen ",
+      "fifteen ",
+      "sixteen ",
+      "seventeen ",
+      "eighteen ",
+      "nineteen ",
+    ];
+    const b = [
+      "",
+      "",
+      "twenty",
+      "thirty",
+      "forty",
+      "fifty",
+      "sixty",
+      "seventy",
+      "eighty",
+      "ninety",
+    ];
+
+    const format = (n, suffix) => {
+      if (n === 0) return "";
+      let str = n > 19 ? b[Math.floor(n / 10)] + " " + a[n % 10] : a[n];
+      return str + suffix;
+    };
+
+    let res = "";
+    res += format(Math.floor(num / 10000000), "crore ");
+    res += format(Math.floor((num / 100000) % 100), "lakh ");
+    res += format(Math.floor((num / 1000) % 100), "thousand ");
+    res += format(Math.floor((num / 100) % 10), "hundred ");
+
+    const lastPart = num % 100;
+    if (num > 100 && lastPart > 0) res += "and ";
+    res +=
+      lastPart > 19
+        ? b[Math.floor(lastPart / 10)] + " " + a[lastPart % 10]
+        : a[lastPart];
+
+    return res.trim();
+  };
   return (
     <div style={{ background: "#f5f5f5", minHeight: "100vh", padding: "20px" }}>
       <div
@@ -169,33 +227,64 @@ useEffect(()=>{
         </div>
 
         {/* Header */}
-        <div style={{ display: "flex", justifyContent: "space-between" }}>
-          <div>
-            <h2>Invoice</h2>
-            <p>Invoice No: {state.S_orderId}</p>
-            <p>Date: {new Date().toLocaleDateString()}</p>
-            <p>Order Id: {state.orderId}</p>
+
+        <div className="h-1 w-full border-t "></div>
+
+        <table className="w-full border-collapse border  font-serif text-[15px]">
+          <tbody>
+            <tr className="h-10">
+              <td className="border  px-3 py-1 w-1/2">
+                <span className="font-medium">
+                  Invoice No. :- {state.S_orderId}
+                </span>
+              </td>
+              <td className="border  px-3 py-1 w-1/2">
+                <span className="font-medium">
+                  Dated:- {new Date().toLocaleDateString()}
+                </span>
+              </td>
+            </tr>
+            <tr className="h-10">
+              <td className="border  px-3 py-1 w-1/2">
+                <span className="font-medium">
+                  Invoice Date:-{new Date().toLocaleDateString()}
+                </span>
+              </td>
+              <td className="border  px-3 py-1 w-1/2">
+                <span className="font-medium">Order ID:- {state.orderId}</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        {/* Customer Info */}
+
+        <div className=" px-2 py-1 border-b  mt-2">
+          <h2 className="font-bold text-lg">Bill To (Customer Details)</h2>
+        </div>
+
+        <div className="border   text-[15px] leading-relaxed ">
+          <div className="p-2 space-y-1">
+            <div>
+              <span className="font-medium">
+                Customer Name / Company Name:-
+              </span>{" "}
+              {state.name}
+            </div>
+            <div>
+              <span className="font-medium">Address:-</span>{" "}
+              {`${state.user_location} | Pin Code:- ${state.pincode}`}
+            </div>
+            <div>
+              <span className="font-medium ">Phone:</span> {state.phone_number}{" "}
+              |<span className="font-medium"> GSTIN (if applicable):</span>{" "}
+              XXXXXXXX
+            </div>
           </div>
         </div>
 
-        {/* Customer Info */}
-        <div style={{ marginTop: "10px" }}>
-          <h3>Bill To:</h3>
-          <p style={{ height: "35px", overflow: "hidden" }}>
-            <b>Customer Name / Company Name: </b>
-            {state.name}
-          </p>
-          <p style={{ height: "35px", overflow: "hidden" }}>
-            <b>Address: </b>
-            {`${state.user_location} | Pin Code:- ${state.pincode}`}
-          </p>
-          <p style={{ height: "35px", overflow: "hidden" }}>
-            <b>Phone: </b> {state.phone_number}
-          </p>
-        </div>
-
         {/* Services Table */}
-        <table
+        {/* <table
           style={{
             width: "100%",
             borderCollapse: "collapse",
@@ -270,144 +359,180 @@ useEffect(()=>{
               </tr>
             )}
           </tbody>
-        </table>
+        </table> */}
+        <div className="w-full  text-[14px] mt-3">
+          <h2 className="font-bold text-base mb-1">Service Details</h2>
 
-        {/* Totals */}
+          <div className="border-t border-l  grid grid-cols-[50px_1fr_120px_100px_120px_100px]">
+            {/* Header Row */}
+            {[
+              "S. No.",
+              "Description of Service",
+              "HSN/SAC Code",
+              "Qty / Hours",
+              "Date/Time Slot",
+              "Amount (₹)",
+            ].map((header) => (
+              <div
+                key={header}
+                className="border-r border-b  p-2 font-bold  flex items-center"
+              >
+                {header}
+              </div>
+            ))}
 
-        {/* Stamp & Sign */}
-        <div
-          style={{
-            border: "2px solid #000",
+            {cart.length > 0 ? (
+              cart.map((item, index) => (
+                <React.Fragment key={index}>
+                  {/* S. No. */}
+                  <div className="border-r border-b  p-2 text-center">
+                    {index + 1}
+                  </div>
 
-            marginTop: "30px",
-            display: "flex",
-            alignItems: "center",
-          }}
-        >
-          {/* Left side: Totals */}
-          <div
-            style={{
-              flex: 1,
-              textAlign: "left",
-              padding: "10px",
-            }}
-          >
-            <p>
-              <strong>
-                Sub Total:
-                {cart?.reduce(
-                  (sum, item) =>
-                    sum +
-                    Number(
-                      item.item_price * item.quantity +
-                        CalculateConvenienceFee(item.item_price * item.quantity)
-                          .convenienceFee
-                    ),
-                  0
-                )}
-              </strong>
-            </p>
-            <p>Discount: ₹{discountAmount}</p>
+                  {/* Description */}
+                  <div className="border-r border-b  p-2">
+                    {item.product_name} <br />
+                    <small>{item.description}</small>
+                  </div>
 
-            <h3>
-              <strong>Grand Total:</strong> ₹
-              {cart?.reduce(
-                (sum, item) =>
-                  sum +
-                  Number(
-                    item.item_price * item.quantity +
-                      CalculateConvenienceFee(item.item_price * item.quantity)
-                        .convenienceFee
-                  ),
-                0
-              ) - Number(discountAmount)}
-            </h3>
-          </div>
+                  {/* HSN/SAC Code */}
+                  <div className="border-r border-b  p-2">
+                    {item.duration}
+                  </div>
 
-          {/* Divider in the center */}
-          <div
-            style={{
-              width: "2px",
-              background: "#000",
-              height: "100%",
-            }}
-          ></div>
+                  {/* Qty / Hours */}
+                  <div className="border-r border-b  p-2 text-center">
+                    {item.quantity}
+                  </div>
 
-          {/* Right side: Logo */}
-          <div
-            style={{
-              flex: 1 / 2,
-              textAlign: "right",
-              padding: "10px",
-              marginLeft: "150px",
-            }}
-          >
-            <img src="/stamp.png" style={{ height: "100px" }} />
+                  {/* Date/Time Slot */}
+                  <div className="border-r border-b  p-2">
+                   
+                    {item.location_booking_time}
+                  </div>
+
+                  {/* Amount */}
+                  <div className="border-r border-b  p-2 text-right">
+                    ₹{parseFloat(item.item_price * item.quantity)}
+                  </div>
+                </React.Fragment>
+              ))
+            ) : (
+              <div className="col-span-6 border-r border-b  p-4 text-center text-gray-500 italic">
+                No services added to cart.
+              </div>
+            )}
           </div>
         </div>
+  {/* Tax Summary */}
+      <div className="max-w-5xl mx-auto  text-[14px] mt-3 ">
+
+         <h2 className="font-bold text-base mb-1 ">  Tax Summary</h2>
+  <div className="grid grid-cols-[1fr_250px] border-t border-l ">
+    
+   
+    <div className="grid grid-cols-[2fr_1fr_1.5fr]">
+      {/* Header */}
+      <div className="border-r border-b  p-1 font-bold">Order Details</div>
+      <div className="border-r border-b  p-1 font-bold text-center">Area/Rate</div>
+      <div className="border-r border-b  p-1 font-bold text-right">Amount (₹)</div>
+
+      {/* Order Amount */}
+      <div className="border-r border-b  p-1">Order Amount:-</div>
+      <div className="border-r border-b  p-1"></div>
+      <div className="border-r border-b  p-1 text-right">
+        {cart?.reduce((sum, item) => sum + Number(item.item_price * item.quantity), 0)}
+      </div>
+
+      {/* Convenience Fee */}
+      <div className="border-r border-b  p-1">Convenience Fee:-</div>
+      <div className="border-r border-b  p-1"></div>
+      <div className="border-r border-b  p-1 text-right">
+        {cart?.reduce((sum, item) => sum + Number(CalculateConvenienceFee(item.item_price * item.quantity).convenienceFee), 0)}
+      </div>
+
+      {/* NEW: Discount Amount Row */}
+      <div className="border-r border-b  p-1">Discount Amount:-</div>
+      <div className="border-r border-b  p-1"></div>
+      <div className="border-r border-b  p-1 text-right ">
+        - ₹{Number(discountAmount || 0).toLocaleString()}
+      </div>
+
+      {/* Total */}
+      <div className="border-r border-b  p-1 font-bold">Total:-</div>
+      <div className="border-r border-b  p-1"></div>
+      <div className="border-r border-b  p-1 text-right font-bold">
+        ₹ {Math.round(
+          cart?.reduce((sum, item) => sum + Number(item.item_price * item.quantity + CalculateConvenienceFee(item.item_price * item.quantity).convenienceFee), 0) - Number(discountAmount || 0)
+        ).toLocaleString()}
+      </div>
+    </div>
+
+    {/* Signature Area with Image */}
+    <div className="border-r border-b  flex items-center justify-center p-2">
+      <img src="/stamp.png" alt="Stamp" className="w-32 h-auto" />
+   
+    </div>
+  </div>
+
+  {/* Amount in Words */}
+  <div className="border-l border-r border-b  p-2  text-[13px]">
+    (Amount in words: Rupees{" "}
+    <span className="capitalize">
+      {numberToIndianWords(
+        Math.round(
+          cart?.reduce((sum, item) => sum + Number(item.item_price * item.quantity + CalculateConvenienceFee(item.item_price * item.quantity).convenienceFee), 0) - Number(discountAmount || 0)
+        )
+      )}
+    </span>{" "}
+    Only)
+  </div>
+</div>
 
         {/* Bank Details */}
-        <div style={{ marginTop: "30px" }}>
-          <h3>Bank Details</h3>
-          <p>
-            <b>Bank:</b>{" "}
-            <input
-              type="text"
-              className="cursor-pointer"
-              defaultValue="Urban Aura Services Pvt. Ltd."
-              style={{ width: "60%" }}
-            />
-          </p>
-          <p>
-            <b>Account Number:</b>{" "}
-            <input
-              type="text"
-              defaultValue="1234567890"
-              className="cursor-pointer"
-            />
-          </p>
-          <p>
-            <b>Branch:</b>{" "}
-            <input
-              type="text"
-              defaultValue="Noida"
-              className="cursor-pointer"
-            />
-          </p>
-          <p>
-            <b>Account Holder:</b>{" "}
-            <input
-              type="text"
-              defaultValue="Urban Aura Pvt Ltd"
-              className="cursor-pointer"
-            />
-          </p>
-          <p>
-            <b>IFSC Code:</b>{" "}
-            <input
-              type="text"
-              defaultValue="HDFC0001234"
-              className="cursor-pointer"
-            />
-          </p>
-          <p>
-            <b>Branch Code:</b>{" "}
-            <input type="text" defaultValue="1234" className="cursor-pointer" />
-          </p>
+      <div className="max-w-5xl mx-auto text-[14px]">
+      
+      {/* 1. COMPANY & BANK DETAILS SECTION */}
+      <div className="grid grid-cols-2 border-t border-l ">
+        {/* Company Details Column */}
+        <div className="border-r border-b  p-3">
+          <h3 className="font-bold  mb-2 text-base">Company Details</h3>
+          <div className="space-y-1">
+            <p><span className="font-bold">Name:</span> Urban Aura Services Private Limited</p>
+            <p><span className="font-bold">CIN:</span> U81210HR2025PTC136650</p>
+            <p><span className="font-bold">GSTIN:</span> 06AADCU9498E1ZV</p>
+            <p><span className="font-bold">PAN:</span> AADCU9498E</p>
+          </div>
         </div>
 
-        {/* Notes */}
-        <div style={{ marginTop: "30px" }}>
-          <h4>Notes</h4>
-          <p>
-            1. This is a computer-generated invoice and does not require a
-            physical signature.
-          </p>
-          <p>
-            2. Please make the payment within 15 days of receiving this invoice.
-          </p>
-          <p>3. For any queries, contact us at.</p>
+        {/* Bank Details Column */}
+        <div className="border-r border-b  p-3">
+          <h3 className="font-bold underline mb-2 text-base">Bank Details</h3>
+          <div className="space-y-1">
+            <p><span className="font-bold">Bank Name:</span> HDFC Bank</p>
+            <p><span className="font-bold">AC Holder:</span> Urban Aura Services Pvt. Ltd.</p>
+            <p><span className="font-bold">Account No.:</span> 50200116397557</p>
+            <p><span className="font-bold">IFSC Code:</span> HDFC0005460</p>
+            <p><span className="font-bold">Branch Code:</span> 5460</p>
+          </div>
         </div>
+      </div>
+
+      {/* 2. NOTE SECTION */}
+      <div className="border-l border-r border-b  p-3">
+        <p className="font-bold underline mb-1">Note:-</p>
+        <ol className="list-none space-y-0.5">
+          <li>1. This is a computer-generated Invoice and does not require a physical signature.</li>
+          <li>2. No refund will be entertained once the service has been completed.</li>
+        </ol>
+      </div>
+
+      {/* 3. THANK YOU MESSAGE */}
+      {/* <div className="border-l border-r border-b border-black p-3 text-center font-bold">
+        Thank you for letting us brighten your space. We look forward to serve you again – Team Urban Aura Services!
+      </div> */}
+
+    </div>
       </div>
 
       <SendToVendorPopup
@@ -455,7 +580,10 @@ useEffect(()=>{
 
         {invoiceUrl && (
           <button
-            onClick={() => {openEditRowCard(state);alert("invoce updated")}}
+            onClick={() => {
+              openEditRowCard(state);
+              alert("invoce updated");
+            }}
             disabled={loading}
             style={{
               padding: "10px 20px",
