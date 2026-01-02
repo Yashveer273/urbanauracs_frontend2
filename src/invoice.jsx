@@ -214,12 +214,11 @@ export default function Invoice() {
           }}
         >
           <p>
-            <b>Address:</b> Line 1, City - Gurugram, State - Haryana, Pincode -
-            122105
+            <b>Address:</b> Tauru City, Sohna City, Gurgaon, Haryana, 122105
           </p>
           <p>
-            <b>Phone:</b> +91 - XXXXXXXXXX | <b>E-mail:</b>{" "}
-            info@urbanauraservices.com | <b>Website:</b> www.urbanauracs.com/
+            <b>Phone:</b> +91 - 7015953419 | <b>E-mail:</b>{" "}
+            auraservicesurban@gmail.com | <b>Website:</b> www.urbanauracs.com/
           </p>
         </div>
 
@@ -227,7 +226,7 @@ export default function Invoice() {
 
         <div className="h-1 w-full border-t "></div>
 
-        <table className="w-full border-collapse border  font-serif text-[15px]">
+        <table className="w-full border-collapse border   text-[15px]">
           <tbody>
             <tr className="h-10">
               <td className="border  px-3 py-1 w-1/2">
@@ -365,7 +364,7 @@ export default function Invoice() {
             {[
               "S. No.",
               "Description of Service",
-              "HSN/SAC Code",
+              "Duration",
               "Qty / Hours",
               "Date/Time Slot",
               "Amount (₹)",
