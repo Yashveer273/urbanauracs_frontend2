@@ -45,46 +45,54 @@ export default function Invoice() {
   };
 
   const downloadPDF = async () => {
-    const input = invoiceRef.current;
-    if (!input) return;
+  const input = invoiceRef.current;
+  if (!input) return;
 
-    try {
-      setLoading(true);
-      const canvas = await html2canvas(input, {
-        scale: 2,
-        useCORS: true,
-      });
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF("p", "mm", "a4");
+  try {
+    setLoading(true);
 
-      const imgWidth = 210;
-      const pageHeight = 297;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      let heightLeft = imgHeight;
-      let position = 0;
+    const canvas = await html2canvas(input, {
+      scale: 1.2,          // 🔽 reduced scale
+      useCORS: true,
+      backgroundColor: "#ffffff",
+    });
 
-      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+    // 🔽 JPEG instead of PNG
+    const imgData = canvas.toDataURL("image/jpeg", 0.65);
+
+    const pdf = new jsPDF("p", "mm", "a4", true); // compression ON
+
+    const imgWidth = 210;
+    const pageHeight = 297;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+    let heightLeft = imgHeight;
+    let position = 0;
+
+    pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight, undefined, "FAST");
+    heightLeft -= pageHeight;
+
+    while (heightLeft > 0) {
+      position -= pageHeight;
+      pdf.addPage();
+      pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight, undefined, "FAST");
       heightLeft -= pageHeight;
-
-      while (heightLeft > 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
-      }
-    
-    
-      // pdf.save(fileName);
-      const pdfBlob = pdf.output("blob");
-    const invoiceUrl = await uploadInvoice(pdfBlob, state);
-      console.log("Uploaded:", invoiceUrl);
-      setInvoiceUrl(invoiceUrl);
-    } catch (err) {
-      console.error("Download failed:", err);
-    } finally {
-      setLoading(false);
     }
-  };
+
+    const pdfBlob = pdf.output("blob");
+
+    // 🔹 Upload directly to Firebase
+    const invoiceUrl = await uploadInvoice(pdfBlob, state);
+    console.log("Uploaded:", invoiceUrl);
+    setInvoiceUrl(invoiceUrl);
+
+  } catch (err) {
+    console.error("Download failed:", err);
+  } finally {
+    setLoading(false);
+  }
+};
+
   console.log(state);
 
   const discountAmount = state.discount;

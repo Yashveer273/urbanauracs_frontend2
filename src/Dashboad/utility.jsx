@@ -82,7 +82,7 @@ export const handleCopy = async (header, body) => {
     // 🔹 Storage path (like Firestore collection)
     const storageRef = ref(
       storage,
-      `/${fileName}`
+      `invoices/${fileName}`
     );
 
     // 🔹 Upload PDF
