@@ -3,6 +3,7 @@ import React from "react";
 
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import HomePage from "./pages/HomePage";
+import Portfolio from "./portfolio";
 import CleaningService from "./pages/CleaningServices";
 import AboutUsPage from "./components/AboutUsPage";
 import ContactUs from "./components/ContactUs";
@@ -29,6 +30,10 @@ function App() {
         
         
         <Route path="/" element={<HomePage />} />
+        <Route path="/" element={<Portfolio />} />
+        
+    
+        
         <Route path="/InvoiceApp" element={<InvoiceApp />} />
         <Route path="/PrivacyPolicy" element={<PrivacyPolicy/>} />
         <Route path="/RefundCancellationPolicy" element={<RefundCancellationPolicy/>} />
