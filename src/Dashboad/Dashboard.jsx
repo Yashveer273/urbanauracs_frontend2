@@ -1031,7 +1031,7 @@ const Dashboard = () => {
             )}
           </div>
         );
-          case "Export-Sales":
+      case "Export-Sales":
         return (
           <div className="">
             {tagAccess.includes("Xl File Manager") ||
@@ -1154,7 +1154,7 @@ const Dashboard = () => {
                   Services
                 </a>
               </li>
-                <li className="mb-2">
+              <li className="mb-2">
                 <a
                   href="#"
                   onClick={() => handleTabClick("Export-Sales")}
@@ -1474,7 +1474,7 @@ const Dashboard = () => {
                   <h3 className="text-xl font-semibold text-gray-700 truncate">
                     {service.title}
                   </h3>
-                   <h3 className="text-xl font-semibold text-gray-700 truncate">
+                  <h3 className="text-xl font-semibold text-gray-700 truncate">
                     {service.description}
                   </h3>
                   <p className="text-sm text-gray-500 truncate">
@@ -1501,7 +1501,15 @@ const Dashboard = () => {
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleDeleteVendorService(service.id);
+
+                        // Add confirmation dialog
+                        const confirmDelete = window.confirm(
+                          "Are you sure you want to delete this service?"
+                        );
+
+                        if (confirmDelete) {
+                          handleDeleteVendorService(service.id);
+                        }
                       }}
                       className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg shadow-sm hover:bg-red-600 transition-colors duration-200 flex items-center justify-center"
                     >

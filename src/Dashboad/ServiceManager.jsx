@@ -128,9 +128,16 @@ const ServiceManager = ({
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleDeleteService(service.id);
+                      // Standard browser confirmation dialog
+                      const isConfirmed = window.confirm(
+                        "Are you sure you want to delete this service?"
+                      );
+
+                      if (isConfirmed) {
+                        handleDeleteService(service.id);
+                      }
                     }}
-                    className="flex-1 bg-red-500 text-white py-2 rounded"
+                    className="flex-1 bg-red-500 text-white py-2 rounded hover:bg-red-600 transition-colors"
                   >
                     <TrashIcon className="mr-1 inline" />
                     Delete
@@ -210,9 +217,17 @@ const ServiceManager = ({
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleDeleteVendor(vendor.vendorId);
+
+                       
+                        const isConfirmed = window.confirm(
+                          "Are you sure you want to delete this vendor?"
+                        );
+
+                        if (isConfirmed) {
+                          handleDeleteVendor(vendor.vendorId);
+                        }
                       }}
-                      className="flex-1 bg-red-500 text-white py-2 rounded"
+                      className="flex-1 bg-red-500 text-white py-2 rounded hover:bg-red-600 transition-colors"
                     >
                       <TrashIcon className="inline mr-1" />
                       Delete
