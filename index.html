@@ -5,27 +5,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Urban Aura Services</title>
 
-    <link rel="icon" type="image/png" sizes="48x48" href="https://urbanauracs.com/favicon-48x48.png?v=2" />
+    <link rel="icon" type="image/png" sizes="48x48" href="https://urbanauracs.com/logo.png" />
 
-    <link rel="icon" type="image/x-icon" href="https://urbanauracs.com/favicon.ico?v=2" />
+    <link rel="icon" type="image/png" sizes="any" href="https://urbanauracs.com/logo.png" />
 
-    <link rel="icon" type="image/png" sizes="32x32" href="https://urbanauracs.com/favicon-32x32.png?v=2" />
-    <link rel="icon" type="image/png" sizes="16x16" href="https://urbanauracs.com/favicon-16x16.png?v=2" />
+    <link rel="apple-touch-icon" href="https://urbanauracs.com/logo.png" />
 
-    <link rel="apple-touch-icon" href="https://urbanauracs.com/apple-touch-icon.png?v=2" />
+    <link rel="shortcut icon" type="image/png" href="https://urbanauracs.com/logo.png" />
+
     <link rel="manifest" href="/site.webmanifest" />
 
+    <link rel="stylesheet" href="/src/index.css" />
   </head>
   <body class="bg-gray-100">
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+
     <script type="text/javascript">
       (function (l) {
         if (l.search[1] === "/") {
-          var decoded = l.search.slice(1).split("&").map(function (s) {
-            return s.replace(/~and~/g, "&");
-          }).join("?");
-          window.history.replaceState(null, null, l.pathname.slice(0, -1) + decoded + l.hash);
+          var decoded = l.search
+            .slice(1)
+            .split("&")
+            .map(function (s) {
+              return s.replace(/~and~/g, "&");
+            })
+            .join("?");
+          window.history.replaceState(
+            null,
+            null,
+            l.pathname.slice(0, -1) + decoded + l.hash
+          );
         }
       })(window.location);
     </script>
