@@ -217,8 +217,6 @@ const ServiceManager = ({
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-
-                       
                         const isConfirmed = window.confirm(
                           "Are you sure you want to delete this vendor?"
                         );
