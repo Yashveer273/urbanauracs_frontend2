@@ -30,6 +30,7 @@ const PaymentSuccess = () => {
   const [status, setStatus] = useState("pending"); // pending | success | error
 
   useEffect(() => {
+
     if (hasRun.current) return;
     hasRun.current = true;
 
@@ -42,7 +43,8 @@ const PaymentSuccess = () => {
           Math.round(Number(order.advance) * 100) !==
             Math.round(Number(amount) * 100)
         ) {
-          console.error("Order mismatch!");
+          console.log("Order id",id);
+          console.log("Order orderId",order.orderId);
           setStatus("error");
           return;
         }

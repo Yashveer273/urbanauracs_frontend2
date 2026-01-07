@@ -9,9 +9,11 @@ import CheckoutSummaryCard from "./CartProductSummery";
 import { CheckCircle } from "lucide-react";
 import { CalculateGrandTotal } from "../components/TexFee";
 import { FaArrowLeft } from "react-icons/fa";
+import BookingPopup from "../components/BookingPopup";
 
 const PaymentGateway = () => {
   const scrollRef = useRef(null);
+   const [isBookingPopupOpen, setIsBookingPopupOpen] = useState(true);
   const { items: cartItems } = useSelector((state) => state.cart);
   const location = useLocation();
   const { date } = location.state || {};
@@ -24,6 +26,7 @@ const PaymentGateway = () => {
   const [advance, setAdvance] = useState(0);
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [message, setMessage] = useState(null);
+  
   const action = async (response, data) => {
     
     const { Url, status } = response.data;
@@ -38,6 +41,21 @@ const PaymentGateway = () => {
       });
     }
   };
+  const handleConfirmBooking = (selectedDate, selectedTime, address) => {
+
+for (let item of cartItems) {
+  item.SelectedServiceTime = selectedTime;
+  item.bookingAddress = address;
+  item.bookingDate = selectedDate;
+}
+
+console.log(cartItems);
+   
+
+    setIsBookingPopupOpen(false);
+  };
+
+
   // ✅ Handle Payment
   const handlePayment = async (
     advance,
@@ -174,9 +192,10 @@ const PaymentGateway = () => {
   useEffect(() => {
     setTotal(CalculateGrandTotal(cartItems));
 
-    setAdvance(Math.round(total * 0.1));
+    setAdvance(Math.round(CalculateGrandTotal(cartItems) * 0.1));
   }, [total, advance]);
   useEffect(() => {
+    
     fetchCoupons();
     const el = scrollRef.current;
     // eslint-disable-next-line no-unused-vars
@@ -255,8 +274,15 @@ const PaymentGateway = () => {
                     margin-right: 0.5rem;
                 }
                 `}
-      </style>{" "}
+      </style>
       <div className="font-sans">
+             {/* New booking popup (opens only after login) */}
+      {isBookingPopupOpen && (
+        <BookingPopup
+          onClose={() => setIsBookingPopupOpen(false)}
+          onConfirm={handleConfirmBooking}
+        />
+      )}
         <div className="bg-white min-h-screen shadow-lg p-4 sm:p-6 md:p-10 w-full">
           <button
             onClick={() => window.history.back()}
@@ -440,6 +466,7 @@ const PaymentGateway = () => {
           </div>
         </div>
       </div>
+    
     </>
   );
 };

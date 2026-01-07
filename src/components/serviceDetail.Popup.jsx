@@ -1,5 +1,5 @@
  
- import React, { useState } from "react";
+ import React from "react";
 import { FaStar, FaClock, FaTicketAlt, FaTimes } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -9,20 +9,20 @@ import {
   toggleCart,
 } from "../store/CartSlice";
 import "./ServiceCard.css";
-import BookingPopup from "./BookingPopup";
+
 
 import { selectUser } from "../store/userSlice";
 
 
- export const ServiceDetailPopup = ({ service, onClose, vendor,userLocation }) => {
+ export const ServiceDetailPopup = ({ service, onClose, vendor }) => {
   const dispatch = useDispatch();
   const user = useSelector(selectUser); // ✅ gets current user state
    
   const isAuthenticated = useSelector(selectIsAuthenticated);
 
-  const [Devicelocation, setDevicelocation] = useState("");
+  // const [Devicelocation, setDevicelocation] = useState("");
   
-  const [isBookingPopupOpen, setIsBookingPopupOpen] = useState(false);
+  // const [isBookingPopupOpen, setIsBookingPopupOpen] = useState(false);
    const handleAddToCart = () => {
   
 
@@ -37,57 +37,73 @@ import { selectUser } from "../store/userSlice";
     }
 
     // Logged in → open booking popup (do NOT add to cart yet)
-    setIsBookingPopupOpen(true);
-  };
-
-  // Confirm from booking popup → now add to cart with the selected date
-  const handleConfirmBooking = (selectedDate, selectedTime, address) => {
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        async (pos) => {
-          const { latitude, longitude } = pos.coords;
-          try {
-            const res = await fetch(
-              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
-            );
-            const data = await res.json();
-            const city =
-              data.address.city ||
-              data.address.town ||
-              data.address.village ||
-              "";
-            const state = data.address.state || "";
-            setDevicelocation(`${city}, ${state}`);
-          } catch (err) {
-            console.error("Error fetching location details:", err);
-            setDevicelocation(userLocation);
-          }
-        },
-        (err) => {
-          console.warn("Location access denied:", err);
-          setDevicelocation("");
-        }
-      );
-    }
-
-    dispatch(
+    // setIsBookingPopupOpen(true);
+       dispatch(
       addItem({
         ...service,
         roductId: service.id,
-        bookingDate: selectedDate,
+        bookingDate: "",
         vendorId: vendor.vendorId,
-        bookingAddress: address,
-        deviceLocation: Devicelocation,
-        SelectedServiceTime: selectedTime,
+        bookingAddress: "address",
+   
+        SelectedServiceTime: "selectedTime",
         vendorName: vendor.vendorName,
         vendorLocation: vendor.location,
         vendorImage: vendor.vendorImage,
       })
     );
     dispatch(toggleCart());
-
-    setIsBookingPopupOpen(false);
+    onClose();
   };
+
+  // Confirm from booking popup → now add to cart with the selected date
+  // const handleConfirmBooking = (selectedDate, selectedTime, address) => {
+  //   if ("geolocation" in navigator) {
+  //     navigator.geolocation.getCurrentPosition(
+  //       async (pos) => {
+  //         const { latitude, longitude } = pos.coords;
+  //         try {
+  //           const res = await fetch(
+  //             `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+  //           );
+  //           const data = await res.json();
+  //           const city =
+  //             data.address.city ||
+  //             data.address.town ||
+  //             data.address.village ||
+  //             "";
+  //           const state = data.address.state || "";
+  //           setDevicelocation(`${city}, ${state}`);
+  //         } catch (err) {
+  //           console.error("Error fetching location details:", err);
+  //           setDevicelocation(userLocation);
+  //         }
+  //       },
+  //       (err) => {
+  //         console.warn("Location access denied:", err);
+  //         setDevicelocation("");
+  //       }
+  //     );
+  //   }
+
+  //   dispatch(
+  //     addItem({
+  //       ...service,
+  //       roductId: service.id,
+  //       bookingDate: selectedDate,
+  //       vendorId: vendor.vendorId,
+  //       bookingAddress: address,
+  //       deviceLocation: Devicelocation,
+  //       SelectedServiceTime: selectedTime,
+  //       vendorName: vendor.vendorName,
+  //       vendorLocation: vendor.location,
+  //       vendorImage: vendor.vendorImage,
+  //     })
+  //   );
+  //   dispatch(toggleCart());
+
+  //   setIsBookingPopupOpen(false);
+  // };
 
 
   return (
@@ -216,12 +232,12 @@ import { selectUser } from "../store/userSlice";
           </div>
         </div>
       </div>
-      {isBookingPopupOpen && (
+      {/* {isBookingPopupOpen && (
         <BookingPopup
           onClose={() => setIsBookingPopupOpen(false)}
           onConfirm={handleConfirmBooking}
         />
-      )}
+      )} */}
     </>
   );
 };

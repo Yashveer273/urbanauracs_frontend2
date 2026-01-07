@@ -13,6 +13,7 @@ import BookingPopup from "./BookingPopup";
 import { selectUser } from "../store/userSlice";
 import { ServiceDetailPopup } from "./serviceDetail.Popup";
 
+
 // --- Frosted Button Component ---
 const FrostedActionButton = ({ label, onClick }) => (
   <div className="frosted-action-group cursor-pointer" onClick={onClick}>
@@ -35,9 +36,10 @@ const ServiceCard = ({ service, vendor, userLocation }) => {
   const user = useSelector(selectUser);
 
   const [isPopupOpen, setIsPopupOpen] = useState(false);
-  const [Devicelocation, setDevicelocation] = useState("");
+
 const [imageLoaded, setImageLoaded] = useState(false);
-  const [isBookingPopupOpen, setIsBookingPopupOpen] = useState(false);
+  // const [isBookingPopupOpen, setIsBookingPopupOpen] = useState(false);
+ 
 
   const handleAddToCart = () => {
     console.log(user.length < 1);
@@ -47,57 +49,45 @@ const [imageLoaded, setImageLoaded] = useState(false);
 
       return;
     }
-
-    setIsBookingPopupOpen(true);
-  };
-
-  const handleConfirmBooking = (selectedDate, selectedTime, address) => {
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        async (pos) => {
-          const { latitude, longitude } = pos.coords;
-          try {
-            const res = await fetch(
-              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
-            );
-            const data = await res.json();
-            const city =
-              data.address.city ||
-              data.address.town ||
-              data.address.village ||
-              "";
-            const state = data.address.state || "";
-            setDevicelocation(`${city}, ${state}`);
-          } catch (err) {
-            console.error("Error fetching location details:", err);
-            setDevicelocation(userLocation);
-          }
-        },
-        (err) => {
-          console.warn("Location access denied:", err);
-          setDevicelocation("");
-        }
-      );
-    }
-
-    dispatch(
+ dispatch(
       addItem({
         ...service,
         roductId: service.id,
-        bookingDate: selectedDate,
+        bookingDate: "",
         vendorId: vendor.vendorId,
-        bookingAddress: address,
-        deviceLocation: Devicelocation,
-        SelectedServiceTime: selectedTime,
+        bookingAddress: "",
+        SelectedServiceTime: "",
         vendorName: vendor.vendorName,
         vendorLocation: vendor.location,
         vendorImage: vendor.vendorImage,
       })
     );
     dispatch(toggleCart());
-
-    setIsBookingPopupOpen(false);
+    // setIsBookingPopupOpen(true);
   };
+
+  // const handleConfirmBooking = (selectedDate, selectedTime, address) => {
+
+   
+
+  //   dispatch(
+  //     addItem({
+  //       ...service,
+  //       roductId: service.id,
+  //       bookingDate: selectedDate,
+  //       vendorId: vendor.vendorId,
+  //       bookingAddress: address,
+   
+  //       SelectedServiceTime: selectedTime,
+  //       vendorName: vendor.vendorName,
+  //       vendorLocation: vendor.location,
+  //       vendorImage: vendor.vendorImage,
+  //     })
+  //   );
+  //   dispatch(toggleCart());
+
+  //   setIsBookingPopupOpen(false);
+  // };
 
   const handleViewDetails = () => setIsPopupOpen(true);
   const handleCloseDetails = () => setIsPopupOpen(false);
@@ -171,12 +161,12 @@ const [imageLoaded, setImageLoaded] = useState(false);
       )}
 
       {/* New booking popup (opens only after login) */}
-      {isBookingPopupOpen && (
+      {/* {isBookingPopupOpen && (
         <BookingPopup
           onClose={() => setIsBookingPopupOpen(false)}
           onConfirm={handleConfirmBooking}
         />
-      )}
+      )} */}
     </>
   );
 };

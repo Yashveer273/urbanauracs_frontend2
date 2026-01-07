@@ -437,20 +437,20 @@ const CheckoutSummaryCard = ({ items,orderId }) => {
       <div className="checkout-summary-card">
         {/* HEADER */}
         <div className="card-header">
-          <h2 className="header-title">
+          {/* <h2 className="header-title">
       
             Order Summary & Checkout
-          </h2>
+          </h2> */}
         </div>
 
         {/* BODY */}
         <div className="card-body">
-          <h3 className="section-title">
+          <span className="section-title">
             Selected Services ({items.length})
-          </h3>
-           <h4 className="mb-4">
+          </span>
+           <span className="mb-4">
             Order Id:- <h2>{orderId}</h2> 
-          </h4>
+          </span>
 
           <div className="item-list-container">
             {items.map((item, index) => (

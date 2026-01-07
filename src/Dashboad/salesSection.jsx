@@ -500,18 +500,18 @@ setsaleDataTem(sale);
     setTempComment("");
   };
   // -----------------------------------------------
-  const openServiceStatusCard = (
-    orderId,
-    serviceId,
-    currentStatus,
-    currentComment = "",
-    isProduct = false,
-    index = null
-  ) => {
-    setEditingStatus({ saleId: orderId, serviceId, isProduct, index });
-    setTempStatus(currentStatus);
-    setTempComment(currentComment);
-  };
+  // const openServiceStatusCard = (
+  //   orderId,
+  //   serviceId,
+  //   currentStatus,
+  //   currentComment = "",
+  //   isProduct = false,
+  //   index = null
+  // ) => {
+  //   setEditingStatus({ saleId: orderId, serviceId, isProduct, index });
+  //   setTempStatus(currentStatus);
+  //   setTempComment(currentComment);
+  // };
   const saveServiceStatusCard = async () => {
     const { saleId, isProduct, serviceId, index } = editingStatus;
    
@@ -1014,196 +1014,254 @@ setsaleDataTem(sale);
           </div>
         )}
         {modalOpen && selectedProductInfo && (
-          <div className="mt-10" onClick={closeModal}>
-            <div
-              className={`table-container bg-white p-6 rounded-xl shadow-md overflow-x-auto ${
-                showModalContent ? " opacity-100" : " opacity-0"
-              }`}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <span
-                onClick={closeModal}
-                className=" text-3xl font-bold text-gray-400 cursor-pointer"
-              >
-                &times;
-              </span>
-              <h3 className="text-2xl font-bold mb-4">
-                Product Details of {selectedProductInfo.userData.phone_number}
-              </h3>
-              <div className="overflow-y-auto max-h-[70vh]">
-                <table className="w-full table-auto border-collapse">
-                  <thead>
-                    <tr className="bg-gray-100 text-gray-600 uppercase text-sm">
-                      {[
-                        "Service ID",
-                        "Service Details",
-                        "Service Date/ Time",
-                        "Booking Address",
-                        "Order Amount",
-                        "Quantity",
-                        "Order Amount*Quantity",
-                        "Convenience Fee",
-                        "Total",
-                        "Status",
-                        "Comment",
-                        "Edit",
-                        "Copy",
-                      ].map((h) => (
-                        <th key={h} className="py-3 px-6">
-                          {h}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
+  <div className="mt-10" onClick={closeModal}>
+    <div
+      className={`table-container bg-white p-6 rounded-xl shadow-md overflow-x-auto ${
+        showModalContent ? "opacity-100" : "opacity-0"
+      }`}
+      onClick={(e) => e.stopPropagation()}
+    >
+      {/* Close Button */}
+      <span
+        onClick={closeModal}
+        className="text-3xl font-bold text-gray-400 cursor-pointer"
+      >
+        &times;
+      </span>
 
-                  <tbody>
-                    {selectedProductInfo.cart.map((item, i) => (
-                      <tr key={i} className="hover:bg-gray-50 border-b">
-                        <td className="py-6 px-6">
-                          {item.product_purchase_id}
-                        </td>
-                        <td className="py-4 px-6 max-w-[260px] break-words whitespace-normal">
-                          <div className="font-medium">{item.product_name}</div>
-                          <div className="text-sm text-gray-500">
-                            {item.description}
-                          </div>
-                        </td>
+      <h3 className="text-2xl font-bold mb-4">
+        Product Details of {selectedProductInfo.userData.phone_number}
+      </h3>
 
-                        {/* ✅ Auto-adjust width Booking Date / Time */}
-                        <td className="py-4 px-4 whitespace-nowrap text-sm">
-                          {item.location_booking_time}
-                          <br />
-                          {item.SelectedServiceTime}
-                        </td>
+      {/* ===== Address & Date/Time (Outside Table) ===== */}
+      <div className="mb-6 text-sm text-gray-700 space-y-1">
+        <div>
+          <strong>Booking Address:</strong>{" "}
+          {selectedProductInfo.cart[0]?.bookingAddress}
+        </div>
+        <div>
+          <strong>Service Date & Time:</strong>{" "}
+          {selectedProductInfo.cart[0]?.location_booking_time} |{" "}
+          {selectedProductInfo.cart[0]?.SelectedServiceTime}
+        </div>
+      </div>
 
-                        <td className="py-4 px-6">{item.bookingAddress}</td>
+      {/* ================= TABLE (SUMMARY ONLY) ================= */}
+      <div className="overflow-y-auto max-h-[60vh]">
+        <table className="w-full table-auto border-collapse">
+          <thead>
+            <tr className="bg-gray-100 text-gray-600 uppercase text-sm">
+           
+              <th className="py-3 px-6">Service Details</th>
+              <th className="py-3 px-6">Quantity</th>
+              <th className="py-3 px-6">Order Amount</th>
+              <th className="py-3 px-6">Convenience Fee</th>
+              <th className="py-3 px-6">Total</th>
+              <th className="py-3 px-6">copy</th>
 
-                        <td className="py-4 px-6">₹{item.item_price}</td>
-                        <td className="py-4 px-6">{item.quantity}</td>
-                        <td className="py-4 px-6">
-                          ₹{item.item_price * item.quantity}
-                        </td>
+            </tr>
+          </thead>
 
-                        <td className="py-4 px-6">
-                          ₹
-                          {
-                            CalculateConvenienceFee(
-                              item.item_price * item.quantity
-                            ).convenienceFee
-                          }
-                        </td>
+          <tbody>
+            {(() => {
+              const cart = selectedProductInfo.cart;
 
-                        <td className="py-4 px-6">
-                          ₹
-                          {item.item_price * item.quantity +
-                            CalculateConvenienceFee(
-                              item.item_price * item.quantity
-                            ).convenienceFee}
-                        </td>
+           
 
-                        {/* Status Button */}
-                        <td className="py-4 px-6">
-                          <button
-                            onClick={() =>
-                              openServiceStatusCard(
-                                selectedProductInfo.id,
-                                item.product_purchase_id,
-                                item.status || "Started",
-                                item.comment || "",
-                                true,
-                                i
-                              )
-                            }
-                            className="text-blue-600 hover:underline"
-                          >
-                            {item.status || "Started"}
-                          </button>
-                        </td>
+              const serviceDetails = cart
+                .map((i) => `${i.product_name} (${i.description})`)
+                .join(", ");
 
-                        {/* Comment Button */}
-                        <td className="py-4 px-6">
-                          {item.comment && (
-                            <button
-                              className="text-green-600 hover:underline"
-                              onClick={() =>
-                                setViewComment({
-                                  saleId: selectedProductInfo.id,
-                                  productIndex: i,
-                                })
-                              }
-                            >
-                              View Comment
-                            </button>
-                          )}
-                        </td>
+              const quantities = cart
+                .map((i) => i.quantity)
+                .join(", ");
 
-                        {/* Edit Button */}
-                        <td className="py-4 px-6">
-                          <button
-                            className="text-indigo-600 hover:text-indigo-800 font-medium"
-                            onClick={() =>
-                              openEditCartModal(item, i, selectedProductInfo.id)
-                            }
-                          >
-                            Edit
-                          </button>
-                        </td>
+              const totalItemAmount = cart.reduce(
+                (sum, i) => sum + i.item_price * i.quantity,
+                0
+              );
 
-                        <td className="py-4 px-6">
-                          <button
-                            className="text-indigo-600 hover:text-indigo-800 font-medium"
-                            onClick={() =>
-                              handleCopy(
-                                [
-                                  "Service ID",
-                                  "Service Details",
-                                  "Service Date/Time",
-                                  "Booking Address",
-                                  "Order Amount",
-                                  "Quantity",
-                                  "Order Amount*Quantity",
-                                  "Convenience Fee",
-                                  "Total",
-                                ],
-                                [
-                                  `${item.product_purchase_id}`,
-                                  `${item.product_name} || ${item.description}`,
-                                  `${item.location_booking_time} || ${item.SelectedServiceTime} `,
-                                  `${item.bookingAddress}`,
-                                  `₹${item.item_price}`,
-                                  `${item.quantity}`,
-                                  `₹${item.item_price * item.quantity}`,
-                                  `₹${
-                                    CalculateConvenienceFee(
-                                      item.item_price * item.quantity
-                                    ).convenienceFee
-                                  }`,
-                                  `₹${
-                                    item.item_price * item.quantity +
-                                    CalculateConvenienceFee(
-                                      item.item_price * item.quantity
-                                    ).convenienceFee
-                                  }`,
-                                ]
-                              )
-                            }
-                          >
-                            Copy
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              const totalConvenienceFee = cart.reduce(
+                (sum, i) =>
+                  sum +
+                  CalculateConvenienceFee(
+                    i.item_price * i.quantity
+                  ).convenienceFee,
+                0
+              );
+
+              const grandTotal =
+                totalItemAmount + totalConvenienceFee;
+
+              return (
+                <tr className="border-b">
+                  <td className="py-4 px-6 max-w-[360px] break-words">
+                    {serviceDetails}
+                  </td>
+
+                  <td className="py-4 px-6">{quantities}</td>
+
+                  <td className="py-4 px-6">₹{totalItemAmount}</td>
+
+                  <td className="py-4 px-6">₹{totalConvenienceFee}</td>
+
+                  <td className="py-4 px-6 font-semibold">
+                    ₹{grandTotal}
+                  </td>
+                  <td className="py-4 px-6">
+    <button
+      onClick={() =>
+        handleCopy(
+          [
+              "Order ID",
+            "Service Date/Time",
+          
+            "Service Details",
+            "Booking Address",
+            "Quantity",
+            "Order Amount",
+            "Convenience Fee",
+            "Total",
+          ],
+          [
+              selectedProductInfo.id,
+            `${selectedProductInfo.cart[0]?.location_booking_time} || ${selectedProductInfo.cart[0]?.SelectedServiceTime}`,
+          
+            serviceDetails,
+            selectedProductInfo.cart[0]?.bookingAddress,
+            quantities,
+            `₹${totalItemAmount}`,
+            `₹${totalConvenienceFee}`,
+            `₹${grandTotal}`,
+          ]
+        )
+      }
+      className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition"
+    >
+      Copy
+    </button>
+  </td>
+                </tr>
+              );
+            })()}
+          </tbody>
+        </table>
+      </div>
+
+      {/* ================= EDIT SECTION (GRID VIEW) ================= */}
+      <h4 className="text-xl font-semibold mt-10 mb-4">
+        Edit Service Items
+      </h4>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+        {selectedProductInfo.cart.map((item, index) => (
+          <div
+            key={index}
+            className="bg-white border rounded-2xl shadow-sm p-6 flex flex-col justify-between min-h-[230px] hover:shadow-md transition"
+          >
+            {/* Header */}
+            <div>
+              <div className="flex justify-between items-start">
+                <div>
+                  <h5 className="font-semibold text-gray-800">
+                    {index + 1}. {item.product_name}
+                  </h5>
+                  <p className="text-sm text-gray-500 mt-1">
+                    {item.description}
+                  </p>
+                </div>
+
+                <span className="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full">
+                  Qty {item.quantity}
+                </span>
               </div>
 
-              <AddSalesItem
-                userData={selectedProductInfo.userData}
-                selectedProductInfo={selectedProductInfo}
-              />
+              {/* Price Info */}
+              <div className="mt-4 text-sm text-gray-700 space-y-1">
+                <div>Unit Price: ₹{item.item_price}</div>
+                <div className="font-medium">
+                Convenience Fee: ₹{ CalculateConvenienceFee( item.item_price * item.quantity ).convenienceFee }  
+                </div>
+              </div>
+
+                <div className="font-medium">
+           Total: ₹{item.item_price * item.quantity}
+                </div>
+              
+
+            
+
+            </div>
+
+            {/* Actions */}
+            <div className="mt-6 flex gap-3">
+              <button
+                onClick={() =>
+                  openEditCartModal(
+                    item,
+                    index,
+                    selectedProductInfo.id
+                  )
+                }
+                className="flex-1 bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition"
+              >
+                Edit Item
+              </button>
+<button
+                onClick={() =>
+                  handleCopy(
+                    [
+                      "Order ID",
+                      "Service Details",
+                      "Service Date/Time",
+                      "Booking Address",
+                      "Order Amount",
+                      "Quantity",
+                      "Order Amount*Quantity",
+                      "Convenience Fee",
+                      "Total",
+                    ],
+                    [
+                     selectedProductInfo.id,
+                      `${item.product_name} || ${item.description}`,
+                      `${item.location_booking_time} || ${item.SelectedServiceTime}`,
+                      `${item.bookingAddress}`,
+                      `₹${item.item_price}`,
+                      `${item.quantity}`,
+                      `₹${item.item_price * item.quantity}`,
+                      `₹${
+                        CalculateConvenienceFee(
+                          item.item_price * item.quantity
+                        ).convenienceFee
+                      }`,
+                      `₹${
+                        item.item_price * item.quantity +
+                        CalculateConvenienceFee(
+                          item.item_price * item.quantity
+                        ).convenienceFee
+                      }`,
+                    ]
+                  )
+                }
+                className="border border-indigo-200 text-indigo-700 py-2 rounded-lg hover:bg-indigo-50 transition"
+              >
+                Copy
+              </button>
+             
             </div>
           </div>
-        )}
+        ))}
+      </div>
+
+      {/* Existing Component */}
+      <AddSalesItem
+        userData={selectedProductInfo.userData}
+        selectedProductInfo={selectedProductInfo}
+      />
+    </div>
+  </div>
+)}
+
       </main>
 
       {/* Modal */}

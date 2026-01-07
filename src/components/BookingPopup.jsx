@@ -71,17 +71,17 @@ const timeSlots = [
       <div className="fixed inset-0 z-[1003] flex items-center justify-center p-4 font-inter">
         <div
           className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-          onClick={onClose}
+          // onClick={onClose}
         />
         <div className="relative w-full max-w-md rounded-2xl overflow-hidden shadow-2xl bg-[#1b1c28] text-white p-10">
           {/* Close button */}
-          <button
+          {/* <button
             className="absolute top-4 right-4 text-gray-400 hover:text-white z-10"
             onClick={onClose}
             aria-label="Close booking popup"
           >
             <FaTimes size={22} />
-          </button>
+          </button> */}
 
           {/* Form */}
           <div className="text-center space-y-6">
