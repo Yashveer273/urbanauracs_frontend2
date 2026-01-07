@@ -22,7 +22,7 @@ const ProductSummaryItem = ({ item }) => {
   const feeDetails = CalculateConvenienceFee(itemTotalBasePrice);
    
   const totalAfterFee = feeDetails.total;
-console.log(item)
+
   return (
     <div className="new-item-card">
       {/* MOBILE HEADER: Image and Title container */}

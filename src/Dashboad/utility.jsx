@@ -3,6 +3,7 @@ import { storage } from "../firebaseCon";
 
 export const cities = [
   "Delhi",
+  "Kanpur",
   "Gurgaon",
   "Faridabad",
   "Chandigarh",

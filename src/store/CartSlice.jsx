@@ -57,6 +57,28 @@ const cartSlice = createSlice({
       }
       saveState(state);
     },
+    updateCartBookingInfo: (state, action) => {
+  const { selectedTime, address, selectedDate } = action.payload;
+
+  state.items = state.items.map(item => ({
+    ...item,
+    SelectedServiceTime: selectedTime,
+    bookingAddress: address,
+    bookingDate: selectedDate,
+  }));
+
+  saveState(state);
+},
+clearCartBookingInfo: (state) => {
+  state.items = state.items.map(item => ({
+    ...item,
+    SelectedServiceTime: "",
+    bookingAddress: "",
+    bookingDate: "",
+  }));
+
+  saveState(state);
+},
     decreaseItem: (state, action) => {
       const existingItem = state.items.find(item => item.id === action.payload);
       if (existingItem) 
@@ -93,7 +115,7 @@ const cartSlice = createSlice({
 });
 
 // Export all actions and new selectors
-export const { addItem,decreaseItem, removeItem, clearCart, toggleCart, closeCart, setAuthenticated, setAuthPopupOpen } = cartSlice.actions;
+export const { addItem,clearCartBookingInfo,updateCartBookingInfo,decreaseItem, removeItem, clearCart, toggleCart, closeCart, setAuthenticated, setAuthPopupOpen } = cartSlice.actions;
 
 export const selectCartItemCount = (state) => state.cart.items.reduce((total, item) => total + item.quantity, 0);
 export const selectCartTotal = (state) => state.cart.items.reduce((total, item) => total + item.price * item.quantity, 0);

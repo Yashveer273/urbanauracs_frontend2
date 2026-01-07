@@ -14,9 +14,7 @@ import Portal from "../components/Portal";
 import CartSidebar from "../components/CartSidebar";
 import AuthPopup from "../components/AuthPopup";
 
-import fullHomeVendors from "../data/fullHomeVendors.json";
-import acRepairVendors from "../data/AcRepair.json";
-import commercialCleaning from "../data/CommercialCleaning.json";
+
 import { loginUser } from "../store/userSlice";
 import { services } from "../data/ProductData";
 import { fetchProdDataDESC } from "../API";

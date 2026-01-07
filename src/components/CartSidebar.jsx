@@ -1,7 +1,7 @@
 import React from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { removeItem, closeCart, selectCartTotal,addItem,decreaseItem } from "../store/CartSlice";
+import { removeItem, closeCart, selectCartTotal,addItem,decreaseItem, clearCartBookingInfo } from "../store/CartSlice";
 
 import {
   FaTimes,
@@ -51,8 +51,10 @@ const CartSidebar = () => {
     // });
     let date = Date.now();
     let total_price = cartTotal.toFixed(2);
+    dispatch(clearCartBookingInfo());
+
     navigate("/PaymentGateway", {
-      state: { date, cartItems, total_price },
+      state: { date, cartItems, total_price }, 
     });
 
     // alert("✅ Checkout successful! Your services have been added to history.");

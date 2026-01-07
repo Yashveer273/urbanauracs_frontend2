@@ -10,25 +10,27 @@ import { CheckCircle } from "lucide-react";
 import { CalculateGrandTotal } from "../components/TexFee";
 import { FaArrowLeft } from "react-icons/fa";
 import BookingPopup from "../components/BookingPopup";
+import { updateCartBookingInfo } from "../store/CartSlice";
 
 const PaymentGateway = () => {
   const scrollRef = useRef(null);
-   const [isBookingPopupOpen, setIsBookingPopupOpen] = useState(true);
-  const { items: cartItems } = useSelector((state) => state.cart);
+  const [isBookingPopupOpen, setIsBookingPopupOpen] = useState(false);
+
+  const { items:cartItems  } = useSelector((state) => state.cart);
   const location = useLocation();
   const { date } = location.state || {};
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
   const [loadingType, setLoadingType] = useState(null);
+ 
   const [coupon, setCoupon] = useState("");
   const [discount, setDiscount] = useState(0);
   const [total, setTotal] = useState(0);
   const [advance, setAdvance] = useState(0);
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [message, setMessage] = useState(null);
-  
+
   const action = async (response, data) => {
-    
     const { Url, status } = response.data;
 
     if (status == "success") {
@@ -41,20 +43,17 @@ const PaymentGateway = () => {
       });
     }
   };
-  const handleConfirmBooking = (selectedDate, selectedTime, address) => {
+const handleConfirmBooking = (selectedDate, selectedTime, address) => {
+  dispatch(
+    updateCartBookingInfo({
+      selectedDate,
+      selectedTime,
+      address,
+    })
+  );
 
-for (let item of cartItems) {
-  item.SelectedServiceTime = selectedTime;
-  item.bookingAddress = address;
-  item.bookingDate = selectedDate;
-}
-
-console.log(cartItems);
-   
-
-    setIsBookingPopupOpen(false);
-  };
-
+  setIsBookingPopupOpen(false);
+};
 
   // ✅ Handle Payment
   const handlePayment = async (
@@ -82,7 +81,7 @@ console.log(cartItems);
       orderId,
       discount,
       appliedCoupon,
-      user
+      user,
     };
 
     try {
@@ -99,8 +98,8 @@ console.log(cartItems);
         const { url } = response.data;
 
         if (status === "CoD") {
-          window.location.href = url;
           dispatch(setOrder(data));
+          window.location.href = url;
           setMessage({
             type: "success",
             text: "✅ Order placed! Pay on delivery..",
@@ -193,9 +192,14 @@ console.log(cartItems);
     setTotal(CalculateGrandTotal(cartItems));
 
     setAdvance(Math.round(CalculateGrandTotal(cartItems) * 0.1));
-  }, [total, advance]);
-  useEffect(() => {
+    if (cartItems[0].bookingDate == "" || cartItems[0].bookingDate == null) {
+      setIsBookingPopupOpen(true);
+    }
+
     
+  }, [total, advance, cartItems]);
+
+  useEffect(() => {
     fetchCoupons();
     const el = scrollRef.current;
     // eslint-disable-next-line no-unused-vars
@@ -221,7 +225,6 @@ console.log(cartItems);
     }, 30); // speed (lower = faster)
 
     return () => clearInterval(interval);
-
   }, [discount]);
   const handlePayment2 = (totalAmount) => {
     // Here you would implement actual payment initiation logic
@@ -276,13 +279,13 @@ console.log(cartItems);
                 `}
       </style>
       <div className="font-sans">
-             {/* New booking popup (opens only after login) */}
-      {isBookingPopupOpen && (
-        <BookingPopup
-          onClose={() => setIsBookingPopupOpen(false)}
-          onConfirm={handleConfirmBooking}
-        />
-      )}
+        {/* New booking popup (opens only after login) */}
+        {isBookingPopupOpen && (
+          <BookingPopup
+            onClose={() => setIsBookingPopupOpen(false)}
+            onConfirm={handleConfirmBooking}
+          />
+        )}
         <div className="bg-white min-h-screen shadow-lg p-4 sm:p-6 md:p-10 w-full">
           <button
             onClick={() => window.history.back()}
@@ -308,9 +311,9 @@ console.log(cartItems);
                     >
                       <option value="">Select Coupon</option>
 
-                      {coupons.map((c) => (
+                      {coupons.map((c,index) => (
                         <option
-                          key={c.id}
+                          key={index}
                           value={c.code}
                           style={{
                             backgroundColor: "#2d2d2d", // Dark background
@@ -466,7 +469,6 @@ console.log(cartItems);
           </div>
         </div>
       </div>
-    
     </>
   );
 };
