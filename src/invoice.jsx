@@ -199,7 +199,7 @@ export default function Invoice() {
               fontWeight: "bold",
             }}
           >
-            <img src="/logo.jpg" style={{ height: "50px" }} />
+            <img src="/logo.png" style={{ height: "50px" }} />
             <h1 style={{ margin: 0 }}>Urban Aura SERVICES PVT. LTD.</h1>
           </div>
         </div>

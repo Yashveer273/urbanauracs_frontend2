@@ -89,7 +89,7 @@ const WhyChoose = () => {
         <div className="flex flex-col lg:flex-row gap-12 h-full">
           <div className="flex-1 flex flex-col justify-center">
            <img
-  src="/logo.jpg"
+  src="/logo.png"
   alt="Clean Logo"
   width={90}
   height={40}

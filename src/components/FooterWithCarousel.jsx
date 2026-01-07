@@ -35,7 +35,7 @@ const FooterWithCarousel = () => {
             <div className="flex flex-col space-y-4">
               <div className="flex items-center space-x-2">
                 <img
-                  src="/logo.jpg"
+                  src="/logo.png"
                   alt="Clean Logo"
                   width={120}
                   height={50}

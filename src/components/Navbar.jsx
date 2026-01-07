@@ -145,7 +145,7 @@ const Navbar = ({ toggleFilterSidebar, }) => {
             {/* Logo */}
             <Link to="/">
             <img
-              src="/logo.jpg"
+              src="/logo.png"
               alt="Clean Logo"
               width={50}
               height={50}

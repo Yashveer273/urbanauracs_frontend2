@@ -69,7 +69,7 @@ const AccountMenu = () => {
             duration: item?.duration,
             quantity: item?.quantity,
             product_purchase_id: item?.product_purchase_id,
-            status:item?.status,
+            status: item?.status,
             itemPrice: item?.item_price,
             product_name: item?.product_name,
             bookingAddress: item?.bookingAddress,
@@ -241,8 +241,23 @@ const AccountMenu = () => {
                       <p className="font-semibold text-gray-800">
                         {formatDate(order.orderSubmittedDate)}
                       </p>
+                      <samp
+                        className={`px-2 py-1 rounded text-sm font-medium
+    ${
+      !order.status || order.status === ""
+        ? "bg-yellow-100 text-yellow-800"
+        : order.status === "Completed"
+        ? "bg-green-100 text-green-800"
+        : order.status === "Cancelled"
+        ? "bg-red-100 text-red-800"
+        : "bg-gray-100 text-gray-800"
+    }`}
+                      >
+                        {order.status && order.status !== ""
+                          ? order.status
+                          : "Pending"}
+                      </samp>
                     </div>
-
                   </div>
 
                   {/* Billing */}
@@ -305,21 +320,6 @@ const AccountMenu = () => {
                         <h4 className="font-semibold text-gray-900 text-sm mb-2">
                           {itm.productName}
                         </h4>
-                        <samp
-  className={`px-2 py-1 rounded text-sm font-medium
-    ${
-      !itm.status || itm.status === ""
-        ? "bg-yellow-100 text-yellow-800"
-        : itm.status === "Completed"
-        ? "bg-green-100 text-green-800"
-        : itm.status === "Cancelled"
-        ? "bg-red-100 text-red-800"
-        : "bg-gray-100 text-gray-800"
-    }`}
->
-  {itm.status && itm.status !== "" ? itm.status : "Pending"}
-</samp>
-
 
                         {/* Table View */}
                         <table className="w-full text-xs text-gray-600 border-collapse">
