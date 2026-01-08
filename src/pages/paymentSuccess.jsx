@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { useParams, } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { nanoid } from "nanoid";
 import axios from "axios";
 // eslint-disable-next-line no-unused-vars
@@ -14,7 +14,8 @@ import {
 import { clearOrder } from "../store/orderSlices";
 import { closeCart, clearCart, selectCartTotal } from "../store/CartSlice"; //jj
 import OrderSuccess from "./thankyou";
-import { API_BASE_URL } from "../API";
+import { API_BASE_URL, sendToVenderUserPersonwhatsapp } from "../API";
+import { CalculateConvenienceFee } from "../components/TexFee";
 
 const PaymentSuccess = () => {
   const { id, amount } = useParams();
@@ -28,9 +29,30 @@ const PaymentSuccess = () => {
   const order = useSelector((state) => state.order);
 
   const [status, setStatus] = useState("pending"); // pending | success | error
+  const sendWhatsappmsg = async (numbersPayload, data) => {
+    const userMsg = `Dear ${data.CustomerName},
+Your booking has been successfully received with Urban Aura Services.
 
+Order Id: ${data.ID}
+Details: ${data.Details}
+Date/Time: ${data.Date} || ${data.Time}
+Address: ${data.Address}
+Order Amount: ₹${data.Amount}
+Convenience Fee: ₹${data.Fee}
+
+Our team will contact you shortly for confirmation.`;
+    try {
+      const res = await sendToVenderUserPersonwhatsapp(numbersPayload, {
+        venederMsg: userMsg, // Fixed spelling "veneder" to match your original if needed
+        userMsg,
+      });
+      console.log("Response:", res);
+      return res;
+    } catch (error) {
+      console.error("Error sending WhatsApp message:", error);
+    }
+  };
   useEffect(() => {
-
     if (hasRun.current) return;
     hasRun.current = true;
 
@@ -43,8 +65,8 @@ const PaymentSuccess = () => {
           Math.round(Number(order.advance) * 100) !==
             Math.round(Number(amount) * 100)
         ) {
-          console.log("Order id",id);
-          console.log("Order orderId",order.orderId);
+          console.log("Order id", id);
+          console.log("Order orderId", order.orderId);
           setStatus("error");
           return;
         }
@@ -57,11 +79,11 @@ const PaymentSuccess = () => {
           oGtotal_price: total_price,
           total_price: order.total_price,
           advance: order.advance,
-          discount:order.discount,
-          appliedCoupon:order.discount,
+          discount: order.discount,
+          appliedCoupon: order.discount,
           left_amount: order.left_amount,
           pincode: user?.pincode,
-          user_location: user?.location ,
+          user_location: user?.location,
           status: "",
           date_time: new Date().toISOString(),
           ConfurmWhatsAppMobileNumber: user?.ConfurmWhatsAppMobileNumber,
@@ -70,7 +92,7 @@ const PaymentSuccess = () => {
               location_booking_time: item.bookingDate,
               SelectedServiceTime: item.SelectedServiceTime,
               item_price: item.price,
-              quantity:item.quantity,
+              quantity: item.quantity,
               originalPrice: item.originalPrice,
               description: item.description,
               duration: item.duration,
@@ -99,6 +121,40 @@ const PaymentSuccess = () => {
         );
 
         if (response.status === 200) {
+          const totalItemAmount = cart.reduce(
+            (sum, i) => sum + i.price * i.quantity,
+            0
+          );
+
+          const totalConvenienceFee = cart.reduce(
+            (sum, i) =>
+              sum +
+              CalculateConvenienceFee(i.price * i.quantity).convenienceFee,
+            0
+          );
+
+          const grandTotal = totalItemAmount + totalConvenienceFee;
+          const Details = cart
+            .map((i) => `${i.title} (${i.description})`)
+            .join(", ");
+          await sendWhatsappmsg(
+            {
+              usernumber: payload.phone_number,
+            },
+            {
+              CustomerName: payload.name,
+              ID: order.orderId,
+
+              Details: Details,
+              Date: cart[0]?.bookingDate,
+              Time: cart[0]?.SelectedServiceTime,
+              Address: cart[0]?.bookingAddress,
+              Amount: totalItemAmount,
+              Fee: totalConvenienceFee,
+              grandTotal,
+            }
+          );
+
           setStatus("success");
           dispatch(clearOrder());
           dispatch(clearCart());
@@ -143,22 +199,8 @@ const PaymentSuccess = () => {
 
   return (
     <>
-   <div className="min-h-screen flex items-center justify-center">
-      <div
-      className={`${
-        status === "success"
-          ? ""
-          : "bg-white rounded-3xl shadow-2xl p-8 w-full max-w-md text-center border-t-4 " +
-            (status === "error" ? "border-red-500" : "border-blue-500")
-      }`}
-    >
-      <AnimatePresence exitBeforeEnter>
-        <motion.div
-          key={status}
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.8 }}
-          transition={{ duration: 0.5 }}
+      <div className="min-h-screen flex items-center justify-center">
+        <div
           className={`${
             status === "success"
               ? ""
@@ -166,28 +208,46 @@ const PaymentSuccess = () => {
                 (status === "error" ? "border-red-500" : "border-blue-500")
           }`}
         >
-          {status === "success" ? <OrderSuccess id={id}/> : statusMap[status].icon}
-
-          <h2
-            className="text-2xl font-bold mb-2"
-            style={{ color: statusMap[status].color }}
-          >
-            {statusMap[status].text}
-          </h2>
-
-          {status === "error" && (
-            <button
-              onClick={() => window.location.reload()}
-              className="bg-red-600 text-white px-6 py-3 rounded-xl hover:bg-red-700 transition w-full mt-4"
+          <AnimatePresence exitBeforeEnter>
+            <motion.div
+              key={status}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              transition={{ duration: 0.5 }}
+              className={`${
+                status === "success"
+                  ? ""
+                  : "bg-white rounded-3xl shadow-2xl p-8 w-full max-w-md text-center border-t-4 " +
+                    (status === "error" ? "border-red-500" : "border-blue-500")
+              }`}
             >
-              Retry
-            </button>
-          )}
-        </motion.div>
-      </AnimatePresence>
-    </div></div>
+              {status === "success" ? (
+                <OrderSuccess id={id} />
+              ) : (
+                statusMap[status].icon
+              )}
+
+              <h2
+                className="text-2xl font-bold mb-2"
+                style={{ color: statusMap[status].color }}
+              >
+                {statusMap[status].text}
+              </h2>
+
+              {status === "error" && (
+                <button
+                  onClick={() => window.location.reload()}
+                  className="bg-red-600 text-white px-6 py-3 rounded-xl hover:bg-red-700 transition w-full mt-4"
+                >
+                  Retry
+                </button>
+              )}
+            </motion.div>
+          </AnimatePresence>
+        </div>
+      </div>
     </>
-    
   );
 };
 

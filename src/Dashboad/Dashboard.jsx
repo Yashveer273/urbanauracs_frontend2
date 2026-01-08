@@ -1502,14 +1502,14 @@ const Dashboard = () => {
                       onClick={(e) => {
                         e.stopPropagation();
 
-                        // Add confirmation dialog
-                        const confirmDelete = window.confirm(
+                      const confirmDelete = window.confirm(
                           "Are you sure you want to delete this service?"
                         );
 
                         if (confirmDelete) {
                           handleDeleteVendorService(service.id);
                         }
+                      
                       }}
                       className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg shadow-sm hover:bg-red-600 transition-colors duration-200 flex items-center justify-center"
                     >

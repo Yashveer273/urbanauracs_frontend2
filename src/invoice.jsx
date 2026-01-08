@@ -3,15 +3,14 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { useLocation } from "react-router-dom";
 import "./invoice.css";
-import { API_BASE_URL, sendToVenderUserPersonwhatsapp } from "./API";
+
 import { doc, setDoc } from "firebase/firestore";
 import { firestore } from "./firebaseCon";
 import {
   CalculateConvenienceFee,
-  CalculateConveniencetotalFee,
+  
 } from "./components/TexFee";
-import { FaPaperPlane, FaPenFancy, FaSyncAlt } from "react-icons/fa";
-import { GetVenderData } from "./Dashboad/GetVenderData";
+
 import SendToVendorPopup from "./components/SendToVendorPopup";
 import { normalizeDate, uploadInvoice } from "./Dashboad/utility";
 export default function Invoice() {
@@ -532,30 +531,15 @@ export default function Invoice() {
       </div>
 
       <SendToVendorPopup
-        open={sendToOpen}
-        onClose={() => setSendToOpen(false)}
-        userNumber={state.phone_number || ""}
-        onSend={async (numbersPayload) => {
-          console.log("SEND PAYLOAD:", numbersPayload);
-          const userMsg = `Hi from urbanauracs.com this is your invoice generated on ${normalizeDate(
-            showSendInvoice.generatedInvoiceDate_time
-          )} ${state.invoice}`;
-
-          const res = await sendToVenderUserPersonwhatsapp(numbersPayload, {
-            venederMsg: userMsg,
-            userMsg,
-          });
-          console.log(res);
-          if (res?.status === "success" && res?.results?.length) {
-            const successMessages = res.results
-              .map((r) => `✔ ${r.number}: ${r.response?.message}`)
-              .join("\n");
-
-            alert(successMessages); // or toast.success(...)
-            setSendToOpen(false);
-          }
-        }}
-      />
+  open={sendToOpen}
+  onClose={() => setSendToOpen(false)}
+  userNumber={state.phone_number || ""}
+  msg={`Hi from urbanauracs.com this is your invoice generated on ${
+    showSendInvoice?.generatedInvoiceDate_time 
+      ? normalizeDate(showSendInvoice.generatedInvoiceDate_time) 
+      : "N/A"
+  } ${state.invoice || ""}`}
+/>
 
       <div className="flex justify-center gap-2 mt-4">
         <button
@@ -598,7 +582,7 @@ export default function Invoice() {
           </button>
         )}
 
-        {state.invoice || showSendInvoice ? (
+        {state.invoice || showSendInvoice.invoice ? (
           <button
             className="center"
             onClick={() => setSendToOpen(true)}
