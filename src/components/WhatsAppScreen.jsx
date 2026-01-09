@@ -14,11 +14,11 @@ const WhatsappChatCard = ({ phone: customerPhone, buttonText = "Send WhatsApp Me
 
   /* ---------------- TEMPLATES ---------------- */
   const templates = {
-    customerConfirmation: (d) => `Dear ${d.customerName},\n\nYour booking has been successfully confirmed with Urban Aura Services.\n\nService ID: ${d.serviceId}\nDetails: ${d.serviceDetails}\nDate/Time: ${d.dateTime}\nAddress: ${d.address}\nOrder Amount: ${d.orderAmount}\nConvenience Fee: ${d.convenienceFee}\n\nThank you for choosing us.`.trim(),
+    customerConfirmation: (d) => `Dear ${d.customerName},\n\nYour booking has been successfully confirmed.\n\nOrder Id: ${d.serviceId}\nDetails: ${d.serviceDetails}\nDate/Time: ${d.dateTime}\nAddress: ${d.address}\nBalance Amount: ${d.balanceAmount}\nOTP: ${d.otp}\n\n (Please confirm this OTP with the service partner before the service begins.)\n\nKindly review the service quality, as refunds are not applicable after payment.\nFor any concerns, please reach out us within 24 hours.`.trim(),
 
-    customerReceived: (d) => `Dear ${d.customerName},\n\nYour booking has been successfully received with Urban Aura Services.\n\nService ID: ${d.serviceId}\nDetails: ${d.serviceDetails}\nDate/Time: ${d.dateTime}\nAddress: ${d.address}\nOrder Amount: ${d.orderAmount}\nConvenience Fee: ${d.convenienceFee}\n\nOur team will contact you shortly for confirmation.`.trim(),
+    customerReceived: (d) => `Dear ${d.customerName},\n\nYour booking has been successfully received with Urban Aura Services.\n\nOrder Id: ${d.serviceId}\nDetails: ${d.serviceDetails}\nDate/Time: ${d.dateTime}\nAddress: ${d.address}\nOrder Amount: ${d.orderAmount}\nConvenience Fee: ${d.convenienceFee}\n\nOur team will contact you shortly for confirmation.`.trim(),
 
-    vendorAssignment: (d) => `Dear ${d.vendorName},\n\nA new service has been assigned to you:\n\nOrder Id: ${d.serviceId}\nCustomer Name: ${d.customerName}\nDetails: ${d.serviceDetails}\nDate/Time: ${d.dateTime}\nAddress: ${d.address}\nOrder Amount: ${d.orderAmount}\nConvenience Fee: ${d.convenienceFee}\nBalance Amount: ${d.balanceAmount}\nResponsible: ${d.Responsible}\n(Please confirm this OTP with the customer before the service begins.)`.trim(),
+    vendorAssignment: (d) => `Dear ${d.vendorName},\n\nA new service has been assigned to you:\n\nOrder Id: ${d.serviceId}\nCustomer Name: ${d.customerName}\nDetails: ${d.serviceDetails}\nDate/Time: ${d.dateTime}\nAddress: ${d.address}\nOrder Amount: ${d.orderAmount}\nConvenience Fee: ${d.convenienceFee}\nBalance Amount: ${d.balanceAmount}\nResponsible: ${d.Responsible}\nOTP: ${d.otp}\n\n(Please confirm this OTP with the customer before the service begins.)`.trim(),
   };
 
   /* ---------------- LOGIC: VENDOR SELECTION ---------------- */

@@ -981,53 +981,50 @@ export default function SalesSection() {
                         </button>
                       )}
                     </td>
-                   <td>
-  <WhatsappChatCard
-    phone={`91${sale.ConfurmWhatsAppMobileNumber}`}
-    buttonText="Send WhatsApp Message"
-    data={{
-      vendorName: "",
-      customerName: sale.name,
-      serviceId: sale.id,
-Responsible:sale.responsible|| "______",
-      serviceDetails: sale.product_info.cart
-        .map((i) => `${i.product_name} (${i.description})`)
-        .join(", "),
-
-      dateTime: `${sale.product_info.cart[0]?.location_booking_time} || ${sale.product_info.cart[0]?.SelectedServiceTime}`,
-
-      address: sale.product_info.cart[0]?.bookingAddress,
-
-      orderAmount: `₹${sale.product_info.cart.reduce(
-        (sum, i) => sum + i.item_price * i.quantity,
-        0
-      )}`,
-
-      convenienceFee: `₹${sale.product_info.cart.reduce(
-        (sum, i) =>
-          sum +
-          CalculateConvenienceFee(i.item_price * i.quantity).convenienceFee,
-        0
-      )}`,
-
-      balanceAmount: `₹${
-        sale.product_info.cart.reduce(
-          (sum, i) => sum + i.item_price * i.quantity,
-          0
-        ) +
-        sale.product_info.cart.reduce(
-          (sum, i) =>
-            sum +
-            CalculateConvenienceFee(i.item_price * i.quantity).convenienceFee,
-          0
-        )
-      }`,
-
-    
-    }}
-  />
-</td>
-
+                    <td>  
+                      <WhatsappChatCard
+                        phone={`91${sale.ConfurmWhatsAppMobileNumber}`}
+                        buttonText="Send WhatsApp Message"
+                        data={{
+                          vendorName: "",
+                          customerName: sale.name,
+                          serviceId: sale.id,
+                          
+                          Responsible: sale.responsible || "______",
+                          otp:Math.floor(10 + Math.random() * 90) * 100 + 25,
+                          serviceDetails: sale.product_info.cart
+                            .map((i) => `${i.product_name} (${i.description})`)
+                            .join(", "),
+                          dateTime: `${sale.product_info.cart[0]?.location_booking_time} || ${sale.product_info.cart[0]?.SelectedServiceTime}`,
+                          address: sale.product_info.cart[0]?.bookingAddress,
+                          orderAmount: `₹${sale.product_info.cart.reduce(
+                            (sum, i) => sum + i.item_price * i.quantity,
+                            0
+                          )}`,
+                          convenienceFee: `₹${sale.product_info.cart.reduce(
+                            (sum, i) =>
+                              sum +
+                              CalculateConvenienceFee(i.item_price * i.quantity)
+                                .convenienceFee,
+                            0
+                          )}`,
+                          balanceAmount: `₹${
+                            sale.product_info.cart.reduce(
+                              (sum, i) => sum + i.item_price * i.quantity,
+                              0
+                            ) +
+                            sale.product_info.cart.reduce(
+                              (sum, i) =>
+                                sum +
+                                CalculateConvenienceFee(
+                                  i.item_price * i.quantity
+                                ).convenienceFee,
+                              0
+                            )
+                          }`,
+                        }}
+                      />
+                    </td>
 
                     <td className="py-4 px-2">
                       <button
