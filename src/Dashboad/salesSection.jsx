@@ -989,7 +989,7 @@ export default function SalesSection() {
       vendorName: "",
       customerName: sale.name,
       serviceId: sale.id,
-otp:Math.floor(100000 + Math.random() * 900000).toString(),
+Responsible:sale.responsible|| "______",
       serviceDetails: sale.product_info.cart
         .map((i) => `${i.product_name} (${i.description})`)
         .join(", "),

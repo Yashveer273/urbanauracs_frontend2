@@ -37,7 +37,7 @@ const ReusableSearchAutocomplete = ({ data, onItemSelected }) => {
   const handleItemSelect = useCallback((item) => {
     setSearchTerm(item.name); 
      setIsDropdownOpen(false); 
-    onItemSelected(item); 
+    onItemSelected(item,item.name); 
        console.log("Selected Item and called external function:", item);
   }, [onItemSelected]);
 

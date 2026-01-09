@@ -25,7 +25,7 @@ const BannerSlider = () => {
   return (
     <div className="banner-container">
       <div className="banner-text">
-        <h1>EXPERIENCE CLEAN POWER THAT TRANSFORMS YOUR HOME INTO A HAVEN</h1>
+        <h1>EXPERIENCE CLEAN POWER THAT TRANSFORMS YOUR HOME INTO A HEAVEN</h1>
         <p>
           Trusted by families since <strong>2025</strong>, we deliver <strong>spotless precision</strong> <br />
           and<strong> calming comfort</strong><br />

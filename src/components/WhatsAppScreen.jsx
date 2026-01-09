@@ -14,11 +14,11 @@ const WhatsappChatCard = ({ phone: customerPhone, buttonText = "Send WhatsApp Me
 
   /* ---------------- TEMPLATES ---------------- */
   const templates = {
-    customerConfirmation: (d) => `Dear ${d.customerName},\n\nYour booking has been successfully confirmed with Urban Aura Services.\n\nService ID: ${d.serviceId}\nDetails: ${d.serviceDetails}\nDate/Time: ${d.dateTime}\nAddress: ${d.address}\n\nOrder Amount: ${d.orderAmount}\nConvenience Fee: ${d.convenienceFee}\n\nThank you for choosing us.`.trim(),
+    customerConfirmation: (d) => `Dear ${d.customerName},\n\nYour booking has been successfully confirmed with Urban Aura Services.\n\nService ID: ${d.serviceId}\nDetails: ${d.serviceDetails}\nDate/Time: ${d.dateTime}\nAddress: ${d.address}\nOrder Amount: ${d.orderAmount}\nConvenience Fee: ${d.convenienceFee}\n\nThank you for choosing us.`.trim(),
 
-    customerReceived: (d) => `Dear ${d.customerName},\n\nYour booking has been successfully received with Urban Aura Services.\n\nService ID: ${d.serviceId}\nDetails: ${d.serviceDetails}\nDate/Time: ${d.dateTime}\nAddress: ${d.address}\n\nOrder Amount: ${d.orderAmount}\nConvenience Fee: ${d.convenienceFee}\n\nOur team will contact you shortly for confirmation.`.trim(),
+    customerReceived: (d) => `Dear ${d.customerName},\n\nYour booking has been successfully received with Urban Aura Services.\n\nService ID: ${d.serviceId}\nDetails: ${d.serviceDetails}\nDate/Time: ${d.dateTime}\nAddress: ${d.address}\nOrder Amount: ${d.orderAmount}\nConvenience Fee: ${d.convenienceFee}\n\nOur team will contact you shortly for confirmation.`.trim(),
 
-    vendorAssignment: (d) => `Dear ${d.vendorName},\n\nA new service has been assigned to you:\n\nService ID: ${d.serviceId}\nCustomer Name: ${d.customerName}\nDetails: ${d.serviceDetails}\nDate/Time: ${d.dateTime}\nAddress: ${d.address}\n\nOrder Amount: ${d.orderAmount}\nConvenience Fee: ${d.convenienceFee}\nBalance Amount: ${d.balanceAmount}\n\nMatch OTP: ${d.otp}\n(Please confirm this OTP with the customer before the service begins.)`.trim(),
+    vendorAssignment: (d) => `Dear ${d.vendorName},\n\nA new service has been assigned to you:\n\nOrder Id: ${d.serviceId}\nCustomer Name: ${d.customerName}\nDetails: ${d.serviceDetails}\nDate/Time: ${d.dateTime}\nAddress: ${d.address}\nOrder Amount: ${d.orderAmount}\nConvenience Fee: ${d.convenienceFee}\nBalance Amount: ${d.balanceAmount}\nResponsible: ${d.Responsible}\n(Please confirm this OTP with the customer before the service begins.)`.trim(),
   };
 
   /* ---------------- LOGIC: VENDOR SELECTION ---------------- */
@@ -119,13 +119,13 @@ const WhatsappChatCard = ({ phone: customerPhone, buttonText = "Send WhatsApp Me
             <MdClose size={20} style={{ cursor: "pointer" }} onClick={handleClose} />
           </div>
 
-          <div style={{ padding: 10, display: "flex", gap: 6, flexWrap: "wrap" }}>
+          <div style={{ padding: 10, display: "flex", gap: 6, flexWrap: "wrap" }}>  <button onClick={() => applyTemplate("customerReceived")} style={templateBtnStyle("#0284c7")}>
+               Received
+            </button>
             <button onClick={() => applyTemplate("customerConfirmation")} style={templateBtnStyle("#16a34a")}>
-               Confirm to Customer
+               Confirmation
             </button>
-            <button onClick={() => applyTemplate("customerReceived")} style={templateBtnStyle("#0284c7")}>
-               Receive to Customer
-            </button>
+          
             <GetVenderData passVender={passVender} />
           </div>
 

@@ -20,7 +20,6 @@ import { services } from "../data/ProductData";
 import { fetchProdDataDESC } from "../API";
 import ReusableSearchAutocomplete from "../components/SearchBox";
 import ReusableFilterOnDescriptionSearchAutocomplete from "../components/ReusableFilterOnDescriptionSearchAutocomplete";
-import { all } from "axios";
 
 const CleaningService = () => {
   const { parameter } = useParams();
@@ -36,6 +35,7 @@ const CleaningService = () => {
   const [filteredVendors, setFilteredVendors] = useState([]);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isAuthenticated, setAuthenticated] = useState(false);
+  const [SearchedServiceName, setSearchedServiceName] = useState(serviceName);
 
   const [appliedFilters, setAppliedFilters] = useState({
     minPrice: 500,
@@ -165,8 +165,9 @@ const CleaningService = () => {
   const noVendorsFound = allVendors.length === 0;
   const noVendorsAfterFilter =
     allVendors.length > 0 && filteredVendors.length === 0;
-  const handleAppItemSelect = (selectedItem) => {
+  const handleAppItemSelect = (selectedItem, SearchedServiceName) => {
     setAllVendors(selectedItem.data);
+    setSearchedServiceName(SearchedServiceName);
   };
   const FilterOnDescription = (selectedItem) => {
     console.log("Filtering on description:", selectedItem);
@@ -264,7 +265,7 @@ const CleaningService = () => {
           </div>
         </div>
         <h1 className="text-3xl  font-bold text-center mb-3 capitalize">
-          {serviceName.replace(/-/g, " ")} Services
+          {SearchedServiceName.replace(/-/g, " ")} Services
         </h1>
 
         {noVendorsFound ? (
