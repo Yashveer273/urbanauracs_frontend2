@@ -1,6 +1,5 @@
 import React, { useState, useMemo, useCallback } from "react";
-import { Search, X } from "lucide-react";
-import { Filter } from "lucide-react";
+import { Search, X, Filter } from "lucide-react";
 
 const ReusableFilterOnDescriptionSearchAutocomplete = ({
   data,
@@ -31,34 +30,36 @@ const ReusableFilterOnDescriptionSearchAutocomplete = ({
     setSearchTerm(newValue);
     setIsDropdownOpen(true);
     onItemSelected(filteredVendors); // send filtered dataset up
-    console.log("Filtered dataset:", filteredVendors);
   };
 
   const handleClear = () => {
     setSearchTerm("");
     setIsDropdownOpen(false);
     onItemSelected(data); // reset to full dataset
-    console.log("Reset dataset:", data);
   };
 
   const handleItemSelect = useCallback(
-    (service) => {
+    (service, selectedVendor) => {
       setSearchTerm(service.description); // keep description in input
       setIsDropdownOpen(false);
-      // Return vendors trimmed to only those matching this description
-      const newFiltered = data
-        .map((vendor) => {
-          const matchedServices = vendor.services.filter(
-            (s) => s.description === service.description
-          );
-          return { ...vendor, services: matchedServices };
-        })
-        .filter((vendor) => vendor.services.length > 0);
+
+      // FIX: Instead of searching all of 'data', we only use the 'selectedVendor'
+      // This ensures we don't accidentally pull in vendors from other cities
+      // who happen to have a service with the same name.
+      
+      const newFiltered = [selectedVendor].map((vendor) => {
+        // We ensure we only show the specific service the user clicked on
+        // (in case the vendor has multiple similar services)
+        const matchedServices = vendor.services.filter(
+          (s) => s.description === service.description
+        );
+        return { ...vendor, services: matchedServices };
+      });
 
       onItemSelected(newFiltered);
-      console.log("Selected description, filtered dataset:", newFiltered);
+      console.log("Selected specific vendor/service:", newFiltered);
     },
-    [data, onItemSelected]
+    [onItemSelected]
   );
 
   return (
@@ -97,11 +98,16 @@ const ReusableFilterOnDescriptionSearchAutocomplete = ({
                 vendor.services.map((service, idx) => (
                   <li
                     key={`${vendor.vendorId}-${idx}`}
-                    onMouseDown={() => handleItemSelect(service)}
+                    // FIX: Pass the 'vendor' object here as the second argument
+                    onMouseDown={() => handleItemSelect(service, vendor)}
                     className="cursor-pointer p-3 flex flex-col hover:bg-gray-50 transition-colors duration-100"
                   >
                     <span className="font-medium text-gray-800">
                       {service.description}
+                    </span>
+                    {/* Optional: Show Vendor Name to clarify context */}
+                    <span className="text-xs text-gray-400">
+                       {vendor.vendorName || "Vendor"}
                     </span>
                   </li>
                 ))
