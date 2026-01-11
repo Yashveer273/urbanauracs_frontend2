@@ -41,7 +41,7 @@ const TicketDetailsModal = ({ ticket, onClose, onUpdateStatus }) => {
         </div>
 
         <p><strong>Name:</strong> {ticket.name}</p>
-        <p><strong>Email:</strong> {ticket.email}</p>
+        <p><strong>Message:</strong> {ticket.message}</p>
         <p><strong>Phone:</strong> {ticket.phone}</p>
         <p><strong>Date:</strong> {ticket.createdAt ? ticket.createdAt.toLocaleString() : "—"}</p>
 
@@ -136,7 +136,7 @@ export default function TicketDashboard() {
   const filteredTickets = tickets.filter((ticket) => {
     const matchSearch =
       ticket.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      ticket.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+   
       ticket.phone?.toLowerCase().includes(searchTerm.toLowerCase());
 
     const ticketDate = ticket.createdAt
@@ -163,7 +163,7 @@ export default function TicketDashboard() {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-3">
         <input
           type="text"
-          placeholder="Search by name, email or phone..."
+          placeholder="Search by name or phone..."
           value={searchTerm}
           onChange={(e) => {
             setSearchTerm(e.target.value);
@@ -193,8 +193,9 @@ export default function TicketDashboard() {
             <thead className="bg-gray-50 sticky top-0 z-10">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600">Name</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600">Email</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600">Phone</th>
+                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600">Phone</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600">Message</th>
+              
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600">Status</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600">Created At</th>
               </tr>
@@ -210,11 +211,12 @@ export default function TicketDashboard() {
                     <td className="px-6 py-3 text-sm font-medium text-gray-900">
                       {ticket.name}
                     </td>
-                    <td className="px-6 py-3 text-sm text-gray-600">
-                      {ticket.email}
-                    </td>
+                    
                     <td className="px-6 py-3 text-sm text-gray-600">
                       {ticket.phone}
+                    </td>
+                    <td className="px-6 py-3 text-sm text-gray-600">
+                      {ticket.message}
                     </td>
                     <td className="px-6 py-3 text-sm">
                       <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getStatusClasses(ticket.status)}`}>
