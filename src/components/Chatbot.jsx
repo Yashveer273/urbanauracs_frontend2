@@ -4,6 +4,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { toggleChatbox, selectChatbox } from "../store/chatboxSlice";
 import { firestore } from "../firebaseCon";
+import { createUnread } from "../Dashboad/utility";
 
 export default function Chatbot() {
   const dispatch = useDispatch();
@@ -78,7 +79,7 @@ export default function Chatbot() {
           createdAt: serverTimestamp(),
         },
       });
-
+await createUnread("sales");
       newMessages.push({ from: "bot", text: "✅ We'll get back to you within 24 hours." });
     }
 
@@ -104,7 +105,7 @@ export default function Chatbot() {
 
       {/* Chatbox */}
       <div
-        className={`fixed bottom-24 right-6 w-96 max-w-[90vw] bg-white rounded-xl shadow-xl flex flex-col overflow-hidden z-40 transition-all duration-400 ${
+        className={`fixed bottom-34 right-6 w-1=96 h-100 max-w-[90vw] bg-white rounded-xl shadow-xl flex flex-col overflow-hidden z-40 transition-all duration-400 ${
           isOpen ? "flex" : "hidden"
         }`}
       >

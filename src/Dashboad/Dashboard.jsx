@@ -26,6 +26,7 @@ import ServiceManager from "./ServiceManager";
 import { cities } from "./utility";
 
 import ExportSalesData from "./exportSalesData";
+import DashboardNavigator from "./DashboardNavigator";
 const HomeIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -1116,157 +1117,14 @@ const Dashboard = () => {
     <DashboardLogin />
   ) : (
     <div className="flex bg-gray-100 min-h-screen font-sans">
-      {/* Sidebar */}
-      <aside className="w-64 bg-white shadow-xl p-6 flex flex-col justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-8 flex items-center">
-            <Package2Icon className="w-8 h-8 mr-2 text-indigo-600" />
-            Dashboard
-          </h1>
-
-          <nav>
-            <ul>
-              <li className="mb-2">
-                <a
-                  href="#"
-                  onClick={() => handleTabClick("auth")}
-                  className={`flex items-center p-3 rounded-lg transition-colors duration-200 ${
-                    activeTab === "auth"
-                      ? "bg-indigo-100 text-indigo-700"
-                      : "text-gray-600 hover:bg-gray-200"
-                  }`}
-                >
-                  <LayoutDashboardIcon className="w-5 h-5 mr-3" />
-                  Users
-                </a>
-              </li>
-              <li className="mb-2">
-                <a
-                  href="#"
-                  onClick={() => handleTabClick("services")}
-                  className={`flex items-center p-3 rounded-lg transition-colors duration-200 ${
-                    activeTab === "services"
-                      ? "bg-indigo-100 text-indigo-700"
-                      : "text-gray-600 hover:bg-gray-200"
-                  }`}
-                >
-                  <Package2Icon className="w-5 h-5 mr-3" />
-                  Services
-                </a>
-              </li>
-              <li className="mb-2">
-                <a
-                  href="#"
-                  onClick={() => handleTabClick("Export-Sales")}
-                  className={`flex items-center p-3 rounded-lg transition-colors duration-200 ${
-                    activeTab === "Export-Sales"
-                      ? "bg-indigo-100 text-indigo-700"
-                      : "text-gray-600 hover:bg-gray-200"
-                  }`}
-                >
-                  <FileTextIcon className="w-5 h-5 mr-3" />
-                  Export Sales Data
-                </a>
-              </li>
-              <li className="mb-2">
-                <a
-                  href="#"
-                  onClick={() => handleTabClick("VandersSection")}
-                  className={`flex items-center p-3 rounded-lg transition-colors duration-200 ${
-                    activeTab === "VandersSection"
-                      ? "bg-indigo-100 text-indigo-700"
-                      : "text-gray-600 hover:bg-gray-200"
-                  }`}
-                >
-                  <User className="w-5 h-5 mr-3" />
-                  Vanders Section
-                </a>
-              </li>
-              <li className="mb-2">
-                <a
-                  href="#"
-                  onClick={() => handleTabClick("sales")}
-                  className={`flex items-center p-3 rounded-lg transition-colors duration-200 ${
-                    activeTab === "sales"
-                      ? "bg-indigo-100 text-indigo-700"
-                      : "text-gray-600 hover:bg-gray-200"
-                  }`}
-                >
-                  <DollarSignIcon className="w-5 h-5 mr-3" />
-                  Sales
-                </a>
-              </li>
-              <li className="mb-2">
-                <a
-                  href="#"
-                  onClick={() => handleTabClick("Coupon-Manager")}
-                  className={`flex items-center p-3 rounded-lg transition-colors duration-200 ${
-                    activeTab === "Coupon-Manager"
-                      ? "bg-indigo-100 text-indigo-700"
-                      : "text-gray-600 hover:bg-gray-200"
-                  }`}
-                >
-                  <FileTextIcon className="w-5 h-5 mr-3" />
-                  Coupon Manager
-                </a>
-              </li>
-              <li className="mb-2">
-                <a
-                  href="#"
-                  onClick={() => handleTabClick("Website-Content")}
-                  className={`flex items-center p-3 rounded-lg transition-colors duration-200 ${
-                    activeTab === "HomeCarousalAssetController"
-                      ? "bg-indigo-100 text-indigo-700"
-                      : "text-gray-600 hover:bg-gray-200"
-                  }`}
-                >
-                  <FileTextIcon className="w-5 h-5 mr-3" />
-                  Website Content
-                </a>
-              </li>
-              <li className="mb-2">
-                <a
-                  href="#"
-                  onClick={() => handleTabClick("Ticket")}
-                  className={`flex items-center p-3 rounded-lg transition-colors duration-200 ${
-                    activeTab === "Ticket"
-                      ? "bg-indigo-100 text-indigo-700"
-                      : "text-gray-600 hover:bg-gray-200"
-                  }`}
-                >
-                  <FileTextIcon className="w-5 h-5 mr-3" />
-                  Ticket
-                </a>
-              </li>
-              <li className="mb-2">
-                <a
-                  href="#"
-                  onClick={() => handleTabClick("dashboard-controller")}
-                  className={`flex items-center p-3 rounded-lg transition-colors duration-200 ${
-                    activeTab === "dashboard-controller"
-                      ? "bg-indigo-100 text-indigo-700"
-                      : "text-gray-600 hover:bg-gray-200"
-                  }`}
-                >
-                  <SettingsIcon className="w-5 h-5 mr-3" />
-                  Dashboard Controller
-                </a>
-              </li>
-            </ul>
-            <button
-              onClick={handleLogout}
-              className="
-    flex items-center px-5 py-2 bg-red-500 text-white font-semibold rounded-lg
-    shadow-md hover:bg-red-600 hover:shadow-lg transition-all duration-200
-    focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-1
-  "
-            >
-              <LogOutIcon className="w-5 h-5 mr-2" />
-              Logout
-            </button>
-          </nav>
-        </div>
-      </aside>
+     
+      <DashboardNavigator
+        activeTab={activeTab}
+        handleTabClick={handleTabClick}
+        handleLogout={handleLogout}
+      />
+   
+  
       {/* --------------------------------------------------------------------------------------------------- */}
       <>
         {/* Main Content Area */}

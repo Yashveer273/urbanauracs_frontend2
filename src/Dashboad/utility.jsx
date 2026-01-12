@@ -1,5 +1,6 @@
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
-import { storage } from "../firebaseCon";
+import { storage,firestore } from "../firebaseCon";
+import { doc, setDoc, increment, serverTimestamp, updateDoc } from "firebase/firestore";
 
 export const cities = [
   "Delhi",
@@ -103,3 +104,35 @@ export const handleCopy = async (header, body) => {
   }
 };
 
+export const createUnread = async (serviceName) => {
+  // ✅ REQUIRED VALIDATION
+  if (!serviceName || typeof serviceName !== "string") {
+    throw new Error("createUnread: serviceName is required and must be a string");
+  }
+
+  const ref = doc(firestore, "notificationCounters", serviceName);
+
+  // ✅ ATOMIC AUTO-INCREMENT
+  await setDoc(
+    ref,
+    {
+      unreadCount: increment(1),
+      updatedAt: serverTimestamp(),
+    },
+    { merge: true }
+  );
+
+  return true;
+};
+export const markServiceAllRead = async (serviceName) => {
+  if (!serviceName) {
+    throw new Error("serviceName is required");
+  }
+
+  const ref = doc(firestore, "notificationCounters", serviceName);
+
+  await updateDoc(ref, {
+    unreadCount: 0,
+    updatedAt: serverTimestamp(),
+  });
+};

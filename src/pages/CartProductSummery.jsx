@@ -3,15 +3,10 @@ import React, { useMemo } from "react";
 import { CheckCircle, IndianRupee } from "lucide-react";
 import { CalculateConvenienceFee } from "../components/TexFee";
 
-
 const formatCurrency = (amount) =>
   `₹${Math.round(amount).toLocaleString("en-IN", {
     minimumFractionDigits: 0,
   })}`;
-
-
-
-
 
 /* ----------------------------------------------------------
     SINGLE PRODUCT ITEM (NEW LAYOUT)
@@ -20,7 +15,7 @@ const ProductSummaryItem = ({ item }) => {
   // Calculate total price for the item quantity after fee
   const itemTotalBasePrice = item.price * item.quantity;
   const feeDetails = CalculateConvenienceFee(itemTotalBasePrice);
-   
+
   const totalAfterFee = feeDetails.total;
 
   return (
@@ -47,31 +42,35 @@ const ProductSummaryItem = ({ item }) => {
           <h3 className="new-item-title">{item.title}</h3>
         </div>
       </div>
-      
+
       {/* REST OF CONTENT (Hidden on desktop in this structure) */}
       <div className="new-item-content">
-             {/* Description field needs to span two columns to look correct */}
-           {/* GRID DETAILS */}
+        {/* Description field needs to span two columns to look correct */}
+        {/* GRID DETAILS */}
         <div className="new-item-grid">
           <span className="label">Description:</span>
-          <span className="value description col-span-1">{item.description}</span>
-       
-          <span className="label">Booking Date:</span>
+          <span className="value description col-span-1">
+            {item.description}
+          </span>
+
+          {/* <span className="label">Booking Date:</span>
           <span className="value">{item.bookingDate}</span>
 
           <span className="label">Booking Time:</span>
           <span className="value">{item.SelectedServiceTime}</span>
 
           <span className="label">Address:</span>
-          <span className="value">{item.bookingAddress}</span>
+          <span className="value">{item.bookingAddress}</span> */}
 
           <span className="label">Duration:</span>
           <span className="value">{item.duration}</span>
           <span className="label">Quantity:</span>
           <span className="value">{item.quantity}</span>
 
-         <span className="label">Convenience Fee:</span>
-          <span className="value">{CalculateConvenienceFee(item.price*item.quantity).convenienceFee}</span>
+          <span className="label">Convenience Fee:</span>
+          <span className="value">
+            {CalculateConvenienceFee(item.price * item.quantity).convenienceFee}
+          </span>
         </div>
 
         {/* PRICE BLOCK - Layout adjusted based on screen size (column on mobile, row on PC) */}
@@ -89,9 +88,7 @@ const ProductSummaryItem = ({ item }) => {
       <div className="new-item-right-price">
         {/* Label is intentionally long to wrap and is right-aligned */}
         <span className="fee-label">After Convenience Fee</span>
-        <span className="fee-value">
-          {formatCurrency(totalAfterFee)}
-        </span>
+        <span className="fee-value">{formatCurrency(totalAfterFee)}</span>
       </div>
     </div>
   );
@@ -100,7 +97,7 @@ const ProductSummaryItem = ({ item }) => {
 /* ----------------------------------------------------------
     MAIN COMPONENT: SUMMARY CARD
 ---------------------------------------------------------- */
-const CheckoutSummaryCard = ({ items,orderId }) => {
+const CheckoutSummaryCard = ({ items, orderId }) => {
   const finalTotal = useMemo(() => {
     let total = 0;
     items.forEach((item) => {
@@ -446,12 +443,24 @@ const CheckoutSummaryCard = ({ items,orderId }) => {
         {/* BODY */}
         <div className="card-body">
           <span className="section-title">
+            <br />
             Selected Services ({items.length})
           </span>
-           <span className="mb-4">
-            Order Id:- <h2>{orderId}</h2> 
+          <br />
+          <span className="mb-4">
+            Order Id:- <h2>{orderId}</h2>
           </span>
+          <span className="label">Booking Date:</span>
+          <span className="value">{items[0].bookingDate}</span>
+          <br />
 
+          <span className="label">Booking Time:</span>
+          <span className="value">{items[0].SelectedServiceTime}</span>
+          <br />
+
+          <span className="label">Address:</span>
+          <span className="value">{items[0].bookingAddress}</span>
+          <br />
           <div className="item-list-container">
             {items.map((item, index) => (
               <ProductSummaryItem item={item} key={index} orderId={orderId} />
