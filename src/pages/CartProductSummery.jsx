@@ -440,7 +440,7 @@ const CheckoutSummaryCard = ({ items, orderId }) => {
           </h2> */}
         </div>
 
-        {/* BODY */}
+       
         <div className="card-body">
           <span className="section-title">
             <br />

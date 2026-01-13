@@ -103,9 +103,9 @@ await createUnread("sales");
         {isOpen ? closeIcon : chatIcon}
       </div>
 
-      {/* Chatbox */}
+      
       <div
-        className={`fixed bottom-34 right-6 w-1=96 h-100 max-w-[90vw] bg-white rounded-xl shadow-xl flex flex-col overflow-hidden z-40 transition-all duration-400 ${
+        className={`fixed bottom-34 right-6 w-1=96  h-100 max-w-[90vw] bg-white rounded-xl shadow-xl flex flex-col overflow-hidden z-40 transition-all duration-400 ${
           isOpen ? "flex" : "hidden"
         }`}
       >

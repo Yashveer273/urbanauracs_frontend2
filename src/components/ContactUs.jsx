@@ -6,7 +6,7 @@ import Chatbot from "./Chatbot";
 import { useSelector } from "react-redux";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { firestore } from "../firebaseCon";
-import { FaYoutube } from "react-icons/fa";
+import { FaEnvelope, FaMapMarkerAlt, FaPhoneAlt, FaYoutube } from "react-icons/fa";
 export default function ContactUs() {
   const [name, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -132,47 +132,32 @@ export default function ContactUs() {
 
         {/* Contact Info */}
         <section className="contact-info">
-          <div className="info-box">
-            {/* Call Icon */}
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="black"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-            >
-              <path d="M6.62 10.79a15.053 15.053 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24 11.72 11.72 0 003.68.59 1 1 0 011 1V20a1 1 0 01-1 1C10.07 21 3 13.93 3 5a1 1 0 011-1h3.5a1 1 0 011 1c0 1.27.21 2.5.59 3.68.09.3.03.63-.24.9l-2.23 2.21z" />
-            </svg>
-            <p>{links[0]?.phone}</p>
-          </div>
+<div className="space-y-4">
+  {/* Phone */}
+  <div className="flex items-center gap-3 rounded-lg border p-3">
+    <FaPhoneAlt className="text-black text-[20px]" />
+    <p className="text-sm text-gray-800">
+      {links[0]?.phone}
+    </p>
+  </div>
 
-          <div className="info-box">
-            {/* Email Icon */}
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="black"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-            >
-              <path d="M20 4H4a2 2 0 00-2 2v12c0 1.11.89 2 2 2h16c1.1 0 2-.89 2-2V6c0-1.11-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z" />
-            </svg>
-            <p>{links[0]?.email}</p>
-          </div>
+  {/* Email */}
+  <div className="flex items-center gap-3 rounded-lg border p-3">
+    <FaEnvelope className="text-black text-[20px]" />
+    <p className="text-sm text-gray-800">
+      {links[0]?.email}
+    </p>
+  </div>
 
-          <div className="info-box">
-            {/* Location Icon */}
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="black"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-            >
-              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 110-5 2.5 2.5 0 010 5z" />
-            </svg>
-            <p>{links[0]?.address}</p>
-          </div>
+  {/* Address */}
+  <div className="flex items-center gap-3 rounded-lg border p-3">
+    <FaMapMarkerAlt className="text-black text-[20px]" />
+    <p className="text-sm text-gray-800">
+      {links[0]?.address}
+    </p>
+  </div>
+</div>
+
           {/* Social Media Icons */}
           <div className="social-icons">
             {/* Instagram */}

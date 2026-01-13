@@ -1,4 +1,3 @@
-// DashboardNavigator.jsx
 import React, { useEffect, useState } from "react";
 import {
   Package2Icon,
@@ -20,7 +19,7 @@ import {
   updateDoc,
   setDoc,
 } from "firebase/firestore";
-import { firestore } from "../firebaseCon"; // adjust this path
+import { firestore } from "../firebaseCon";
 
 const DashboardNavigator = ({ activeTab, handleTabClick, handleLogout }) => {
   const [counts, setCounts] = useState({});
@@ -40,7 +39,7 @@ const DashboardNavigator = ({ activeTab, handleTabClick, handleLogout }) => {
     { tab: "dashboard-controller", label: "Dashboard Controller", icon: SettingsIcon },
   ];
 
-  // Real-time listener for notification counters
+ 
   useEffect(() => {
     const ref = collection(firestore, "notificationCounters");
 
@@ -51,7 +50,7 @@ const DashboardNavigator = ({ activeTab, handleTabClick, handleLogout }) => {
           newCounts[doc.id] = doc.data().unreadCount || 0;
         }
       });
-      // Ensure default 0 for tabs with no doc yet
+     
       countTabs.forEach((tab) => {
         if (newCounts[tab] === undefined) newCounts[tab] = 0;
       });
@@ -89,7 +88,7 @@ const DashboardNavigator = ({ activeTab, handleTabClick, handleLogout }) => {
           <ul>
             {tabs.map((tabItem) => {
               const Icon = tabItem.icon;
-              const count = counts[tabItem.tab]; // undefined for tabs without count
+              const count = counts[tabItem.tab]; 
               return (
                 <li className="mb-2" key={tabItem.tab}>
                   <a
