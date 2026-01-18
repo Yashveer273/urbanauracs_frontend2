@@ -84,11 +84,12 @@ export default function SalesSection() {
 
   const [tagAccess, setTagAccess] = useState([]);
   const [saleDataTem, setsaleDataTem] = useState(null);
+
   // ------------------------------------------------------------------
   const checkAuth = () => {
     const token = localStorage.getItem("urbanauraservicesdashauthToken");
     const dashtagAccess = localStorage.getItem(
-      "urbanauraservicesdashtagAccess"
+      "urbanauraservicesdashtagAccess",
     );
 
     if (token) {
@@ -114,7 +115,7 @@ export default function SalesSection() {
         setCurrentPage(1);
       },
       checkAuth(),
-      getResponsiblePersion()
+      getResponsiblePersion(),
     );
 
     return () => unsubscribe();
@@ -251,7 +252,7 @@ export default function SalesSection() {
 
   const currentData = filteredData.slice(
     (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
+    currentPage * itemsPerPage,
   );
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
 
@@ -285,8 +286,8 @@ export default function SalesSection() {
       await setDoc(saleRef, { responsible: newPerson }, { merge: true });
       setSalesData((prev) =>
         prev.map((s) =>
-          s.id === saleId ? { ...s, responsible: newPerson } : s
-        )
+          s.id === saleId ? { ...s, responsible: newPerson } : s,
+        ),
       );
     } catch (e) {
       console.error("Error updating responsible person:", e);
@@ -301,9 +302,9 @@ export default function SalesSection() {
         Number(
           item.item_price * item.quantity +
             CalculateConvenienceFee(item.item_price * item.quantity)
-              .convenienceFee
+              .convenienceFee,
         ),
-      0
+      0,
     );
 
     setRowForm({
@@ -357,8 +358,8 @@ export default function SalesSection() {
                 discount: rowForm.discount,
                 date_time: new Date(rowForm.dateTime).toISOString(),
               }
-            : s
-        )
+            : s,
+        ),
       );
 
       setEditingRow(null);
@@ -367,6 +368,7 @@ export default function SalesSection() {
       console.error("Error updating row:", e);
     }
   };
+  const [open, setOpen] = useState(false);
 
   const [editingCartProduct, setEditingCartProduct] = useState({
     saleId: null,
@@ -386,6 +388,8 @@ export default function SalesSection() {
 
   const saveCartEdit = async (data) => {
     try {
+      // SelectedServiceTime
+      console.log(data.productData)
       const saleId = data.saleId;
       const res = await axios.put(
         `${API_BASE_URL}/editSalesItem/${saleId}/cart`,
@@ -393,7 +397,7 @@ export default function SalesSection() {
           product_purchase_id: data.productData.product_purchase_id,
           updates: data.productData,
           userId: selectedProductInfo.userData.userId,
-        }
+        },
       );
 
       if (res.data.success) {
@@ -423,7 +427,7 @@ export default function SalesSection() {
       const updatedCart = saleData.product_info.cart.map((item) =>
         item.product_purchase_id === data.productData.product_purchase_id
           ? { ...item, ...data.productData }
-          : item
+          : item,
       );
 
       await updateDoc(saleRef, { product_info: { cart: updatedCart } });
@@ -439,33 +443,33 @@ export default function SalesSection() {
     newStatus,
     newComment = "",
     isProduct = false,
-    index = null
+    index = null,
   ) => {
     try {
       const saleRef = doc(firestore, "sales", saleId);
 
       if (isProduct) {
         const updatedCart = selectedProductInfo.cart.map((p, idx) =>
-          idx === index ? { ...p, status: newStatus, comment: newComment } : p
+          idx === index ? { ...p, status: newStatus, comment: newComment } : p,
         );
         await setDoc(
           saleRef,
           { product_info: { ...selectedProductInfo, cart: updatedCart } },
-          { merge: true }
+          { merge: true },
         );
         setSelectedProductInfo((prev) => ({ ...prev, cart: updatedCart }));
       } else {
         await setDoc(
           saleRef,
           { status: newStatus, comment: newComment },
-          { merge: true }
+          { merge: true },
         );
         setSalesData((prev) =>
           prev.map((s) =>
             s.id === saleId
               ? { ...s, status: newStatus, comment: newComment }
-              : s
-          )
+              : s,
+          ),
         );
       }
       await updateStatusOrCommentDB(newStatus, saleId);
@@ -478,7 +482,7 @@ export default function SalesSection() {
     currentStatus,
     currentComment = "",
     isProduct = false,
-    index = null
+    index = null,
   ) => {
     setEditingStatus({ saleId, isProduct, index });
     setTempStatus(currentStatus);
@@ -494,7 +498,7 @@ export default function SalesSection() {
       tempStatus,
       tempComment,
       isProduct,
-      index
+      index,
     );
     setEditingStatus({ saleId: null, productIndex: null });
     setTempStatus("");
@@ -526,7 +530,7 @@ export default function SalesSection() {
       tempStatus,
       tempComment,
       isProduct,
-      index
+      index,
     );
     setEditingStatus({ saleId: null, productIndex: null, serviceId: null });
     setTempStatus("");
@@ -536,7 +540,7 @@ export default function SalesSection() {
     saleId,
     serviceId,
     newStatus,
-    newComment = ""
+    newComment = "",
   ) => {
     try {
       const saleRef = doc(firestore, "sales", saleId);
@@ -544,7 +548,7 @@ export default function SalesSection() {
       const updatedCart = selectedProductInfo.cart.map((p) =>
         p.product_purchase_id === serviceId
           ? { ...p, status: newStatus, comment: newComment }
-          : p
+          : p,
       );
 
       // 🔹 Update Firestore (nested merge-safe)
@@ -555,7 +559,7 @@ export default function SalesSection() {
             cart: updatedCart,
           },
         },
-        { merge: true }
+        { merge: true },
       );
 
       let data = saleDataTem;
@@ -609,20 +613,12 @@ export default function SalesSection() {
     tableContainerRef.current.scrollBy({ left: 200, behavior: "smooth" });
   };
   const timeSlots = [
-    "6:00 AM",
-    "7:00 AM",
-    "8:00 AM",
-    "9:00 AM",
-    "10:00 AM",
-    "11:00 AM",
-    "12:00 PM",
-    "1:00 PM",
-    "2:00 PM",
-    "3:00 PM",
-    "4:00 PM",
-    "5:00 PM",
-    "6:00 PM",
-    "7:00 PM",
+    "8:00 AM - 10:00 AM",
+    "10:00 AM - 12:00 PM",
+    "12:00 PM - 02:00 PM",
+    "02:00 PM - 04:00 PM",
+    "04:00 PM - 06:00 PM",
+    "06:00 PM - 08:00 PM",
   ];
   return (
     <div className="flex flex-col min-h-screen font-sans bg-gray-100 w-300">
@@ -854,10 +850,10 @@ export default function SalesSection() {
                           Number(
                             item.item_price * item.quantity +
                               CalculateConvenienceFee(
-                                item.item_price * item.quantity
-                              ).convenienceFee
+                                item.item_price * item.quantity,
+                              ).convenienceFee,
                           ),
-                        0
+                        0,
                       )}
                     </td>
                     <td className="py-4 px-2">
@@ -871,10 +867,10 @@ export default function SalesSection() {
                           Number(
                             item.item_price * item.quantity +
                               CalculateConvenienceFee(
-                                item.item_price * item.quantity
-                              ).convenienceFee
+                                item.item_price * item.quantity,
+                              ).convenienceFee,
                           ),
-                        0
+                        0,
                       ) -
                         Number(sale?.discount || 0) -
                         Number(sale?.payedAmount || 0)}
@@ -892,7 +888,7 @@ export default function SalesSection() {
                           openStatusCard(
                             sale.id,
                             sale.status || "Pending",
-                            sale.comment || ""
+                            sale.comment || "",
                           )
                         }
                         className="text-blue-600 cursor-pointer"
@@ -981,7 +977,7 @@ export default function SalesSection() {
                         </button>
                       )}
                     </td>
-                    <td>  
+                    <td>
                       <WhatsappChatCard
                         phone={`91${sale.ConfurmWhatsAppMobileNumber}`}
                         buttonText="Send WhatsApp Message"
@@ -989,9 +985,9 @@ export default function SalesSection() {
                           vendorName: "",
                           customerName: sale.name,
                           serviceId: sale.id,
-                          
+
                           Responsible: sale.responsible || "______",
-                          otp:Math.floor(10 + Math.random() * 90) * 100 + 25,
+                          otp: Math.floor(10 + Math.random() * 90) * 100 + 25,
                           serviceDetails: sale.product_info.cart
                             .map((i) => `${i.product_name} (${i.description})`)
                             .join(", "),
@@ -999,27 +995,27 @@ export default function SalesSection() {
                           address: sale.product_info.cart[0]?.bookingAddress,
                           orderAmount: `₹${sale.product_info.cart.reduce(
                             (sum, i) => sum + i.item_price * i.quantity,
-                            0
+                            0,
                           )}`,
                           convenienceFee: `₹${sale.product_info.cart.reduce(
                             (sum, i) =>
                               sum +
                               CalculateConvenienceFee(i.item_price * i.quantity)
                                 .convenienceFee,
-                            0
+                            0,
                           )}`,
                           balanceAmount: `₹${
                             sale.product_info.cart.reduce(
                               (sum, i) => sum + i.item_price * i.quantity,
-                              0
+                              0,
                             ) +
                             sale.product_info.cart.reduce(
                               (sum, i) =>
                                 sum +
                                 CalculateConvenienceFee(
-                                  i.item_price * i.quantity
+                                  i.item_price * i.quantity,
                                 ).convenienceFee,
-                              0
+                              0,
                             )
                           }`,
                         }}
@@ -1139,7 +1135,7 @@ export default function SalesSection() {
 
                       const totalItemAmount = cart.reduce(
                         (sum, i) => sum + i.item_price * i.quantity,
-                        0
+                        0,
                       );
 
                       const totalConvenienceFee = cart.reduce(
@@ -1147,7 +1143,7 @@ export default function SalesSection() {
                           sum +
                           CalculateConvenienceFee(i.item_price * i.quantity)
                             .convenienceFee,
-                        0
+                        0,
                       );
 
                       const grandTotal = totalItemAmount + totalConvenienceFee;
@@ -1192,7 +1188,7 @@ export default function SalesSection() {
                                     `₹${totalItemAmount}`,
                                     `₹${totalConvenienceFee}`,
                                     `₹${grandTotal}`,
-                                  ]
+                                  ],
                                 )
                               }
                               className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition"
@@ -1242,7 +1238,7 @@ export default function SalesSection() {
                           Convenience Fee: ₹
                           {
                             CalculateConvenienceFee(
-                              item.item_price * item.quantity
+                              item.item_price * item.quantity,
                             ).convenienceFee
                           }
                         </div>
@@ -1287,16 +1283,16 @@ export default function SalesSection() {
                               `₹${item.item_price * item.quantity}`,
                               `₹${
                                 CalculateConvenienceFee(
-                                  item.item_price * item.quantity
+                                  item.item_price * item.quantity,
                                 ).convenienceFee
                               }`,
                               `₹${
                                 item.item_price * item.quantity +
                                 CalculateConvenienceFee(
-                                  item.item_price * item.quantity
+                                  item.item_price * item.quantity,
                                 ).convenienceFee
                               }`,
-                            ]
+                            ],
                           )
                         }
                         className="border border-indigo-200 text-indigo-700 py-2 rounded-lg hover:bg-indigo-50 transition"
@@ -1463,16 +1459,16 @@ export default function SalesSection() {
                   {field === "totalPrice"
                     ? "Total Price"
                     : field === "dateTime"
-                    ? "Date/Time"
-                    : field.charAt(0).toUpperCase() + field.slice(1)}
+                      ? "Date/Time"
+                      : field.charAt(0).toUpperCase() + field.slice(1)}
                 </label>
                 <input
                   type={
                     field === "dateTime"
                       ? "datetime-local"
                       : field === "discount" || field === "payedAmount"
-                      ? "number"
-                      : "text"
+                        ? "number"
+                        : "text"
                   }
                   className="border p-2 w-full rounded-md"
                   value={rowForm[field]}
@@ -1558,7 +1554,7 @@ export default function SalesSection() {
               value={
                 editingCartProduct?.productData?.location_booking_time
                   ? new Date(
-                      editingCartProduct.productData.location_booking_time
+                      editingCartProduct.productData.location_booking_time,
                     )
                       .toISOString()
                       .split("T")[0]
@@ -1576,30 +1572,65 @@ export default function SalesSection() {
               }
               className="w-full border px-3 py-2 mb-3 rounded"
             />
-
             {/* Booking Time */}
             <label className="block text-sm font-medium mb-1">
               Booking Time
             </label>
-            <select
-              value={editingCartProduct?.productData?.SelectedServiceTime || ""}
-              onChange={(e) =>
-                setEditingCartProduct((prev) => ({
-                  ...prev,
-                  productData: {
-                    ...prev.productData,
-                    SelectedServiceTime: e.target.value,
-                  },
-                }))
-              }
-              className="w-full border px-3 py-2 mb-3 rounded bg-white"
-            >
-              {timeSlots.map((time) => (
-                <option key={time} value={time}>
-                  {time}
-                </option>
-              ))}
-            </select>
+
+            <div className="relative">
+              <input
+                type="text"
+                readOnly
+                name="SelectedServiceTime"
+                required
+                value={
+                  editingCartProduct?.productData?.SelectedServiceTime || ""
+                }
+                placeholder="Select Time"
+                onClick={() => setOpen((prev) => !prev)}
+                className="mt-1 block w-full px-4 py-2 bg-zinc-100 border border-zinc-300 rounded-xl shadow-sm cursor-pointer focus:ring-zinc-500 focus:border-zinc-500"
+              />
+
+              {open && (
+                <div className="absolute z-50 mt-2 w-full bg-gray-900 rounded-xl shadow-xl p-4 max-h-60 overflow-y-auto">
+                  <div className="grid grid-cols-3 gap-3">
+                    {timeSlots.map((slot, index) => {
+                      const [start, end] = slot.split(" - ");
+
+                      return (
+                        <button
+                          type="button"
+                          key={index}
+                          onClick={() => {
+                            setEditingCartProduct((prev) => ({
+                              ...prev,
+                              productData: {
+                                ...prev.productData,
+                                SelectedServiceTime: slot,
+                              },
+                            }));
+                            setOpen(false);
+                          }}
+                          className={`px-3 py-2 rounded-lg transition flex flex-col items-center text-center
+                ${
+                  editingCartProduct?.productData?.SelectedServiceTime === slot
+                    ? "bg-blue-600 text-white shadow-md"
+                    : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+                }
+              `}
+                        >
+                          <span className="text-sm font-semibold">{start}</span>
+                          <span className="text-[10px] opacity-70 leading-tight">
+                            to
+                          </span>
+                          <span className="text-sm font-semibold">{end}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* Description */}
             <label className="block text-sm font-medium mb-1">
@@ -1658,7 +1689,7 @@ export default function SalesSection() {
               value={
                 CalculateConvenienceFee(
                   editingCartProduct?.productData?.item_price *
-                    editingCartProduct?.productData?.quantity
+                    editingCartProduct?.productData?.quantity,
                 ).convenienceFee
               }
               disabled={true}
@@ -1674,7 +1705,7 @@ export default function SalesSection() {
                 (editingCartProduct?.productData?.item_price +
                   CalculateConvenienceFee(
                     editingCartProduct?.productData?.item_price *
-                      editingCartProduct?.productData?.quantity
+                      editingCartProduct?.productData?.quantity,
                   ).convenienceFee) *
                 editingCartProduct?.productData?.quantity
               }
