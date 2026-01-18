@@ -21,7 +21,6 @@ const DetailedServiceCard = ({ service,userLocation,vendor }) => {
    const handleAddToCart = () => {
     
   
-      console.log(user.length < 1);
       if (user.length < 1 && !isAuthenticated) {
         // Not logged in → open auth popup
         dispatch(setAuthPopupOpen(true));
@@ -112,7 +111,7 @@ const ServiceDetailPopup = ({ service, onClose, vendor,userLocation }) => {
    const handleAddToCart = () => {
   
 
-    console.log(user.length < 1);
+   
     if (user.length < 1 && !isAuthenticated) {
       // Not logged in → open auth popup
       dispatch(setAuthPopupOpen(true));

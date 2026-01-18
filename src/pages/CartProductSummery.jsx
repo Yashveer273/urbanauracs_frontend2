@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React from "react";
 
 import { CheckCircle, IndianRupee } from "lucide-react";
 import { CalculateConvenienceFee } from "../components/TexFee";
@@ -98,15 +98,19 @@ const ProductSummaryItem = ({ item }) => {
     MAIN COMPONENT: SUMMARY CARD
 ---------------------------------------------------------- */
 const CheckoutSummaryCard = ({ items, orderId }) => {
-  const finalTotal = useMemo(() => {
-    let total = 0;
-    items.forEach((item) => {
-      const itemTotalBasePrice = item.price * item.quantity;
-      const feeDetails = CalculateConvenienceFee(itemTotalBasePrice);
-      total += feeDetails.total;
-    });
-    return total;
-  }, [items]);
+   // ✅ CALCULATIONS (SIMPLE & CLEAR)
+  let totalAmount = 0;
+  let totalConvenienceFees = 0;
+
+  items.forEach((item) => {
+    const baseAmount = item.price * item.quantity;
+    const feeDetails = CalculateConvenienceFee(baseAmount);
+
+    totalAmount += baseAmount;
+    totalConvenienceFees += feeDetails.convenienceFee;
+  });
+
+  const finalPayableAmount = totalAmount + totalConvenienceFees;
 
   return (
     // Outer container for centering the card on the page (Tailwind)
@@ -469,14 +473,115 @@ const CheckoutSummaryCard = ({ items, orderId }) => {
         </div>
 
         {/* FOOTER */}
-        <div className="card-footer">
-          {/* Footer label */}
-          <span className="total-label">Total Payable Fee:</span>
-          <span className="final-total-amount">
-            <IndianRupee size={20} strokeWidth={3} className="mr-1" />
-            {finalTotal}
-          </span>
-        </div>
+        <div
+  className="card-footer"
+  style={{
+    display: "flex",
+    flexDirection: "column",
+  
+    alignItems: "stretch",
+  }}
+>
+  {/* Total Amount */}
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+    }}
+  >
+    <span
+      style={{
+        fontSize: "14px",
+        fontWeight: 600,
+        color: "#cbd5f5",
+      }}
+    >
+      Total Amount
+    </span>
+
+    <span
+      style={{
+        display: "flex",
+        alignItems: "center",
+        fontSize: "16px",
+        fontWeight: 700,
+        color: "#ffffff",
+      }}
+    >
+      <IndianRupee size={14} style={{ marginRight: 4 }} />
+      {totalAmount}
+    </span>
+  </div>
+
+  {/* Convenience Fees */}
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+    }}
+  >
+    <span
+      style={{
+        fontSize: "14px",
+        fontWeight: 600,
+        color: "#cbd5f5",
+      }}
+    >
+    Total Convenience Fees
+    </span>
+
+    <span
+      style={{
+        display: "flex",
+        alignItems: "center",
+        fontSize: "16px",
+        fontWeight: 700,
+        color: "#ffffff",
+      }}
+    >
+      <IndianRupee size={14} style={{ marginRight: 4 }} />
+      {totalConvenienceFees}
+    </span>
+  </div>
+
+  {/* Divider */}
+ 
+
+  {/* Final Payable */}
+  <div
+    style={{
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+    }}
+  >
+    <span
+      style={{
+        fontSize: "16px",
+        fontWeight: 700,
+        color: "#fbbf24",
+      }}
+    >
+      Total Payable
+    </span>
+
+    <span
+      style={{
+        display: "flex",
+        alignItems: "center",
+        fontSize: "22px",
+        fontWeight: 900,
+        color: "#f97316",
+      }}
+    >
+      <IndianRupee size={20} strokeWidth={3} style={{ marginRight: 6 }} />
+      {finalPayableAmount}
+    </span>
+  </div>
+</div>
+
       </div>
     </div>
   );

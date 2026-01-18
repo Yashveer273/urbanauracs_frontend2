@@ -125,7 +125,7 @@ const BookingForm = ({ MyCity }) => {
   }, [isManualLocation, MyCity]);
 
   const handleBookNow = () => {
-    console.log(services);
+
     let serviceData = services.find((s) => s.ServiceName == selectedService);
 
     const Data = serviceData.data.filter(
@@ -133,7 +133,7 @@ const BookingForm = ({ MyCity }) => {
         Product.location?.trim().toLowerCase().replace(/\s+/g, "") ===
         BookingCity.trim().toLowerCase().replace(/\s+/g, "")
     );
-    console.log(Data.length);
+   
     if (Data.length <= 0) {
       alert("😔 No services available in your selected location");
       // setchatopenStatus=true;

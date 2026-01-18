@@ -122,7 +122,7 @@ export const fetchProdDataDESC = async () => {
         : [], // fallback
     }));
 
-    console.log("FINAL REVERSED DATA:", result);
+    
 
     return result;
   } catch (error) {
@@ -154,7 +154,7 @@ export const updateSale = async (orderId, updateSalesData) => {
       `${API_BASE_URL}/update/SalesData/${orderId}`,
       updateSalesData
     );
-    console.log("✅ Update successful:", response.data);
+   
     return response;
   } catch (error) {
     console.error("❌ Update failed:", error);
@@ -171,7 +171,7 @@ export const getMyOrderHistory = async (userId, page = 1, limit = 10) => {
       `${API_BASE_URL}/order-history/${userId}?page=${page}&limit=${limit}`
     );
 
-    console.log("✅ Order History:", response.data);
+ 
     return response;
   } catch (error) {
     console.error("❌ Failed to fetch order history:", error);
@@ -197,7 +197,7 @@ export const handleBuy = async (data, action) => {
           document.body.appendChild(script);
         });
       }
-console.log(order);
+
   // Step 3: Open Razorpay checkout
   const options = {
     key: order.key,
@@ -312,7 +312,7 @@ export const handlePaymentLeft = async (data, action) => {
       params: { mobile, msg }
     });
 
-    console.log("WhatsApp response:", response.data);
+ 
     return response.data;
 
   } catch (error) {
@@ -323,15 +323,8 @@ export const handlePaymentLeft = async (data, action) => {
 
 export const sendToVenderUserPersonwhatsapp = async (numbersPayload,msgPayload) => {
   try {
-    // Map payload
-   
-
-    // Call backend endpoint
     const response = await axios.post(`${API_BASE_URL}/sendToVender-User-Person-whatsapp`, {numbersPayload,msgPayload});
-
-    console.log("WhatsApp API response:", response.data);
     return response.data;
-
   } catch (error) {
     console.error("Error sending WhatsApp numbers:", error.response?.data || error.message);
     return error;

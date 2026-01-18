@@ -189,9 +189,9 @@ const handleConfirmBooking = (selectedDate, selectedTime, address) => {
     }
   };
   useEffect(() => {
-    setTotal(CalculateGrandTotal(cartItems));
+    setTotal(CalculateGrandTotal(cartItems).grandTotal);
 
-    setAdvance(Math.round(CalculateGrandTotal(cartItems) * 0.1));
+    setAdvance(CalculateGrandTotal(cartItems).advanceAmount);
     if (cartItems[0].bookingDate == "" || cartItems[0].bookingDate == null) {
       setIsBookingPopupOpen(true);
     }
@@ -228,7 +228,7 @@ const handleConfirmBooking = (selectedDate, selectedTime, address) => {
   }, [discount]);
   const handlePayment2 = (totalAmount) => {
     // Here you would implement actual payment initiation logic
-    console.log(`Final payment amount ready to be processed: ₹${totalAmount}`);
+    console.log(`Final ₹${totalAmount}`);
   };
   return (
     <>

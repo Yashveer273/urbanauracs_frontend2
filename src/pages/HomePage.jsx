@@ -44,19 +44,19 @@ const HomePage = () => {
 
   const getLinks = async () => {
   const data2= await fetchProdDataDESC();
-  console.log(data2);
+
 services.length = 0;
   if(data2.length>0)services.push(...data2[0].data); 
 
     const data = await fetchSocialLinks();
      dispatch(setLinks(data));
-    console.log("Social Links:", data);
+   
   };
   const ValidateUse = async () => {
   try {
     if (!user?.token) {
 
-      console.log("No token found for validation.",user);
+      
       dispatch(logoutUser());
       return;
     }
@@ -66,7 +66,7 @@ services.length = 0;
     });
 
     if (res.data.success) {
-      console.log("✅ Token is valid:", res.data.data);
+      console.log("");
     } else {
       console.warn("❌ Token invalid, logging out...");
       dispatch(logoutUser());

@@ -142,7 +142,7 @@ const AuthPopup = ({ onClose }) => {
   };
 
   const handleAuthSuccess = (data) => {
-    console.log(data);
+ 
     // Store user data in local storage
     try {
       dispatch(loginUser(data));
@@ -327,7 +327,7 @@ const AuthPopup = ({ onClose }) => {
       setLoading(false); // stop loading if validation fails
       return;
     }
-    console.log(formData);
+    
     const response = await fetch(`${API_BASE_URL}/register`, {
       method: "POST",
       headers: {

@@ -906,7 +906,7 @@ export default function SalesSection() {
         onClose={() => setSendToOpen(false)}
         userNumber={state.phone_number || ""}
         onSend={async (numbersPayload) => {
-          console.log("SEND PAYLOAD:", numbersPayload);
+         
           const userMsg = `Hi from urbanauracs.com this is your invoice generated on ${normalizeDate(
             showSendInvoice.generatedInvoiceDate_time
           )} ${state.invoice}`;
@@ -915,7 +915,7 @@ export default function SalesSection() {
             venederMsg: userMsg,
             userMsg,
           });
-          console.log(res);
+         
           if (res?.status === "success" && res?.results?.length) {
             const successMessages = res.results
               .map((r) => `✔ ${r.number}: ${r.response?.message}`)

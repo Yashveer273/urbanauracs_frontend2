@@ -314,7 +314,7 @@ const Dashboard = () => {
   };
 
   const SaveSubmit = async (FDBservices, newService) => {
-    console.log(newService);
+  
     try {
       if (FDBservices.length > 0) {
         // ✅ Document exists → update its 'data' array
@@ -325,14 +325,14 @@ const Dashboard = () => {
           data: newService,
         });
 
-        console.log("Service added to existing document!");
+     
       } else {
         // ❌ No document yet → create a new one
         await addDoc(collection(firestore, "homeCleaningServiceDB"), {
           data: newService, // Initialize array with first service
         });
 
-        console.log("New document created with service!");
+      
       }
     } catch (err) {
       console.error("Error saving service:", err);
@@ -356,7 +356,7 @@ const Dashboard = () => {
           data: newService,
         });
 
-        console.log("Service added to existing document!");
+        
       }
     } catch (err) {
       console.error(err);
@@ -395,7 +395,7 @@ const Dashboard = () => {
           data: updatedDataArray,
         });
 
-        console.log("✅ Vendor updated successfully in Firestore!");
+ 
       } else {
         console.error("❌ No document in Firestore to update");
       }
@@ -499,7 +499,7 @@ const Dashboard = () => {
       // ✅ Update React state
       setServices(services.filter((service) => service.id !== id));
 
-      console.log("Service deleted successfully");
+  
     } catch (error) {
       console.error("Error deleting service:", error);
     }
@@ -660,7 +660,7 @@ const Dashboard = () => {
       location: "",
     });
 
-    console.log("Vendor updated successfully!", updatedServices);
+
   };
 
   // Handles deleting a vendor from the selected top-level service.
@@ -710,7 +710,7 @@ const Dashboard = () => {
       );
       setSelectedService(updatedSelectedService);
 
-      console.log("Vendor removed successfully");
+   
     } catch (error) {
       console.error("Error deleting vendor:", error);
     }
@@ -917,7 +917,7 @@ const Dashboard = () => {
       );
       setSelectedVendor(updatedSelectedVendor);
 
-      console.log("Vendor service deleted successfully");
+     
     } catch (error) {
       console.error("Error deleting vendor service:", error);
     }
@@ -940,7 +940,7 @@ const Dashboard = () => {
   );
 
   const passVender = (selectedVendor) => {
-    console.log(selectedVendor);
+   
 
     setVendorFormData({
       vendorName: selectedVendor.vendorName,

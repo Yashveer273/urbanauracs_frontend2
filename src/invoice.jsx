@@ -26,8 +26,8 @@ export default function Invoice() {
   const openEditRowCard = async (sale) => {
     try {
       (sale.invoice = invoiceUrl),
-        (sale.generatedInvoiceDate_time = Date.now()),
-        console.log("Updating sale:", sale);
+        (sale.generatedInvoiceDate_time = Date.now());
+       
       const saleRef = doc(firestore, "sales", sale.id);
 
       await setDoc(saleRef, sale, { merge: true });
@@ -82,7 +82,7 @@ export default function Invoice() {
 
     // 🔹 Upload directly to Firebase
     const invoiceUrl = await uploadInvoice(pdfBlob, state);
-    console.log("Uploaded:", invoiceUrl);
+    
     setInvoiceUrl(invoiceUrl);
 
   } catch (err) {
@@ -91,9 +91,6 @@ export default function Invoice() {
     setLoading(false);
   }
 };
-
-  console.log(state);
-
   const discountAmount = state.discount;
   const [sendToOpen, setSendToOpen] = useState(false);
   const saveInvoice2 = () => {

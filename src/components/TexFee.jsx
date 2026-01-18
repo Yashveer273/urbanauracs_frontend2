@@ -48,17 +48,37 @@ export function CalculateConveniencetotalFee(baseAmount) {
 // ------------------------------
 export const CalculateGrandTotal = (items) => {
   if (!Array.isArray(items) || items.length === 0) {
-    return 0;
+    return {
+      totalAmount: 0,
+      totalConvenienceFees: 0,
+      advanceAmount: 0,
+    };
   }
 
-  let grandTotal = 0;
+  let totalAmount = 0;
+  let totalConvenienceFees = 0;
 
-  items.forEach(item => {
-    const itemTotal = item.price * item.quantity;
-    grandTotal += CalculateConveniencetotalFee(itemTotal);
+  items.forEach((item) => {
+    const baseAmount = item.price * item.quantity;
+    const feeDetails = CalculateConvenienceFee(baseAmount);
+
+    totalAmount += baseAmount;
+    totalConvenienceFees += feeDetails.convenienceFee;
   });
 
-  return grandTotal;
+  // 25% of total amount + convenience fees
+  const advanceAmount = Math.round(
+    totalAmount * 0.25 + totalConvenienceFees
+  );
+let grandTotal=Math.round(
+    totalAmount + totalConvenienceFees
+  );
+  return {
+    totalAmount,
+    totalConvenienceFees,
+    advanceAmount,
+    grandTotal
+  };
 };
 
 // ------------------------------

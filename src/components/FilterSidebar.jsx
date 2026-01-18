@@ -26,7 +26,7 @@ const FilterSidebar = ({
     useState(selectedLocation);
 
   useEffect(() => {
-    console.log(maxPrice)
+   
     setMinPriceState(minPrice);
     setMaxPriceState(maxPrice);
     setSelectedServiceTypes(new Set(serviceTypes));

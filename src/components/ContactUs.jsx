@@ -30,12 +30,7 @@ export default function ContactUs() {
     e.preventDefault();
     if (isFormValid) {
       // Log form data to console
-      console.log({
-        name,
-        email,
-        phone,
-        message,
-      });
+      
       await addDoc(collection(firestore, "homeCleaningTicket"), {
         data: {
           name,

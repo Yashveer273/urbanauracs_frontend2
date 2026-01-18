@@ -4,11 +4,32 @@ import "./FooterWithCarousel.css";
 import Chatbot from "./Chatbot";
 import { useSelector } from "react-redux";
 const cities = [
-  "Delhi", "Gurgaon", "Faridabad", "Chandigarh", "Ghaziabad", "Noida",
-    "Kolkata", "Mumbai", "Pune", "Varanasi", "Mathura", "Patna",
-    "Meerut", "Jaipur", "Ranchi", "Lucknow", "Ahmedabad", "Dehradun",
-    "Jammu", "Gwalior", "Bhopal", "Indore", "Hyderabad", "Bengaluru",
-    "Mysore", "Allahabad"
+  "Delhi",
+  "Gurgaon",
+  "Faridabad",
+  "Chandigarh",
+  "Ghaziabad",
+  "Noida",
+  "Kolkata",
+  "Mumbai",
+  "Pune",
+  "Varanasi",
+  "Mathura",
+  "Patna",
+  "Meerut",
+  "Jaipur",
+  "Ranchi",
+  "Lucknow",
+  "Ahmedabad",
+  "Dehradun",
+  "Jammu",
+  "Gwalior",
+  "Bhopal",
+  "Indore",
+  "Hyderabad",
+  "Bengaluru",
+  "Mysore",
+  "Allahabad",
 ];
 
 const FooterWithCarousel = () => {
@@ -78,7 +99,7 @@ const FooterWithCarousel = () => {
                     Contact
                   </a>
                 </li>
-                
+
                 <li>
                   <a
                     href="/PrivacyPolicy"
@@ -158,7 +179,7 @@ const FooterWithCarousel = () => {
               <p>
                 Address:{" "}
                 <a
-                  href="mailto:info@urbancompany.com"
+                  href="#"
                   className="hover:text-white transition-colors duration-200"
                 >
                   {links[0]?.address}
@@ -167,16 +188,16 @@ const FooterWithCarousel = () => {
               <p>
                 Email:{" "}
                 <a
-                  href="mailto:info@urbancompany.com"
+                  href={`mailto:${links[0]?.email}`}
                   className="hover:text-white transition-colors duration-200"
                 >
                   {links[0]?.email}
                 </a>
               </p>
               <p>
-                Phone:{" "}
+                Phone:
                 <a
-                  href="tel:+1234567890"
+                  href={`mailto:${links[0]?.phone}`}
                   className="transition-colors duration-200 hover:text-white pointer-events-auto md:pointer-events-none md:text-inherit md:no-underline"
                 >
                   {links[0]?.phone}

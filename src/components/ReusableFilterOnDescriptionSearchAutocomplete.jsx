@@ -57,7 +57,7 @@ const ReusableFilterOnDescriptionSearchAutocomplete = ({
       });
 
       onItemSelected(newFiltered);
-      console.log("Selected specific vendor/service:", newFiltered);
+      
     },
     [onItemSelected]
   );

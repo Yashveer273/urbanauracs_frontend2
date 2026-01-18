@@ -170,7 +170,7 @@ const CleaningService = () => {
     setSearchedServiceName(SearchedServiceName);
   };
   const FilterOnDescription = (selectedItem) => {
-    console.log("Filtering on description:", selectedItem);
+
     setFilteredVendors(selectedItem);
   };
 
@@ -235,8 +235,7 @@ const CleaningService = () => {
                 // Save back to localStorage
                 localStorage.setItem("users", JSON.stringify(updatedUsers));
 
-                // Log the newly added user
-                console.log("User added to localStorage:", userData);
+             
               }
 
               // Also set authenticated user for current session

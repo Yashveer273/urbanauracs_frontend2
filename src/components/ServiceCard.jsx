@@ -42,7 +42,7 @@ const [imageLoaded, setImageLoaded] = useState(false);
  
 
   const handleAddToCart = () => {
-    console.log(user.length < 1);
+ 
     if (user.length < 1 && !isAuthenticated) {
       // Not logged in → open auth popup
       dispatch(setAuthPopupOpen(true));

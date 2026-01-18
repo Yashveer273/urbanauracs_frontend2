@@ -31,7 +31,7 @@ const AccountMenu = () => {
 
     if (res?.status === 200 && res.data.orders?.length > 0) {
       const formatted = res.data.orders.map((order) => {
-        console.log(order);
+     
         const cartItems = order?.product_info?.cart || [];
         const totalFee = order?.product_info?.cart?.reduce(
           (sum, item) =>
@@ -133,7 +133,7 @@ const AccountMenu = () => {
   };
 
   // const action = (res, data) => {
-  //   console.log(res, data);
+
   //   if (res.data.status == "success") {
   //     if (user.userId) {
   //       callOrderHistory();

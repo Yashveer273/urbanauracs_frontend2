@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
-
-// The main CityCards component
 export default function CityCards({setMyCity}) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  // eslint-disable-next-line no-unused-vars
   const [selectedCityName, setSelectedCityName] = useState(null);
 
   const cities = [
@@ -25,7 +24,7 @@ export default function CityCards({setMyCity}) {
     setIsModalOpen(false);
    
     setMyCity(cityName);
-    console.log("Selected City:",selectedCityName, cityName);
+  
   };
 
   return (

@@ -94,9 +94,6 @@ export const handleCopy = async (header, body) => {
 
     // 🔹 Get download URL
     const downloadURL = await getDownloadURL(storageRef);
-
-    console.log("✅ Invoice URL:", downloadURL);
-
     return downloadURL;
   } catch (error) {
     console.error("❌ Upload failed:", error);

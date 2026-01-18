@@ -24,21 +24,21 @@ const ReusableSearchAutocomplete = ({ data, onItemSelected }) => {
     const newValue = event.target.value;
     setSearchTerm(newValue);
    setIsDropdownOpen(true);
-    console.log("Input Change:", newValue);
+   
   };
 
   // Handler for clearing the input
   const handleClear = () => {
     setSearchTerm('');
     setIsDropdownOpen(true);
-    console.log("Input Cleared:", "");
+   
   };
 
   const handleItemSelect = useCallback((item) => {
     setSearchTerm(item.name); 
      setIsDropdownOpen(false); 
     onItemSelected(item,item.name); 
-       console.log("Selected Item and called external function:", item);
+ 
   }, [onItemSelected]);
 
    const handleFocus = () => {

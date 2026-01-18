@@ -57,7 +57,7 @@ Our team will contact you shortly for confirmation.`;
     hasRun.current = true;
 
     const saveOrder = async () => {
-      console.log(order);
+     
       try {
         if (
           !order ||
@@ -65,8 +65,7 @@ Our team will contact you shortly for confirmation.`;
           Math.round(Number(order.advance) * 100) !==
             Math.round(Number(amount) * 100)
         ) {
-          console.log("Order id", id);
-          console.log("Order orderId", order.orderId);
+        
           setStatus("error");
           return;
         }
