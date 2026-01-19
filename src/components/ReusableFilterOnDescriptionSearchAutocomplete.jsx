@@ -4,6 +4,7 @@ import { Search, X, Filter } from "lucide-react";
 const ReusableFilterOnDescriptionSearchAutocomplete = ({
   data,
   onItemSelected,
+  BookingCity
 }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -18,6 +19,7 @@ const ReusableFilterOnDescriptionSearchAutocomplete = ({
         const matchedServices = vendor.services.filter(
           (service) =>
             service.description &&
+       vendor.location===  BookingCity && 
             service.description.toLowerCase().includes(lowerCaseSearch)
         );
         return { ...vendor, services: matchedServices };

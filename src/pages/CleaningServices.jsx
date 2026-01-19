@@ -14,7 +14,6 @@ import Portal from "../components/Portal";
 import CartSidebar from "../components/CartSidebar";
 import AuthPopup from "../components/AuthPopup";
 
-
 import { loginUser } from "../store/userSlice";
 import { services } from "../data/ProductData";
 import { fetchProdDataDESC } from "../API";
@@ -59,24 +58,35 @@ const CleaningService = () => {
         const Data = serviceData.data.filter(
           (Product) =>
             Product.location?.trim().toLowerCase().replace(/\s+/g, "") ===
-            BookingCity.trim().toLowerCase().replace(/\s+/g, "")
+            BookingCity.trim().toLowerCase().replace(/\s+/g, ""),
         );
 
-        const formattedServices = services.map((s, index) => ({
-          id: index,
-          name: s.ServiceName,
-          data: s.data,
-        }));
+        const formattedServices = services
+          .map((s, index) => {
+            const delhiData = s.data.filter(
+              (item) => item.location === BookingCity,
+            );
+
+            if (delhiData.length === 0) return null;
+
+            return {
+              id: index,
+              name: s.ServiceName,
+              data: delhiData,
+            };
+          })
+          .filter(Boolean); // removes null entries
         setAllVendors(Data);
         setFilteredVendors(Data);
         SetInitialSpells(formattedServices);
+       
       }
     } else {
       let serviceData = services.find((s) => s.ServiceName == serviceName);
       const Data = serviceData.data.filter(
         (Product) =>
           Product.location?.trim().toLowerCase().replace(/\s+/g, "") ===
-          appliedFilters.BookingCity.trim().toLowerCase().replace(/\s+/g, "")
+          appliedFilters.BookingCity.trim().toLowerCase().replace(/\s+/g, ""),
       );
       const formattedServices = services.map((s, index) => ({
         id: index,
@@ -101,7 +111,7 @@ const CleaningService = () => {
       vendorsToFilter = vendorsToFilter.filter(
         (vendor) =>
           vendor.location?.toLowerCase().replace(/\s/g, "") ===
-          activeBookingCities.toLowerCase().replace(/\s/g, "")
+          activeBookingCities.toLowerCase().replace(/\s/g, ""),
       );
     }
 
@@ -139,6 +149,7 @@ const CleaningService = () => {
     setFilteredVendors(vendorsToFilter);
   };
   useEffect(() => {
+    console.log(InitialSpells);
     callUpate();
   }, [allVendors, appliedFilters]);
 
@@ -149,17 +160,17 @@ const CleaningService = () => {
   const uniqueServiceTitles = Array.from(
     new Set(
       allVendors.flatMap((vendor) =>
-        vendor.services.map((service) => service.title)
-      )
-    )
+        vendor.services.map((service) => service.title),
+      ),
+    ),
   );
 
   const uniqueApartmentSizes = Array.from(
     new Set(
       allVendors.flatMap((vendor) =>
-        vendor.services.map((service) => service.description)
-      )
-    )
+        vendor.services.map((service) => service.description),
+      ),
+    ),
   );
 
   const noVendorsFound = allVendors.length === 0;
@@ -170,7 +181,6 @@ const CleaningService = () => {
     setSearchedServiceName(SearchedServiceName);
   };
   const FilterOnDescription = (selectedItem) => {
-
     setFilteredVendors(selectedItem);
   };
 
@@ -221,12 +231,12 @@ const CleaningService = () => {
 
               // Check for duplicates by mobile number
               const duplicateUser = existingUsers.find(
-                (user) => user.mobile === userData.mobile
+                (user) => user.mobile === userData.mobile,
               );
 
               if (duplicateUser) {
                 console.warn(
-                  `User with mobile ${userData.mobile} already exists in localStorage`
+                  `User with mobile ${userData.mobile} already exists in localStorage`,
                 );
               } else {
                 // Add the new user
@@ -234,8 +244,6 @@ const CleaningService = () => {
 
                 // Save back to localStorage
                 localStorage.setItem("users", JSON.stringify(updatedUsers));
-
-             
               }
 
               // Also set authenticated user for current session
@@ -251,13 +259,14 @@ const CleaningService = () => {
           <div className="w-full max-w-lg flex flex-col gap-[10px] lg:flex-row lg:gap-[20px]">
             <ReusableSearchAutocomplete
               data={InitialSpells}
+              BookingCity={BookingCity}
               onItemSelected={handleAppItemSelect}
               className="flex-1"
             />
-            
-            
+
             <ReusableFilterOnDescriptionSearchAutocomplete
               data={allVendors}
+              BookingCity={BookingCity}
               onItemSelected={FilterOnDescription}
               className="flex-1"
             />
