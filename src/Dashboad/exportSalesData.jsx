@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
+import { collection, query, getDocs, orderBy } from 'firebase/firestore';
 import { firestore } from '../firebaseCon'; 
 import * as XLSX from 'xlsx';
 import { Search, FileSpreadsheet, Loader2, Download, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -37,18 +37,38 @@ const ExportSalesData = () => {
 
     try {
       const salesRef = collection(firestore, "sales");
+      
+      // NOTE: We primarily sort by date_time. 
+      // Since 'location_booking_time' is inside an array (cart), we cannot filter it in the DB query easily.
+      // We fetch the relevant sales (you may remove the 'where' clauses below if you want to search the entire DB for service dates, 
+      // but keeping them improves performance if booking & service dates are usually close).
       const q = query(
         salesRef,
-        where("date_time", ">=", finalStart),
-        where("date_time", "<=", finalEnd + "\uf8ff"),
+        // where("date_time", ">=", finalStart), // Optional: Uncomment to restrict by booking date as well
+        // where("date_time", "<=", finalEnd + "\uf8ff"), // Optional
         orderBy("date_time", "desc")
       );
 
       const querySnapshot = await getDocs(q);
       const rows = [];
+      
       querySnapshot.forEach((doc) => {
-        rows.push({ id: doc.id, ...doc.data() });
+        const data = { id: doc.id, ...doc.data() };
+        const cart = data.product_info?.cart || [];
+        
+        // --- FILTER LOGIC APPLIED ON SERVICE TIME ---
+        // We check if ANY item in the cart has a 'location_booking_time' within the selected range
+        const hasServiceInTime = cart.some(item => {
+           // Assuming location_booking_time is stored as YYYY-MM-DD or similar string comparable format
+           const serviceTime = item.location_booking_time; 
+           return serviceTime >= finalStart && serviceTime <= finalEnd;
+        });
+
+        if (hasServiceInTime) {
+            rows.push(data);
+        }
       });
+      
       setPreviewData(rows);
     } catch (error) {
       console.error("Export Error:", error);
@@ -62,6 +82,13 @@ const ExportSalesData = () => {
     previewData.forEach((sale) => {
       const cart = sale.product_info?.cart || [];
       cart.forEach((item) => {
+        // Double check: Only export lines that match the service time filter?
+        // Or export the whole order if one item matches? 
+        // Below logic exports ALL items if the Order passed the filter. 
+        // To strictly export only matching items, uncomment the 'if' block below.
+        
+        // if (item.location_booking_time < startDate || item.location_booking_time > endDate) return;
+
         const qty = Number(item.quantity || 0);
         const itemPrice = Number(item.item_price || 0);
         const orderAmount = itemPrice * qty;
@@ -110,7 +137,7 @@ const ExportSalesData = () => {
   return (
     <div className="flex flex-col min-h-screen font-sans bg-gray-100 w-full p-4 md:p-8">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-3xl font-bold">Export Panel</h2>
+        <h2 className="text-3xl font-bold">Export Panel (By Service Date)</h2>
         {previewData.length > 0 && (
           <button onClick={exportToExcel} className="flex items-center gap-2 bg-emerald-600 text-white px-6 py-2 rounded-xl shadow-md font-bold">
             <FileSpreadsheet size={20} /> Download Excel
@@ -120,12 +147,20 @@ const ExportSalesData = () => {
 
       {/* Date Filter Box */}
       <div className="bg-white rounded-lg shadow-sm p-4 mb-4 border border-gray-200 grid grid-cols-1 md:grid-cols-3 gap-4">
-          <input type="date" className="p-2 border rounded-md text-sm" value={startDate} onChange={e => setStartDate(e.target.value)} />
-          <input type="date" className="p-2 border rounded-md text-sm" value={endDate} onChange={e => setEndDate(e.target.value)} />
-          <button onClick={fetchData} className="p-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700 font-bold transition-all">
-            {loading ? <Loader2 className="animate-spin inline mr-2" size={18} /> : null}
-            {loading ? "Fetching..." : "Preview Data"}
-          </button>
+          <div className="flex flex-col">
+            <label className="text-xs font-bold text-gray-500 mb-1">Service Start Date</label>
+            <input type="date" className="p-2 border rounded-md text-sm" value={startDate} onChange={e => setStartDate(e.target.value)} />
+          </div>
+          <div className="flex flex-col">
+            <label className="text-xs font-bold text-gray-500 mb-1">Service End Date</label>
+            <input type="date" className="p-2 border rounded-md text-sm" value={endDate} onChange={e => setEndDate(e.target.value)} />
+          </div>
+          <div className="flex items-end">
+            <button onClick={fetchData} className="w-full p-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700 font-bold transition-all h-[38px]">
+                {loading ? <Loader2 className="animate-spin inline mr-2" size={18} /> : null}
+                {loading ? "Fetching..." : "Preview Data"}
+            </button>
+          </div>
       </div>
 
       {/* MAIN TABLE (Summary) */}
@@ -160,7 +195,7 @@ const ExportSalesData = () => {
                 <td className="py-4 px-6 font-bold text-indigo-600">{sale.status || "Pending"}</td>
                 <td className="py-4 px-6 text-gray-400">{sale.responsible || "—"}</td>
               </tr>
-            )) : <tr><td colSpan={12} className="py-10 text-center text-gray-300 font-bold">NO SALES DATA</td></tr>}
+            )) : <tr><td colSpan={12} className="py-10 text-center text-gray-300 font-bold">NO SALES FOUND FOR THIS SERVICE DATE RANGE</td></tr>}
           </tbody>
         </table>
         {totalPages > 1 && (
@@ -194,13 +229,18 @@ const ExportSalesData = () => {
               </thead>
               <tbody>
                 {currentDetailData.map((item, i) => (
-                  <tr key={i} className="hover:bg-gray-50 border-b text-sm">
+                  <tr key={i} className={`hover:bg-gray-50 border-b text-sm ${item.location_booking_time >= startDate && item.location_booking_time <= endDate ? 'bg-green-50/50' : ''}`}>
                     <td className="py-4 px-6">{item.product_purchase_id}</td>
                     <td className="py-4 px-6 max-w-[300px]">
                       <div className="font-bold text-gray-700">{item.product_name}</div>
                       <div className="text-xs text-gray-400 italic">{item.description}</div>
                     </td>
-                    <td className="py-4 px-6 text-xs">{item.location_booking_time}<br/>{item.SelectedServiceTime}</td>
+                    <td className="py-4 px-6 text-xs">
+                        <span className={item.location_booking_time >= startDate && item.location_booking_time <= endDate ? 'font-bold text-green-700' : ''}>
+                             {item.location_booking_time}
+                        </span>
+                        <br/>{item.SelectedServiceTime}
+                    </td>
                     <td className="py-4 px-6">{item.bookingAddress}</td>
                     <td className="py-4 px-6">₹{item.item_price}</td>
                     <td className="py-4 px-6 font-bold">{item.quantity}</td>
