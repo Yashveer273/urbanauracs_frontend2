@@ -346,10 +346,16 @@ const handleConfirmBooking = (selectedDate, selectedTime, address) => {
                 </div>
               )}
               <div className="border-t p-2 mt-4 sm:mt-6 text-lg sm:text-xl font-bold text-gray-900">
-                {discount > 0 && (
-                  <p className="text-green-600 font-semibold">
-                    Coupon Discount: -₹{discount}
+                {discount > 0 && (<>
+                <p className="text-green-600 font-semibold">
+                    Coupon Discount: -₹{discount} 
                   </p>
+                  
+                     <p className="text-green-600 font-semibold">
+                    After Discount: -₹{total-discount} 
+                  </p>
+                </>
+                  
                 )}
               </div>
               {appliedCoupon && (

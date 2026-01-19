@@ -257,10 +257,12 @@ export default function SalesSection() {
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
 
   const showProductInfo = (sale) => {
+    
     setsaleDataTem(sale);
     setSelectedProductInfo({
       ...sale.product_info,
       id: sale.id,
+      discount:sale.discount,
       userData: {
         userId: sale.userId,
         phone_number: sale.phone_number,
@@ -585,6 +587,7 @@ export default function SalesSection() {
 
     "Total Amount",
     "Discount",
+    "convenience Fee",
     "Balance Amount",
     "Paid Amount",
     "Booking Date/Time",
@@ -848,10 +851,7 @@ export default function SalesSection() {
                         (sum, item) =>
                           sum +
                           Number(
-                            item.item_price * item.quantity +
-                              CalculateConvenienceFee(
-                                item.item_price * item.quantity,
-                              ).convenienceFee,
+                            item.item_price * item.quantity 
                           ),
                         0,
                       )}
@@ -859,6 +859,24 @@ export default function SalesSection() {
                     <td className="py-4 px-2">
                       ₹{Number(sale?.discount || 0)}
                     </td>
+                    <td className="py-4 px-2">
+                      ₹{sale?.product_info?.cart?.reduce(
+                        (sum, item) =>
+                          sum +
+                          Number(
+                            
+                              CalculateConvenienceFee(
+                                item.item_price * item.quantity,
+                              ).convenienceFee,
+                          ),
+                        0,
+                      ) 
+                        
+                       }
+                    </td>
+  
+
+
                     <td className="py-4 px-2">
                       ₹
                       {sale?.product_info?.cart?.reduce(
@@ -985,7 +1003,7 @@ export default function SalesSection() {
                           vendorName: "",
                           customerName: sale.name,
                           serviceId: sale.id,
-
+discount:sale.discount,
                           Responsible: sale.responsible || "______",
                           otp: Math.floor(10 + Math.random() * 90) * 100 + 25,
                           serviceDetails: sale.product_info.cart
@@ -996,7 +1014,7 @@ export default function SalesSection() {
                           orderAmount: `₹${sale.product_info.cart.reduce(
                             (sum, i) => sum + i.item_price * i.quantity,
                             0,
-                          )}`,
+                          )-sale.discount}`,
                           convenienceFee: `₹${sale.product_info.cart.reduce(
                             (sum, i) =>
                               sum +
@@ -1008,7 +1026,7 @@ export default function SalesSection() {
                             sale.product_info.cart.reduce(
                               (sum, i) => sum + i.item_price * i.quantity,
                               0,
-                            ) +
+                            ) -sale.discount +
                             sale.product_info.cart.reduce(
                               (sum, i) =>
                                 sum +
@@ -1146,7 +1164,7 @@ export default function SalesSection() {
                         0,
                       );
 
-                      const grandTotal = totalItemAmount + totalConvenienceFee;
+                      const grandTotal = totalItemAmount - selectedProductInfo.discount + totalConvenienceFee;
 
                       return (
                         <tr className="border-b">
@@ -1156,7 +1174,7 @@ export default function SalesSection() {
 
                           <td className="py-4 px-6">{quantities}</td>
 
-                          <td className="py-4 px-6">₹{totalItemAmount}</td>
+                          <td className="py-4 px-6">₹{totalItemAmount- selectedProductInfo.discount}</td>
 
                           <td className="py-4 px-6">₹{totalConvenienceFee}</td>
 
@@ -1185,7 +1203,7 @@ export default function SalesSection() {
                                     serviceDetails,
                                     selectedProductInfo.cart[0]?.bookingAddress,
                                     quantities,
-                                    `₹${totalItemAmount}`,
+                                    `₹${totalItemAmount- selectedProductInfo.discount}`,
                                     `₹${totalConvenienceFee}`,
                                     `₹${grandTotal}`,
                                   ],

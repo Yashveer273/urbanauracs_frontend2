@@ -6,10 +6,7 @@ import "./invoice.css";
 
 import { doc, setDoc } from "firebase/firestore";
 import { firestore } from "./firebaseCon";
-import {
-  CalculateConvenienceFee,
-  
-} from "./components/TexFee";
+import { CalculateConvenienceFee } from "./components/TexFee";
 
 import SendToVendorPopup from "./components/SendToVendorPopup";
 import { normalizeDate, uploadInvoice } from "./Dashboad/utility";
@@ -25,9 +22,9 @@ export default function Invoice() {
 
   const openEditRowCard = async (sale) => {
     try {
-      (sale.invoice = invoiceUrl),
-        (sale.generatedInvoiceDate_time = Date.now());
-       
+      ((sale.invoice = invoiceUrl),
+        (sale.generatedInvoiceDate_time = Date.now()));
+
       const saleRef = doc(firestore, "sales", sale.id);
 
       await setDoc(saleRef, sale, { merge: true });
@@ -44,53 +41,70 @@ export default function Invoice() {
   };
 
   const downloadPDF = async () => {
-  const input = invoiceRef.current;
-  if (!input) return;
+    const input = invoiceRef.current;
+    if (!input) return;
 
-  try {
-    setLoading(true);
+    try {
+      setLoading(true);
 
-    const canvas = await html2canvas(input, {
-      scale: 1.2,          // 🔽 reduced scale
-      useCORS: true,
-      backgroundColor: "#ffffff",
-    });
+      const canvas = await html2canvas(input, {
+        scale: 1.2, // 🔽 reduced scale
+        useCORS: true,
+        backgroundColor: "#ffffff",
+      });
 
-    // 🔽 JPEG instead of PNG
-    const imgData = canvas.toDataURL("image/jpeg", 0.65);
+      // 🔽 JPEG instead of PNG
+      const imgData = canvas.toDataURL("image/jpeg", 0.65);
 
-    const pdf = new jsPDF("p", "mm", "a4", true); // compression ON
+      const pdf = new jsPDF("p", "mm", "a4", true); // compression ON
 
-    const imgWidth = 210;
-    const pageHeight = 297;
-    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      const imgWidth = 210;
+      const pageHeight = 297;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-    let heightLeft = imgHeight;
-    let position = 0;
+      let heightLeft = imgHeight;
+      let position = 0;
 
-    pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight, undefined, "FAST");
-    heightLeft -= pageHeight;
-
-    while (heightLeft > 0) {
-      position -= pageHeight;
-      pdf.addPage();
-      pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight, undefined, "FAST");
+      pdf.addImage(
+        imgData,
+        "JPEG",
+        0,
+        position,
+        imgWidth,
+        imgHeight,
+        undefined,
+        "FAST",
+      );
       heightLeft -= pageHeight;
+
+      while (heightLeft > 0) {
+        position -= pageHeight;
+        pdf.addPage();
+        pdf.addImage(
+          imgData,
+          "JPEG",
+          0,
+          position,
+          imgWidth,
+          imgHeight,
+          undefined,
+          "FAST",
+        );
+        heightLeft -= pageHeight;
+      }
+
+      const pdfBlob = pdf.output("blob");
+
+      // 🔹 Upload directly to Firebase
+      const invoiceUrl = await uploadInvoice(pdfBlob, state);
+
+      setInvoiceUrl(invoiceUrl);
+    } catch (err) {
+      console.error("Download failed:", err);
+    } finally {
+      setLoading(false);
     }
-
-    const pdfBlob = pdf.output("blob");
-
-    // 🔹 Upload directly to Firebase
-    const invoiceUrl = await uploadInvoice(pdfBlob, state);
-    
-    setInvoiceUrl(invoiceUrl);
-
-  } catch (err) {
-    console.error("Download failed:", err);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
   const discountAmount = state.discount;
   const [sendToOpen, setSendToOpen] = useState(false);
   const saveInvoice2 = () => {
@@ -195,8 +209,17 @@ export default function Invoice() {
               fontWeight: "bold",
             }}
           >
-            <img src="/logo.png" style={{ height: "50px" }} />
-            <h1 style={{ margin: 0 }}>Urban Aura SERVICES PVT. LTD.</h1>
+            <img
+              src="/logo.png"
+              alt="logo"
+              style={{
+                height: "50px",
+                width: "50px",
+                borderRadius: "50%",
+                objectFit: "cover",
+              }}
+            />
+            <h1 style={{ margin: 0 }}>Urban Aura Services Pvt. Ltd.</h1>
           </div>
         </div>
 
@@ -213,8 +236,8 @@ export default function Invoice() {
             <b>Address:</b> Tauru City, Sohna City, Gurgaon, Haryana, 122105
           </p>
           <p>
-            <b>Phone:</b> +91 - 7015953419  | <b>E-mail:</b>
-            auraservicesurban@gmail.com  | <b>Website:</b>  www.urbanauracs.com/
+            <b>Phone:</b> +91 - 7015953419 | <b>E-mail:</b>
+            auraservicesurban@gmail.com | <b>Website:</b> www.urbanauracs.com/
           </p>
         </div>
 
@@ -388,9 +411,7 @@ export default function Invoice() {
                   </div>
 
                   {/* HSN/SAC Code */}
-                  <div className="border-r border-b  p-2">
-                    {item.duration}
-                  </div>
+                  <div className="border-r border-b  p-2">{item.duration}</div>
 
                   {/* Qty / Hours */}
                   <div className="border-r border-b  p-2 text-center">
@@ -399,7 +420,6 @@ export default function Invoice() {
 
                   {/* Date/Time Slot */}
                   <div className="border-r border-b  p-2">
-                   
                     {item.location_booking_time}
                   </div>
 
@@ -416,127 +436,187 @@ export default function Invoice() {
             )}
           </div>
         </div>
-  {/* Tax Summary */}
-      <div className="max-w-5xl mx-auto  text-[14px] mt-3 ">
+        {/* Tax Summary */}
+        <div className="max-w-5xl mx-auto  text-[14px] mt-3 ">
+          <h2 className="font-bold text-base mb-1 "> Tax Summary</h2>
+          <div className="grid grid-cols-[1fr_250px] border-t border-l ">
+            <div className="grid grid-cols-[2fr_1fr_1.5fr]">
+              {/* Header */}
+              <div className="border-r border-b  p-1 font-bold">
+                Order Details
+              </div>
+              <div className="border-r border-b  p-1 font-bold text-center">
+                Area/Rate
+              </div>
+              <div className="border-r border-b  p-1 font-bold text-right">
+                Amount (₹)
+              </div>
 
-         <h2 className="font-bold text-base mb-1 ">  Tax Summary</h2>
-  <div className="grid grid-cols-[1fr_250px] border-t border-l ">
-    
-   
-    <div className="grid grid-cols-[2fr_1fr_1.5fr]">
-      {/* Header */}
-      <div className="border-r border-b  p-1 font-bold">Order Details</div>
-      <div className="border-r border-b  p-1 font-bold text-center">Area/Rate</div>
-      <div className="border-r border-b  p-1 font-bold text-right">Amount (₹)</div>
+              {/* Order Amount */}
+              <div className="border-r border-b  p-1">Order Amount:-</div>
+              <div className="border-r border-b  p-1"></div>
+              <div className="border-r border-b  p-1 text-right">
+                {cart?.reduce(
+                  (sum, item) => sum + Number(item.item_price * item.quantity),
+                  0,
+                )}
+              </div>
 
-      {/* Order Amount */}
-      <div className="border-r border-b  p-1">Order Amount:-</div>
-      <div className="border-r border-b  p-1"></div>
-      <div className="border-r border-b  p-1 text-right">
-        {cart?.reduce((sum, item) => sum + Number(item.item_price * item.quantity), 0)}
-      </div>
+              {/* Convenience Fee */}
+              <div className="border-r border-b  p-1">Convenience Fee:-</div>
+              <div className="border-r border-b  p-1"></div>
+              <div className="border-r border-b  p-1 text-right">
+                {cart?.reduce(
+                  (sum, item) =>
+                    sum +
+                    Number(
+                      CalculateConvenienceFee(item.item_price * item.quantity)
+                        .convenienceFee,
+                    ),
+                  0,
+                )}
+              </div>
 
-      {/* Convenience Fee */}
-      <div className="border-r border-b  p-1">Convenience Fee:-</div>
-      <div className="border-r border-b  p-1"></div>
-      <div className="border-r border-b  p-1 text-right">
-        {cart?.reduce((sum, item) => sum + Number(CalculateConvenienceFee(item.item_price * item.quantity).convenienceFee), 0)}
-      </div>
+              {/* NEW: Discount Amount Row */}
+              <div className="border-r border-b  p-1">Discount Amount:-</div>
+              <div className="border-r border-b  p-1"></div>
+              <div className="border-r border-b  p-1 text-right ">
+                - ₹{Number(discountAmount || 0).toLocaleString()}
+              </div>
 
-      {/* NEW: Discount Amount Row */}
-      <div className="border-r border-b  p-1">Discount Amount:-</div>
-      <div className="border-r border-b  p-1"></div>
-      <div className="border-r border-b  p-1 text-right ">
-        - ₹{Number(discountAmount || 0).toLocaleString()}
-      </div>
+              {/* Total */}
+              <div className="border-r border-b  p-1 font-bold">Total:-</div>
+              <div className="border-r border-b  p-1"></div>
+              <div className="border-r border-b  p-1 text-right font-bold">
+                ₹{" "}
+                {Math.round(
+                  cart?.reduce(
+                    (sum, item) =>
+                      sum +
+                      Number(
+                        item.item_price * item.quantity +
+                          CalculateConvenienceFee(
+                            item.item_price * item.quantity,
+                          ).convenienceFee,
+                      ),
+                    0,
+                  ) - Number(discountAmount || 0),
+                ).toLocaleString()}
+              </div>
+            </div>
 
-      {/* Total */}
-      <div className="border-r border-b  p-1 font-bold">Total:-</div>
-      <div className="border-r border-b  p-1"></div>
-      <div className="border-r border-b  p-1 text-right font-bold">
-        ₹ {Math.round(
-          cart?.reduce((sum, item) => sum + Number(item.item_price * item.quantity + CalculateConvenienceFee(item.item_price * item.quantity).convenienceFee), 0) - Number(discountAmount || 0)
-        ).toLocaleString()}
-      </div>
-    </div>
+            {/* Signature Area with Image */}
+            <div className="border-r border-b  flex items-center justify-center p-2">
+              <img src="/stamp.png" alt="Stamp" className="w-32 h-auto" />
+            </div>
+          </div>
 
-    {/* Signature Area with Image */}
-    <div className="border-r border-b  flex items-center justify-center p-2">
-      <img src="/stamp.png" alt="Stamp" className="w-32 h-auto" />
-   
-    </div>
-  </div>
-
-  {/* Amount in Words */}
-  <div className="border-l border-r border-b  p-2  text-[13px]">
-    (Amount in words: Rupees{" "}
-    <span className="capitalize">
-      {numberToIndianWords(
-        Math.round(
-          cart?.reduce((sum, item) => sum + Number(item.item_price * item.quantity + CalculateConvenienceFee(item.item_price * item.quantity).convenienceFee), 0) - Number(discountAmount || 0)
-        )
-      )}
-    </span>{" "}
-    Only)
-  </div>
-</div>
+          {/* Amount in Words */}
+          <div className="border-l border-r border-b  p-2  text-[13px]">
+            (Amount in words: Rupees{" "}
+            <span className="capitalize">
+              {numberToIndianWords(
+                Math.round(
+                  cart?.reduce(
+                    (sum, item) =>
+                      sum +
+                      Number(
+                        item.item_price * item.quantity +
+                          CalculateConvenienceFee(
+                            item.item_price * item.quantity,
+                          ).convenienceFee,
+                      ),
+                    0,
+                  ) - Number(discountAmount || 0),
+                ),
+              )}
+            </span>{" "}
+            Only)
+          </div>
+        </div>
 
         {/* Bank Details */}
-      <div className="max-w-5xl mx-auto text-[14px]">
-      
-      {/* 1. COMPANY & BANK DETAILS SECTION */}
-      <div className="grid grid-cols-2 border-t border-l ">
-        {/* Company Details Column */}
-        <div className="border-r border-b  p-3">
-          <h3 className="font-bold  mb-2 text-base">Company Details</h3>
-          <div className="space-y-1">
-            <p><span className="font-bold">Name:</span> Urban Aura Services Private Limited</p>
-            <p><span className="font-bold">CIN:</span> U81210HR2025PTC136650</p>
-            <p><span className="font-bold">GSTIN:</span> 06AADCU9498E1ZV</p>
-            <p><span className="font-bold">PAN:</span> AADCU9498E</p>
+        <div className="max-w-5xl mx-auto text-[14px]">
+          {/* 1. COMPANY & BANK DETAILS SECTION */}
+          <div className="grid grid-cols-2 border-t border-l ">
+            {/* Company Details Column */}
+            <div className="border-r border-b  p-3">
+              <h3 className="font-bold  mb-2 text-base">Company Details</h3>
+              <div className="space-y-1">
+                <p>
+                  <span className="font-bold">Name:</span> Urban Aura Services
+                  Private Limited
+                </p>
+                <p>
+                  <span className="font-bold">CIN:</span> U81210HR2025PTC136650
+                </p>
+                <p>
+                  <span className="font-bold">GSTIN:</span> 06AADCU9498E1ZV
+                </p>
+                <p>
+                  <span className="font-bold">PAN:</span> AADCU9498E
+                </p>
+              </div>
+            </div>
+
+            {/* Bank Details Column */}
+            <div className="border-r border-b  p-3">
+              <h3 className="font-bold underline mb-2 text-base">
+                Bank Details
+              </h3>
+              <div className="space-y-1">
+                <p>
+                  <span className="font-bold">Bank Name:</span> HDFC Bank
+                </p>
+                <p>
+                  <span className="font-bold">AC Holder:</span> Urban Aura
+                  Services Pvt. Ltd.
+                </p>
+                <p>
+                  <span className="font-bold">Account No.:</span> 50200116397557
+                </p>
+                <p>
+                  <span className="font-bold">IFSC Code:</span> HDFC0005460
+                </p>
+                <p>
+                  <span className="font-bold">Branch Code:</span> 5460
+                </p>
+              </div>
+            </div>
           </div>
-        </div>
 
-        {/* Bank Details Column */}
-        <div className="border-r border-b  p-3">
-          <h3 className="font-bold underline mb-2 text-base">Bank Details</h3>
-          <div className="space-y-1">
-            <p><span className="font-bold">Bank Name:</span> HDFC Bank</p>
-            <p><span className="font-bold">AC Holder:</span> Urban Aura Services Pvt. Ltd.</p>
-            <p><span className="font-bold">Account No.:</span> 50200116397557</p>
-            <p><span className="font-bold">IFSC Code:</span> HDFC0005460</p>
-            <p><span className="font-bold">Branch Code:</span> 5460</p>
+          {/* 2. NOTE SECTION */}
+          <div className="border-l border-r border-b  p-3">
+            <p className="font-bold underline mb-1">Note:-</p>
+            <ol className="list-none space-y-0.5">
+              <li>
+                1. This is a computer-generated Invoice and does not require a
+                physical signature.
+              </li>
+              <li>
+                2. No refund will be entertained once the service has been
+                completed.
+              </li>
+            </ol>
           </div>
-        </div>
-      </div>
 
-      {/* 2. NOTE SECTION */}
-      <div className="border-l border-r border-b  p-3">
-        <p className="font-bold underline mb-1">Note:-</p>
-        <ol className="list-none space-y-0.5">
-          <li>1. This is a computer-generated Invoice and does not require a physical signature.</li>
-          <li>2. No refund will be entertained once the service has been completed.</li>
-        </ol>
-      </div>
-
-      {/* 3. THANK YOU MESSAGE */}
-      {/* <div className="border-l border-r border-b border-black p-3 text-center font-bold">
+          {/* 3. THANK YOU MESSAGE */}
+          {/* <div className="border-l border-r border-b border-black p-3 text-center font-bold">
         Thank you for letting us brighten your space. We look forward to serve you again – Team Urban Aura Services!
       </div> */}
-
-    </div>
+        </div>
       </div>
 
       <SendToVendorPopup
-  open={sendToOpen}
-  onClose={() => setSendToOpen(false)}
-  userNumber={state.phone_number || ""}
-  msg={`Hi from urbanauracs.com this is your invoice generated on ${
-    showSendInvoice?.generatedInvoiceDate_time 
-      ? normalizeDate(showSendInvoice.generatedInvoiceDate_time) 
-      : "N/A"
-  } ${state.invoice || ""}`}
-/>
+        open={sendToOpen}
+        onClose={() => setSendToOpen(false)}
+        userNumber={state.phone_number || ""}
+        msg={`Hi from urbanauracs.com this is your invoice generated on ${
+          showSendInvoice?.generatedInvoiceDate_time
+            ? normalizeDate(showSendInvoice.generatedInvoiceDate_time)
+            : "N/A"
+        } ${state.invoice || ""}`}
+      />
 
       <div className="flex justify-center gap-2 mt-4">
         <button
