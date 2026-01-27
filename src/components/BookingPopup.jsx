@@ -1,20 +1,22 @@
 import React, { useMemo, useState, useEffect } from "react";
-import {
-  FaTimes,
-  FaCalendarAlt,
-  FaClock,
-  FaMapMarkerAlt,
-} from "react-icons/fa";
+import { FaCalendarAlt, FaClock, FaMapMarkerAlt } from "react-icons/fa";
 import Portal from "./Portal";
+import { getBlockedDates } from "../API";
 
-const BookingPopup = ({ onClose, onConfirm }) => {
+const BookingPopup = ({
+  onClose,
+  onConfirm,
+  applyGapCondition = false, // ✅ default false
+}) => {
   const [selectedDate, setSelectedDate] = useState("");
   const [hour, setHour] = useState("");
+  const [open, setOpen] = useState(false);
+  const [blockedDates, setBlockedDates] = useState([]);
 
   const [address, setAddress] = useState("");
   const [rememberAddress, setRememberAddress] = useState(false);
 
-  // today in YYYY-MM-DD to prevent past-date selection
+  /* ---------------- MIN DATE ---------------- */
   const minDate = useMemo(() => {
     const d = new Date();
     const yyyy = d.getFullYear();
@@ -22,176 +24,212 @@ const BookingPopup = ({ onClose, onConfirm }) => {
     const dd = String(d.getDate()).padStart(2, "0");
     return `${yyyy}-${mm}-${dd}`;
   }, []);
+  const loadBlockedDates = async () => {
+    try {
+      const data = await getBlockedDates();
 
-  // Load saved address if rememberAddress was true
+      // convert to YYYY-MM-DD format
+      const formatted = data.map((d) => {
+        const dt = new Date(d.date);
+        return dt.toISOString().split("T")[0];
+      });
+
+      setBlockedDates(formatted);
+    } catch (err) {
+      console.error("Failed to load blocked dates", err);
+    }
+  };
+  /* ---------------- LOAD SAVED ADDRESS ---------------- */
   useEffect(() => {
-    const savedStatus = localStorage.getItem("urberaura-bookingAddressStatus");
-    if (savedStatus) {
+    loadBlockedDates();
+    const saved = localStorage.getItem("urberaura-bookingAddressStatus");
+    if (saved) {
       try {
-        const parsed = JSON.parse(savedStatus);
+        const parsed = JSON.parse(saved);
         if (parsed?.remember && parsed?.address) {
           setRememberAddress(true);
           setAddress(parsed.address);
         }
       } catch (e) {
-        console.error("Error parsing saved booking address", e);
+        console.error("Error parsing saved booking address:", e);
       }
     }
   }, []);
 
+  /* ---------------- ALL SLOTS ---------------- */
+  const timeSlots = [
+    "08:00 AM - 10:00 AM",
+    "10:00 AM - 12:00 PM",
+    "12:00 PM - 02:00 PM",
+    "02:00 PM - 04:00 PM",
+    "04:00 PM - 06:00 PM",
+    "06:00 PM - 08:00 PM",
+  ];
 
+  /* ---------------- CHECK TODAY ---------------- */
+  const isToday = (date) => {
+    const today = new Date();
+    const d = new Date(date);
+    return (
+      d.getDate() === today.getDate() &&
+      d.getMonth() === today.getMonth() &&
+      d.getFullYear() === today.getFullYear()
+    );
+  };
 
-  // Validate 3 hours ahead
-  // ✅ Validation using selected time + ensuring 3h gap
+  /* ---------------- SLOT FILTER LOGIC ---------------- */
+  const filteredSlots = useMemo(() => {
+    // 🔴 If flag is false → behave normally
+    if (!applyGapCondition) {
+      return timeSlots;
+    }
 
+    if (!selectedDate) return [];
+
+    // Future date → show all slots
+    if (!isToday(selectedDate)) {
+      return timeSlots;
+    }
+
+    const currentHour = new Date().getHours();
+
+    // After 2 PM → no same-day slots
+    if (currentHour >= 14) return [];
+
+    if (currentHour < 8) {
+      return [
+        "02:00 PM - 04:00 PM",
+        "04:00 PM - 06:00 PM",
+        "06:00 PM - 08:00 PM",
+      ];
+    }
+
+    if (currentHour < 12) {
+      return ["04:00 PM - 06:00 PM", "06:00 PM - 08:00 PM"];
+    }
+
+    return ["06:00 PM - 08:00 PM"];
+  }, [selectedDate, applyGapCondition]);
+
+  /* ---------------- CLEAR TIME ON DATE CHANGE ---------------- */
+  useEffect(() => {
+    setHour("");
+  }, [selectedDate]);
+
+  /* ---------------- SUBMIT ---------------- */
   const handleSubmit = (e) => {
     e.preventDefault();
-
-    const timeFinal = `${hour}`;
 
     if (rememberAddress) {
       localStorage.setItem(
         "urberaura-bookingAddressStatus",
-        JSON.stringify({ remember: true, address })
+        JSON.stringify({ remember: true, address }),
       );
     } else {
       localStorage.removeItem("urberaura-bookingAddressStatus");
     }
 
-
-    onConfirm(selectedDate, timeFinal, address);
+    // 🔥 Payable / payment logic untouched
+    onConfirm(selectedDate, hour, address);
     onClose();
   };
-const timeSlots = [
-  "8:00 AM - 10:00 AM", "10:00 AM - 12:00 PM", "12:00 PM - 02:00 PM", "02:00 PM - 04:00 PM", "04:00 PM - 06:00 PM", "06:00 PM - 08:00 PM"
-];
- const [open, setOpen] = useState(false);
+
   return (
     <Portal>
-      <div className="fixed inset-0 z-[1003] flex items-center justify-center p-4 font-inter">
-        <div
-          className="absolute inset-0 bg-black/40 backdrop-blur-sm"
-          // onClick={onClose}
-        />
-        <div className="relative w-full max-w-md rounded-2xl overflow-hidden shadow-2xl bg-[#1b1c28] text-white p-10">
-          {/* Close button */}
-          {/* <button
-            className="absolute top-4 right-4 text-gray-400 hover:text-white z-10"
-            onClick={onClose}
-            aria-label="Close booking popup"
-          >
-            <FaTimes size={22} />
-          </button> */}
+      <div className="fixed inset-0 z-[1003] flex items-center justify-center p-4">
+        <div className="absolute inset-0 bg-black/40" />
+        <div className="relative w-full max-w-md bg-[#1b1c28] text-white p-10 rounded-2xl">
+          <h2 className="text-3xl font-bold text-center mb-6">
+            Choose Booking Details
+          </h2>
 
-          {/* Form */}
-          <div className="text-center space-y-6">
-            <h2 className="text-3xl font-bold">Choose Booking Details</h2>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* DATE */}
+            <div
+              className="relative"
+              onClick={() =>
+                document.getElementById("bookingDate").showPicker()
+              }
+            >
+              <FaCalendarAlt className="absolute left-4 top-1/2 -translate-y-1/2" />
+              <input
+                type="date"
+                id="bookingDate"
+                min={minDate}
+                value={selectedDate}
+                onChange={(e) => {
+                  const chosen = e.target.value;
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Date Picker */}
-              <div className="relative" onClick={() => document.getElementById("bookingDate").showPicker()}>
-                <FaCalendarAlt className="absolute top-1/2 left-4 -translate-y-1/2 text-white h-5 w-5" />
-                <input
-                  type="date"
-                  min={minDate}
-                  id="bookingDate"
-                  value={selectedDate}
-                  onChange={(e) => setSelectedDate(e.target.value)}
-                  className="w-full bg-gray-700 rounded-lg pl-12 pr-4 py-3 text-white focus:outline-none"
-                  required
-                />
-              </div>
-<div className="relative w-full">
-    
-      <div
-        className="relative cursor-pointer"
-        onClick={() => setOpen(!open)}
-      >
-        <FaClock className="absolute top-1/2 left-4 -translate-y-1/2 text-white h-5 w-5" />
-        <input
-          type="text"
-          readOnly
-          value={hour || ""}
-          placeholder="Select Time"
-          className="w-full bg-gray-700 rounded-lg pl-12 pr-4 py-3 text-white focus:outline-none cursor-pointer"
-        />
-      </div>
+                  if (blockedDates.includes(chosen)) {
+                    alert("This date is not available for booking.");
+                    setSelectedDate("");
+                    return;
+                  }
 
-      
-      {open && (
-  <div className="absolute z-50 mt-2 w-full bg-gray-900 rounded-xl shadow-xl p-4 max-h-60 overflow-y-auto">
-    <div className="grid grid-cols-3 gap-3">
-      {timeSlots.map((slot, index) => {
-        const [start, end] = slot.split(" - ");
-        return (
-          <button
-            key={index}
-            onClick={() => {
-              setHour(slot);
-              setOpen(false);
-            }}
-            className={`px-3 py-2 rounded-lg transition flex flex-col items-center text-center 
-              ${hour === slot
-                ? "bg-blue-600 text-white shadow-md"
-                : "bg-gray-800 text-gray-300 hover:bg-gray-700"}
-            `}
-          >
-            <span className="text-sm font-semibold">{start}</span>
-            <span className="text-[10px] opacity-70 leading-tight">to</span>
-            <span className="text-sm font-semibold">{end}</span>
-          </button>
-        );
-      })}
-    </div>
-  </div>
-)}
+                  setSelectedDate(chosen);
+                }}
+                className="w-full bg-gray-700 rounded-lg pl-12 pr-4 py-3"
+                required
+              />
+            </div>
 
+            {/* TIME */}
+            <div className="relative">
+              <FaClock className="absolute left-4 top-1/2 -translate-y-1/2" />
+              <input
+                readOnly
+                placeholder="Select Time"
+                value={hour}
+                onClick={() => setOpen(!open)}
+                className="w-full bg-gray-700 rounded-lg pl-12 pr-4 py-3 cursor-pointer"
+              />
 
-    </div>
+              {open && (
+                <div className="absolute mt-2 w-full bg-gray-900 p-4 rounded-xl z-50">
+                  {filteredSlots.length === 0 ? (
+                    <p className="text-sm text-gray-400 text-center">
+                      No slots available
+                    </p>
+                  ) : (
+                    <div className="grid grid-cols-3 gap-3">
+                      {filteredSlots.map((slot, i) => (
+                        <button
+                          type="button"
+                          key={i}
+                          onClick={() => {
+                            setHour(slot);
+                            setOpen(false);
+                          }}
+                          className="bg-gray-800 hover:bg-gray-700 rounded-lg px-3 py-2 text-sm"
+                        >
+                          {slot}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
 
-              {/* Address Field */}
-              <div className="relative">
-                <FaMapMarkerAlt className="absolute top-1/2 left-4 -translate-y-1/2 text-gray-400 h-5 w-5" />
-                <input
-                  type="text"
-                  name="bookingAddress" 
-                  placeholder="Enter Booking Address"
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  className="w-full bg-gray-700 rounded-lg pl-12 pr-4 py-3 text-white focus:outline-none"
-                  required
-                />
-              </div>
+            {/* ADDRESS */}
+            <div className="relative">
+              <FaMapMarkerAlt className="absolute left-4 top-1/2 -translate-y-1/2" />
+              <input
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                placeholder="Enter Booking Address"
+                className="w-full bg-gray-700 rounded-lg pl-12 pr-4 py-3"
+                required
+              />
+            </div>
 
-              {/* Remember Address */}
-              <div className="flex items-center gap-2 text-left">
-                <input
-                  type="checkbox"
-                  id="rememberAddress"
-                  checked={rememberAddress}
-                  onChange={(e) => setRememberAddress(e.target.checked)}
-                  className="h-4 w-4"
-                />
-                <label
-                  htmlFor="rememberAddress"
-                  className="text-sm text-gray-300"
-                >
-                  Remember my address for next booking
-                </label>
-              </div>
-              <p className="text-sm text-[#fbbf24] bg-[#2c2d34] px-3 py-2 rounded-lg text-center border border-[#fbbf24]/40">
-                The team will be reaching your place within the time slot.
-              </p>
-
-              {/* Submit */}
-              <button
-                type="submit"
-                className="w-full bg-[#f87559] text-white py-3 rounded-lg font-bold text-lg hover:bg-[#ff8f6e] transition-colors"
-              >
-                Confirm Booking
-              </button>
-            </form>
-          </div>
+            <button
+              type="submit"
+              className="w-full bg-[#f87559] py-3 rounded-lg font-bold"
+            >
+              Confirm Booking
+            </button>
+          </form>
         </div>
       </div>
     </Portal>

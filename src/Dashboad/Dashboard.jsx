@@ -27,6 +27,7 @@ import { cities } from "./utility";
 
 import ExportSalesData from "./exportSalesData";
 import DashboardNavigator from "./DashboardNavigator";
+import BlockedDatesTable from "./blockDate";
 const HomeIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -1070,10 +1071,53 @@ const Dashboard = () => {
           <div className="">
             {tagAccess.includes("Website Content") ||
             tagAccess.includes("Admin") ? (
-              <div className=" flex">
-                <HomeCarousalAssetController />
-                <SocialLinksManager />
-              </div>
+              <div
+  style={{
+    display: "grid",
+    gridTemplateColumns: "repeat(2, 1fr)", // two equal columns
+    gridAutoRows: "minmax(100px, auto)",
+    gap: "16px",
+    padding: "16px",
+  }}
+>
+  {/* First block */}
+  <div
+    style={{
+      background: "#fff",
+      borderRadius: "8px",
+      boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+      padding: "16px",
+    }}
+  >
+    <HomeCarousalAssetController />
+  </div>
+
+  {/* Second block */}
+  <div
+    style={{
+      background: "#fff",
+      borderRadius: "8px",
+      boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+      padding: "16px",
+    }}
+  >
+    <SocialLinksManager />
+  </div>
+
+  {/* Third block spans 2 columns */}
+  <div
+    style={{
+      background: "#fff",
+      borderRadius: "8px",
+      boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+      padding: "16px",
+      gridColumn: "1 / -1", // span all columns
+    }}
+  >
+    <BlockedDatesTable />
+  </div>
+</div>
+
             ) : (
               <LockedBox
                 className="flex justify-center items-center h-screen"

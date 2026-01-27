@@ -25,7 +25,7 @@ const ServiceManager = ({
     <>
       {/* ================= SERVICES LIST ================= */}
       {!selectedService && (
-        <div className="max-w-4xl mx-auto transition-opacity duration-500">
+        <div className="max-w-6xl mx-auto transition-opacity duration-500">
           <h2 className="text-3xl font-bold text-gray-800 mb-6">
             Service Categories
           </h2>

@@ -330,3 +330,49 @@ export const sendToVenderUserPersonwhatsapp = async (numbersPayload,msgPayload) 
     return error;
   }
 };
+
+
+
+// 🔹 Get all blocked dates
+export const getBlockedDates = async () => {
+  try {
+    const res = await axios.get(`${API_BASE_URL}/api/block-dates`);
+    return res.data;
+  } catch (err) {
+    console.error("Error fetching blocked dates:", err);
+    return [];
+  }
+};
+
+// 🔹 Add a new blocked date
+export const addBlockedDate = async (date) => {
+  try {
+    const res = await axios.post(`${API_BASE_URL}/api/block-dates`, { date });
+    return res.data;
+  } catch (err) {
+    console.error("Error adding blocked date:", err.response?.data || err.message);
+    throw err;
+  }
+};
+
+// 🔹 Edit a blocked date
+export const editBlockedDate = async (id, date, blocked) => {
+  try {
+    const res = await axios.put(`${API_BASE_URL}/api/block-dates/${id}`, { date, blocked });
+    return res.data;
+  } catch (err) {
+    console.error("Error editing blocked date:", err.response?.data || err.message);
+    throw err;
+  }
+};
+
+// 🔹 Delete a blocked date
+export const deleteBlockedDate = async (id) => {
+  try {
+    const res = await axios.delete(`${API_BASE_URL}/api/block-dates/${id}`);
+    return res.data;
+  } catch (err) {
+    console.error("Error deleting blocked date:", err.response?.data || err.message);
+    throw err;
+  }
+};

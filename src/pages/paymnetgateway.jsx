@@ -284,6 +284,7 @@ const handleConfirmBooking = (selectedDate, selectedTime, address) => {
           <BookingPopup
             onClose={() => setIsBookingPopupOpen(false)}
             onConfirm={handleConfirmBooking}
+            applyGapCondition={true}
           />
         )}
         <div className="bg-white min-h-screen shadow-lg p-4 sm:p-6 md:p-10 w-full">
@@ -350,7 +351,6 @@ const handleConfirmBooking = (selectedDate, selectedTime, address) => {
                 <p className="text-green-600 font-semibold">
                     Coupon Discount: -₹{discount} 
                   </p>
-                  
                      <p className="text-green-600 font-semibold">
                     After Discount: -₹{total-discount} 
                   </p>

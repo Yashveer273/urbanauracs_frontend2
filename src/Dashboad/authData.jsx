@@ -292,9 +292,9 @@ useEffect(() => {
 
   // Render the component
   return (
-    <div className="flex flex-col min-h-screen font-sans bg-gray-100">
+     <div className="max-w-12xl mx-auto transition-opacity duration-500">
       {/* Main Content */}
-      <main className="flex-1 p-4 md:p-8 overflow-auto">
+      <main className="flex-1  md:p-8 overflow-auto">
         <h2 className="text-3xl font-bold text-gray-800 mb-6">
           User Authentication Dashboard
         </h2>

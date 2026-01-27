@@ -204,12 +204,13 @@ export default function SalesSection() {
       )
         return false;
       if (
+        
         filters.responsible &&
-        !sale.responsible
-          ?.toLowerCase()
-          .includes(filters.responsible.toLowerCase())
+        sale.responsible
+          ?.toLowerCase()==filters.responsible.toLowerCase()
+          
       )
-        return false;
+        return true;
 
       if (filters.status) {
         const saleStatus = sale.status?.toLowerCase() || "";
@@ -708,15 +709,24 @@ export default function SalesSection() {
               className="p-2 border rounded-md text-sm"
             />
 
-            <input
-              type="text"
-              placeholder="Responsible Person"
-              value={filters.responsible}
-              onChange={(e) =>
-                setFilters((p) => ({ ...p, responsible: e.target.value }))
-              }
-              className="p-2 border rounded-md text-sm"
-            />
+           <select
+  value={filters.responsible}
+  onChange={(e) =>
+    setFilters((p) => ({ ...p, responsible: e.target.value }))
+  }
+  className="p-2 border rounded-md text-sm"
+>
+  <option value="">----Select----</option>
+  {responsiblePersons.map((person) => (
+    <option
+      key={person._id}
+      value={person.ResponsiblePersonName}
+    > 
+      {person.ResponsiblePersonName}
+    </option>
+  ))}
+</select>
+
             <input
               type="date"
               value={filters.onDate}
