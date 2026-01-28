@@ -347,6 +347,7 @@ export const getBlockedDates = async () => {
 // 🔹 Add a new blocked date
 export const addBlockedDate = async (date) => {
   try {
+    console.log("Adding blocked date:", date)
     const res = await axios.post(`${API_BASE_URL}/api/block-dates`, { date });
     return res.data;
   } catch (err) {

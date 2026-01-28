@@ -204,11 +204,8 @@ export default function SalesSection() {
       )
         return false;
       if (
-        
         filters.responsible &&
-        sale.responsible
-          ?.toLowerCase()==filters.responsible.toLowerCase()
-          
+        sale.responsible?.toLowerCase() == filters.responsible.toLowerCase()
       )
         return true;
 
@@ -258,12 +255,11 @@ export default function SalesSection() {
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
 
   const showProductInfo = (sale) => {
-    
     setsaleDataTem(sale);
     setSelectedProductInfo({
       ...sale.product_info,
       id: sale.id,
-      discount:sale.discount,
+      discount: sale.discount,
       userData: {
         userId: sale.userId,
         phone_number: sale.phone_number,
@@ -392,7 +388,7 @@ export default function SalesSection() {
   const saveCartEdit = async (data) => {
     try {
       // SelectedServiceTime
-      console.log(data.productData)
+      console.log(data.productData);
       const saleId = data.saleId;
       const res = await axios.put(
         `${API_BASE_URL}/editSalesItem/${saleId}/cart`,
@@ -699,33 +695,42 @@ export default function SalesSection() {
               className="p-2 border rounded-md text-sm"
             />
 
-            <input
-              type="text"
-              placeholder="Status"
+            <select
               value={filters.status}
               onChange={(e) =>
                 setFilters((p) => ({ ...p, status: e.target.value }))
               }
               className="p-2 border rounded-md text-sm"
-            />
+            >
+              <option value="">----Select----</option>
+              {[
+                "Pending",
+                "Confirmed",
+                "Started",
+                "Completed",
+                "Payment Collected",
+                "Cancelled",
+              ].map((status) => (
+                <option key={status} value={status}>
+                  {status}
+                </option>
+              ))}
+            </select>
 
-           <select
-  value={filters.responsible}
-  onChange={(e) =>
-    setFilters((p) => ({ ...p, responsible: e.target.value }))
-  }
-  className="p-2 border rounded-md text-sm"
->
-  <option value="">----Select----</option>
-  {responsiblePersons.map((person) => (
-    <option
-      key={person._id}
-      value={person.ResponsiblePersonName}
-    > 
-      {person.ResponsiblePersonName}
-    </option>
-  ))}
-</select>
+            <select
+              value={filters.responsible}
+              onChange={(e) =>
+                setFilters((p) => ({ ...p, responsible: e.target.value }))
+              }
+              className="p-2 border rounded-md text-sm"
+            >
+              <option value="">----Select----</option>
+              {responsiblePersons.map((person) => (
+                <option key={person._id} value={person.ResponsiblePersonName}>
+                  {person.ResponsiblePersonName}
+                </option>
+              ))}
+            </select>
 
             <input
               type="date"
@@ -859,10 +864,7 @@ export default function SalesSection() {
                       ₹
                       {sale?.product_info?.cart?.reduce(
                         (sum, item) =>
-                          sum +
-                          Number(
-                            item.item_price * item.quantity 
-                          ),
+                          sum + Number(item.item_price * item.quantity),
                         0,
                       )}
                     </td>
@@ -870,22 +872,18 @@ export default function SalesSection() {
                       ₹{Number(sale?.discount || 0)}
                     </td>
                     <td className="py-4 px-2">
-                      ₹{sale?.product_info?.cart?.reduce(
+                      ₹
+                      {sale?.product_info?.cart?.reduce(
                         (sum, item) =>
                           sum +
                           Number(
-                            
-                              CalculateConvenienceFee(
-                                item.item_price * item.quantity,
-                              ).convenienceFee,
+                            CalculateConvenienceFee(
+                              item.item_price * item.quantity,
+                            ).convenienceFee,
                           ),
                         0,
-                      ) 
-                        
-                       }
+                      )}
                     </td>
-  
-
 
                     <td className="py-4 px-2">
                       ₹
@@ -1013,7 +1011,7 @@ export default function SalesSection() {
                           vendorName: "",
                           customerName: sale.name,
                           serviceId: sale.id,
-discount:sale.discount,
+                          discount: sale.discount,
                           Responsible: sale.responsible || "______",
                           otp: Math.floor(10 + Math.random() * 90) * 100 + 25,
                           serviceDetails: sale.product_info.cart
@@ -1021,10 +1019,12 @@ discount:sale.discount,
                             .join(", "),
                           dateTime: `${sale.product_info.cart[0]?.location_booking_time} || ${sale.product_info.cart[0]?.SelectedServiceTime}`,
                           address: sale.product_info.cart[0]?.bookingAddress,
-                          orderAmount: `₹${sale.product_info.cart.reduce(
-                            (sum, i) => sum + i.item_price * i.quantity,
-                            0,
-                          )-sale.discount}`,
+                          orderAmount: `₹${
+                            sale.product_info.cart.reduce(
+                              (sum, i) => sum + i.item_price * i.quantity,
+                              0,
+                            ) - sale.discount
+                          }`,
                           convenienceFee: `₹${sale.product_info.cart.reduce(
                             (sum, i) =>
                               sum +
@@ -1036,7 +1036,8 @@ discount:sale.discount,
                             sale.product_info.cart.reduce(
                               (sum, i) => sum + i.item_price * i.quantity,
                               0,
-                            ) -sale.discount +
+                            ) -
+                            sale.discount +
                             sale.product_info.cart.reduce(
                               (sum, i) =>
                                 sum +
@@ -1174,7 +1175,10 @@ discount:sale.discount,
                         0,
                       );
 
-                      const grandTotal = totalItemAmount - selectedProductInfo.discount + totalConvenienceFee;
+                      const grandTotal =
+                        totalItemAmount -
+                        selectedProductInfo.discount +
+                        totalConvenienceFee;
 
                       return (
                         <tr className="border-b">
@@ -1184,7 +1188,9 @@ discount:sale.discount,
 
                           <td className="py-4 px-6">{quantities}</td>
 
-                          <td className="py-4 px-6">₹{totalItemAmount- selectedProductInfo.discount}</td>
+                          <td className="py-4 px-6">
+                            ₹{totalItemAmount - selectedProductInfo.discount}
+                          </td>
 
                           <td className="py-4 px-6">₹{totalConvenienceFee}</td>
 
@@ -1213,7 +1219,7 @@ discount:sale.discount,
                                     serviceDetails,
                                     selectedProductInfo.cart[0]?.bookingAddress,
                                     quantities,
-                                    `₹${totalItemAmount- selectedProductInfo.discount}`,
+                                    `₹${totalItemAmount - selectedProductInfo.discount}`,
                                     `₹${totalConvenienceFee}`,
                                     `₹${grandTotal}`,
                                   ],
