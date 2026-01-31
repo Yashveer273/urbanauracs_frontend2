@@ -20,7 +20,7 @@ import CouponManager from "./coupancord";
 import HomeCarousalAssetController from "./HomeCarousalAssetController";
 import SocialLinksManager from "./socialMedia";
 import VandersSection from "./VandersSection";
-import { User } from "lucide-react";
+
 import { GetVenderData } from "./GetVenderData";
 import ServiceManager from "./ServiceManager";
 import { cities } from "./utility";
@@ -28,42 +28,7 @@ import { cities } from "./utility";
 import ExportSalesData from "./exportSalesData";
 import DashboardNavigator from "./DashboardNavigator";
 import BlockedDatesTable from "./blockDate";
-const HomeIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className="lucide lucide-home"
-  >
-    <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-    <polyline points="9 22 9 12 15 12 15 22" />
-  </svg>
-);
-const Package2Icon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className="lucide lucide-package-2"
-  >
-    <path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9Z" />
-    <path d="m3 9 2.45-4.9A2 2 0 0 1 7.24 3h9.52a2 2 0 0 1 1.79 1.1L21 9" />
-    <line x1="12" x2="12" y1="12" y2="17" />
-    <path d="M12 18h.01" />
-  </svg>
-);
+
 const PlusIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -81,41 +46,7 @@ const PlusIcon = () => (
     <path d="M12 5v14" />
   </svg>
 );
-const SearchIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className="lucide lucide-search"
-  >
-    <circle cx="11" cy="11" r="8" />
-    <path d="m21 21-4.3-4.3" />
-  </svg>
-);
-const LogOutIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className="lucide lucide-log-out"
-  >
-    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-    <polyline points="16 17 21 12 16 7" />
-    <line x1="21" x2="9" y1="12" y2="12" />
-  </svg>
-);
+
 const EditIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -169,95 +100,7 @@ const ChevronLeftIcon = () => (
     <path d="m15 18-6-6 6-6" />
   </svg>
 );
-const ChevronRightIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className="lucide lucude-chevron-right"
-  >
-    <path d="m9 18 6-6-6-6" />
-  </svg>
-);
-const DollarSignIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className="lucide lucide-dollar-sign"
-  >
-    <line x1="12" x2="12" y1="2" y2="22" />
-    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-  </svg>
-);
-const FileTextIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className="lucide lucide-file-text"
-  >
-    <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
-    <polyline points="14 2 14 8 20 8" />
-    <line x1="16" x2="8" y1="13" y2="13" />
-    <line x1="16" x2="8" y1="17" y2="17" />
-    <line x1="10" x2="8" y1="9" y2="9" />
-  </svg>
-);
-const SettingsIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className="lucide lucide-settings"
-  >
-    <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.122a2 2 0 0 1-1.583 1.939l-1.6.32a2 2 0 0 0-1.742 2.373l-.066.265a2 2 0 0 1-1.637 1.838l-.265.066a2 2 0 0 0-2.373 1.742l-.32 1.6A2 2 0 0 1 2 12.22v.44a2 2 0 0 0 2 2h.122a2 2 0 0 1 1.939 1.583l.32 1.6a2 2 0 0 0 2.373 1.742l.265-.066a2 2 0 0 1 1.838-1.637l.066-.265a2 2 0 0 0 1.742-2.373l1.6-.32A2 2 0 0 1 22 12.22v-.44a2 2 0 0 0-2-2h-.122a2 2 0 0 1-1.939-1.583l-.32-1.6a2 2 0 0 0-2.373-1.742l-.265.066a2 2 0 0 1-1.838 1.637l-.066.265A2 2 0 0 0 12.22 2z" />
-    <circle cx="12" cy="12" r="3" />
-  </svg>
-);
-const LayoutDashboardIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    className="lucide lucide-layout-dashboard"
-  >
-    <rect width="7" height="9" x="3" y="3" rx="1" />
-    <rect width="7" height="5" x="14" y="3" rx="1" />
-    <rect width="7" height="9" x="14" y="12" rx="1" />
-    <rect width="7" height="5" x="3" y="16" rx="1" />
-  </svg>
-);
+
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("services");

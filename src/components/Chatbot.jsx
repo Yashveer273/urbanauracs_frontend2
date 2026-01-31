@@ -79,7 +79,7 @@ export default function Chatbot() {
           createdAt: serverTimestamp(),
         },
       });
-await createUnread("sales");
+await createUnread("Ticket");
       newMessages.push({ from: "bot", text: "✅ We'll get back to you within 24 hours." });
     }
 
