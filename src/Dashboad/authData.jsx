@@ -27,7 +27,7 @@ import { updateUser } from "../API";
 export default function AuthDashboard() {
   // State for search inputs
   const [searchName, setSearchName] = useState("");
-  const [searchEmail, setSearchEmail] = useState("");
+
   const [searchPincode, setSearchPincode] = useState("");
   const [searchMobile, setSearchMobile] = useState("");
   const [authData, setAuthData] = useState([]);
@@ -94,9 +94,7 @@ const filterTable = () => {
       ?.toLowerCase()
       .includes(searchName.toLowerCase());
 
-    const emailMatch = user.email
-      ?.toLowerCase()
-      .includes(searchEmail.toLowerCase());
+
 
     const pincodeMatch = user.pincode?.includes(searchPincode || "");
     const mobileMatch = user.mobileNumber?.includes(searchMobile || "");
@@ -109,7 +107,7 @@ const filterTable = () => {
       (!startDate || (userDate && userDate >= new Date(startDate))) &&
       (!endDate || (userDate && userDate <= new Date(endDate)));
 
-    return nameMatch && emailMatch && pincodeMatch && mobileMatch && dateMatch;
+    return nameMatch  && pincodeMatch && mobileMatch && dateMatch;
   });
 
   // ✅ NO slice here
@@ -268,7 +266,7 @@ useEffect(() => {
 }, [
   authData,
   searchName,
-  searchEmail,
+
   searchPincode,
   searchMobile,
   startDate,
@@ -288,7 +286,28 @@ useEffect(() => {
     };
     getTotalPages();
   }, []);
- 
+ const [selectedLocation, setSelectedLocation] = useState(null);
+
+const overlayStyle = {
+  position: "fixed",
+  top: 0,
+  left: 0,
+  width: "100%",
+  height: "100%",
+  background: "rgba(0,0,0,0.5)",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+};
+
+const modalStyle = {
+  background: "#fff",
+  padding: "20px",
+  borderRadius: "8px",
+  maxWidth: "400px",
+  width: "90%",
+};
+
 
   // Render the component
   return (
@@ -360,13 +379,7 @@ useEffect(() => {
             value={searchName}
             onChange={(e) => setSearchName(e.target.value)}
           />
-          <input
-            type="text"
-            placeholder="Search by Email"
-            className="p-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-            value={searchEmail}
-            onChange={(e) => setSearchEmail(e.target.value)}
-          />
+         
           <input
             type="text"
             placeholder="Search by Pincode"
@@ -401,11 +414,11 @@ useEffect(() => {
         <div className="table-container bg-white p-6 rounded-xl shadow-md overflow-x-auto">
           <table className="w-full text-left table-auto border-collapse">
             <thead>
-              <tr className="bg-gray-100 text-gray-600 uppercase text-sm leading-normal rounded-xl">
+              <tr className="bg-gray-100 text-black uppercase text-sm leading-normal rounded-xl">
                 <th className="py-3 px-6 border-b border-gray-200 rounded-tl-xl">
                   Username
                 </th>
-                <th className="py-3 px-6 border-b border-gray-200">Email</th>
+               
                 <th className="py-3 px-6 border-b border-gray-200">
                   Mobile Number
                 </th>
@@ -426,15 +439,15 @@ useEffect(() => {
                 </th>
               </tr>
             </thead>
-            <tbody className="text-gray-600 text-sm font-light">
+            <tbody className="text-gray text-sm font-bold">
               {/* Map through the current data for the table rows */}
               {currentData.map((user, index) => (
                 <tr
                   key={index}
-                  className="hover:bg-gray-50 border-b border-gray-200"
+                  className="hover:bg-gray-50 border-b border-gray-200 "
                 >
                   <td className="py-4 px-6">{user.username}</td>
-                  <td className="py-4 px-6">{user.email}</td>
+                 
                   <td className="py-4 px-6">{user.mobileNumber}</td>
                   <td className="py-4 px-6">{user.ConfurmWhatsAppMobileNumber}</td>
                   <td className="py-4 px-6">{user.phoneType}</td>
@@ -446,7 +459,17 @@ useEffect(() => {
                   Edit
                 </button>
               </td>
-                  <td className="py-4 px-6">{user.location}</td>
+                  <td className="py-4 px-6">
+  <span
+    onClick={() => setSelectedLocation(user.location)}
+    style={{ cursor: "pointer", color: "#2563eb" }}
+  >
+    {user.location.length > 10
+      ? user.location.slice(0, 10) + "..."
+      : user.location}
+  </span>
+</td>
+
                   <td className="py-4 px-6">{user.pincode}</td>
                   <td className="py-4 px-6">
                     {user.created?.toDate
@@ -518,6 +541,17 @@ useEffect(() => {
           </div>
         </div>
       )}
+      {selectedLocation && (
+  <div style={overlayStyle}>
+    <div style={modalStyle}>
+      
+      <p>{selectedLocation}</p>
+      <button   className="bg-gray-400 text-white px-4 py-2 rounded-lg hover:bg-gray-500"
+              onClick={() => setSelectedLocation(null)}>Close</button>
+    </div>
+  </div>
+)}
+
         </div>
 
         {/* Pagination Buttons */}

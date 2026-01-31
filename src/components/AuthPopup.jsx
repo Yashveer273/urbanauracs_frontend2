@@ -104,7 +104,7 @@ const AuthPopup = ({ onClose }) => {
   const [isLoginView, setIsLoginView] = useState(true);
   // State to manage the current step: false for initial input, true for OTP
   const [showOtpInput, setShowOtpInput] = useState(false);
-  const [loginMethod, setLoginMethod] = useState("email");
+  const [loginMethod, setLoginMethod] = useState("");
   const [MyOtp, setMyOtp] = useState(0);
   const [isVerified, setIsVerified] = useState(false);
   const [isOtpSent, setisOtpSent] = useState(false);
@@ -113,7 +113,7 @@ const AuthPopup = ({ onClose }) => {
   const [loading, setLoading] = useState(false);
   // State for form data
   const [formData, setFormData] = useState({
-    email: "",
+ 
     mobileNumber: "",
     username: "",
     countryCode: "+91",
@@ -312,10 +312,10 @@ const AuthPopup = ({ onClose }) => {
     }
 
     // First step: Validate and simulate sending OTP
-    const { email, username, mobileNumber, pincode, location, phoneType } =
+    const {  username, mobileNumber, pincode, location, phoneType } =
       formData;
     if (
-      !email ||
+ 
       !username ||
       !mobileNumber ||
       !pincode ||
@@ -333,7 +333,7 @@ const AuthPopup = ({ onClose }) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        email,
+      
         username,
         mobileNumber,
         pincode,
@@ -425,8 +425,7 @@ const AuthPopup = ({ onClose }) => {
               {isLoginView && !showOtpInput && (
                 <>
                   <div className="flex justify-center space-x-2 mb-4">
-                    {/* <button type="button" onClick={() => setLoginMethod('email')} className={`px-4 py-2 rounded-full font-semibold transition-colors ${loginMethod === 'email' ? 'bg-[#f87559] text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}>Email</button> */}
-                    <button
+                       <button
                       type="button"
                       onClick={() => setLoginMethod("mobile")}
                       className={`px-4 py-2 rounded-full font-semibold transition-colors ${
@@ -512,18 +511,7 @@ const AuthPopup = ({ onClose }) => {
                       required
                     />
                   </div>
-                  <div className="relative">
-                    <FaEnvelope className="absolute top-1/2 left-4 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-                    <input
-                      type="email"
-                      name="email"
-                      placeholder="Email address"
-                      value={formData.email}
-                      onChange={handleChange}
-                      className="w-full bg-gray-700 rounded-lg pl-12 pr-4 py-3 text-white focus:outline-none"
-                      required
-                    />
-                  </div>
+                 
                   <div className="relative">
                     <FaMapPin className="absolute top-1/2 left-4 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
                     <input
