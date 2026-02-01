@@ -50,20 +50,24 @@ export default function AuthDashboard() {
   const [monthlyRegistrationsData, setMonthlyRegistrationsData] = useState([]);
   const [monthlyGraphTitle, setMonthlyGraphTitle] = useState("");
  const [editingUser, setEditingUser] = useState(null);
-  const [formData, setFormData] = useState({
-    mobileNumber: "",
-    phoneType: "",
-    _id:""
-  });
+const [formData, setFormData] = useState({
+  mobileNumber: "",          // WhatsApp number
+  normalMobileNumber: "",    // NEW normal number
+  phoneType: "",
+  _id: ""
+});
+
   const [loading, setLoading] = useState(false);
-  const handleEditClick = (user) => {
-    setEditingUser(user);
-    setFormData({
-      mobileNumber: user.ConfurmWhatsAppMobileNumber,
-      phoneType: user.phoneType,
-      _id:user._id,
-    });
-  };
+ const handleEditClick = (user) => {
+  setEditingUser(user);
+  setFormData({
+    mobileNumber: user.ConfurmWhatsAppMobileNumber || "",
+    normalMobileNumber: user.normalMobileNumber || "", // NEW
+    phoneType: user.phoneType || "",
+    _id: user._id,
+  });
+};
+
   
   const handleUpdate = async () => {
     if (!editingUser) return;
@@ -97,7 +101,10 @@ const filterTable = () => {
 
 
     const pincodeMatch = user.pincode?.includes(searchPincode || "");
-    const mobileMatch = user.mobileNumber?.includes(searchMobile || "");
+const mobileMatch = user.mobileNumber
+  ? user.mobileNumber.toString().includes(searchMobile || "")
+  : false;
+
 
     const userDate = user.createdAt
       ? new Date(user.createdAt)
@@ -498,16 +505,28 @@ const modalStyle = {
               Edit User: {editingUser.username}
             </h3>
 
-            <label className="block text-gray-600 text-sm mb-2">
-            WhatsApp Mobile Number
-            </label>
-            <input
-              type="number"
-              name="mobileNumber"
-              value={formData.mobileNumber}
-              onChange={handleChange}
-              className="w-full border p-2 rounded mb-3"
-            />
+          <label className="block text-gray-600 text-sm mb-2">
+  WhatsApp Mobile Number
+</label>
+<input
+  type="tel"
+  name="mobileNumber"
+  value={formData.mobileNumber}
+  onChange={handleChange}
+  className="w-full border p-2 rounded mb-3"
+/>
+
+<label className="block text-gray-600 text-sm mb-2">
+  Normal Mobile Number
+</label>
+<input
+  type="tel"
+  name="normalMobileNumber"
+  value={formData.normalMobileNumber}
+  onChange={handleChange}
+  className="w-full border p-2 rounded mb-3"
+/>
+
 
             <label className="block text-gray-600 text-sm mb-2">
               Phone Type

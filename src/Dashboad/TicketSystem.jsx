@@ -75,7 +75,7 @@ export default function TicketDashboard() {
   const pageSize = 6;
 
   const [tickets, setTickets] = useState([]);
-  const [loading, setLoading] = useState(false);
+
 
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -99,7 +99,7 @@ export default function TicketDashboard() {
 
   // 🔹 Fetch specific page
   const fetchPage = async (pageNumber) => {
-    setLoading(true);
+
 
     let q;
 
@@ -136,7 +136,7 @@ export default function TicketDashboard() {
     setPageCursors(newCursors);
 
     setCurrentPage(pageNumber);
-    setLoading(false);
+ 
   };
 
   // 🔹 Update ticket status
