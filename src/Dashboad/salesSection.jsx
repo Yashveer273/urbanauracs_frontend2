@@ -39,6 +39,7 @@ import {
 import { handleCopy, normalizeDate } from "./utility";
 import WhatsAppChatBox from "./whatsappchatopener";
 import WhatsappChatCard from "../components/WhatsAppScreen";
+import { GetVenderData } from "./GetVenderData";
 
 export default function SalesSection() {
   const [salesData, setSalesData] = useState([]);
@@ -55,6 +56,7 @@ export default function SalesSection() {
     dateY: "",
     dateMode: "", // "single" | "range"
     responsible: "",
+    responsibleVendor:""
   });
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -70,6 +72,7 @@ export default function SalesSection() {
     saleId: null,
     productIndex: null,
   });
+const [openChangeResposibleVendor, setOpenChangeResposibleVendor] = useState({status:false,saleId:""});
 
   const [last7DaysData, setLast7DaysData] = useState([]);
   const [responsiblePersons, setResponsiblePersons] = useState([]);
@@ -181,6 +184,7 @@ export default function SalesSection() {
       dateY: "",
       dateMode: "",
       responsible: "",
+      responsibleVendor:""
     };
 
     setFilters(reset);
@@ -208,6 +212,17 @@ export default function SalesSection() {
         sale.responsible?.toLowerCase() == filters.responsible.toLowerCase()
       )
         return true;
+if (
+  filters.responsibleVendor &&
+  sale?.responsibleVendor?.vendorName === filters.responsibleVendor
+) {
+  console.log(
+    filters.responsibleVendor,
+    "filters",
+    sale?.responsibleVendor?.vendorName
+  );
+  return true;
+}
 
       if (filters.status) {
         const saleStatus = sale.status?.toLowerCase() || "";
@@ -241,8 +256,7 @@ export default function SalesSection() {
       }
       if (filters.responsible && !sale.orderId?.includes(filters.orderId))
         return false;
-
-      return true;
+   
     });
 
     setFilteredData(result);
@@ -288,6 +302,20 @@ export default function SalesSection() {
           s.id === saleId ? { ...s, responsible: newPerson } : s,
         ),
       );
+    } catch (e) {
+      console.error("Error updating responsible person:", e);
+    }
+  };
+  const updateResponsibleVendor = async (saleId, responsibleVendor ) => {
+    try {
+      const saleRef = doc(firestore, "sales", saleId);
+      await setDoc(saleRef, { responsibleVendor : responsibleVendor  }, { merge: true });
+      setSalesData((prev) =>
+        prev.map((s) =>
+          s.id === saleId ? { ...s, responsibleVendor : responsibleVendor  } : s,
+        ),
+      );
+      setOpenChangeResposibleVendor(false);
     } catch (e) {
       console.error("Error updating responsible person:", e);
     }
@@ -575,13 +603,9 @@ export default function SalesSection() {
     "S OrderId",
     "Order Id",
     "Edit",
-
     "User Name",
-
     "Phone",
-
     "Details",
-
     "Total Amount",
     "Discount",
     "convenience Fee",
@@ -591,6 +615,7 @@ export default function SalesSection() {
     "Status",
     "Responsible",
     "Comment",
+    "Vendor",
     "create Invoice",
     "WhatsApp Msg",
   ];
@@ -662,142 +687,125 @@ export default function SalesSection() {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm p-3 mb-4">
-          {/* ROW 1 — TEXT + SINGLE DATE */}
-          <div className="grid grid-cols-2 md:grid-cols-6 gap-2 mb-2">
-            <input
-              type="number"
-              placeholder="Phone"
-              value={filters.phone}
-              onChange={(e) =>
-                setFilters((p) => ({ ...p, phone: Number(e.target.value) }))
-              }
-              className="p-2 border rounded-md text-sm"
-            />
+      <div className="bg-white rounded-lg shadow-sm p-4 mb-4">
+  {/* Filter Inputs Grid */}
+  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-4">
+    
+    <div className="flex flex-col gap-1">
+      <label className="text-xs font-medium text-gray-500">Phone</label>
+      <input
+        type="number"
+        placeholder="Phone"
+        value={filters.phone}
+        onChange={(e) => setFilters((p) => ({ ...p, phone: Number(e.target.value) }))}
+        className="p-2 border rounded-md text-sm w-full"
+      />
+    </div>
 
-            <input
-              type="text"
-              placeholder="Name"
-              value={filters.name}
-              onChange={(e) =>
-                setFilters((p) => ({ ...p, name: e.target.value }))
-              }
-              className="p-2 border rounded-md text-sm"
-            />
+    <div className="flex flex-col gap-1">
+      <label className="text-xs font-medium text-gray-500">Name</label>
+      <input
+        type="text"
+        placeholder="Name"
+        value={filters.name}
+        onChange={(e) => setFilters((p) => ({ ...p, name: e.target.value }))}
+        className="p-2 border rounded-md text-sm w-full"
+      />
+    </div>
 
-            <input
-              type="text"
-              placeholder="Order ID"
-              value={filters.orderId}
-              onChange={(e) =>
-                setFilters((p) => ({ ...p, orderId: Number(e.target.value) }))
-              }
-              className="p-2 border rounded-md text-sm"
-            />
+    <div className="flex flex-col gap-1">
+      <label className="text-xs font-medium text-gray-500">Order ID</label>
+      <input
+        type="text"
+        placeholder="Order ID"
+        value={filters.orderId}
+        onChange={(e) => setFilters((p) => ({ ...p, orderId: Number(e.target.value) }))}
+        className="p-2 border rounded-md text-sm w-full"
+      />
+    </div>
 
-            <select
-              value={filters.status}
-              onChange={(e) =>
-                setFilters((p) => ({ ...p, status: e.target.value }))
-              }
-              className="p-2 border rounded-md text-sm"
-            >
-              <option value="">----Select----</option>
-              {[
-                "Pending",
-                "Confirmed",
-                "Started",
-                "Completed",
-                "Payment Collected",
-                "Cancelled",
-              ].map((status) => (
-                <option key={status} value={status}>
-                  {status}
-                </option>
-              ))}
-            </select>
+    <div className="flex flex-col gap-1">
+      <label className="text-xs font-medium text-gray-500">Status</label>
+      <select
+        value={filters.status}
+        onChange={(e) => setFilters((p) => ({ ...p, status: e.target.value }))}
+        className="p-2 border rounded-md text-sm w-full"
+      >
+        <option value="">----Select----</option>
+        {["Pending", "Confirmed", "Started", "Completed", "Payment Collected", "Cancelled"].map((status) => (
+          <option key={status} value={status}>{status}</option>
+        ))}
+      </select>
+    </div>
 
-            <select
-              value={filters.responsible}
-              onChange={(e) =>
-                setFilters((p) => ({ ...p, responsible: e.target.value }))
-              }
-              className="p-2 border rounded-md text-sm"
-            >
-              <option value="">----Select----</option>
-              {responsiblePersons.map((person) => (
-                <option key={person._id} value={person.ResponsiblePersonName}>
-                  {person.ResponsiblePersonName}
-                </option>
-              ))}
-            </select>
+    <div className="flex flex-col gap-1">
+      <label className="text-xs font-medium text-gray-500">Responsible Person</label>
+      <select
+        value={filters.responsible}
+        onChange={(e) => setFilters((p) => ({ ...p, responsible: e.target.value }))}
+        className="p-2 border rounded-md text-sm w-full"
+      >
+        <option value="">----Select----</option>
+        {responsiblePersons.map((person) => (
+          <option key={person._id} value={person.ResponsiblePersonName}>
+            {person.ResponsiblePersonName}
+          </option>
+        ))}
+      </select>
+    </div>
 
-            <input
-              type="date"
-              value={filters.onDate}
-              onChange={(e) =>
-                setFilters((p) => ({
-                  ...p,
-                  onDate: e.target.value,
-                  dateX_To: "",
-                  dateY: "",
-                  dateMode: "single",
-                }))
-              }
-              className="p-2 border rounded-md text-sm"
-            />
+    {/* Vendor Search (Assuming GetVenderData renders a search input) */}
+    <div className="flex flex-col gap-1">
+     
+      <GetVenderData passVender={(data) => setFilters((p) => ({ ...p, responsibleVendor: data.vendorName }))} />
+    </div>
 
-            <button
-              onClick={applyFilters}
-              className="p-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700"
-            >
-              Apply
-            </button>
-          </div>
+    <div className="flex flex-col gap-1">
+      <label className="text-xs font-medium text-gray-500">Single Date</label>
+      <input
+        type="date"
+        value={filters.onDate}
+        onChange={(e) => setFilters((p) => ({ ...p, onDate: e.target.value, dateX_To: "", dateY: "", dateMode: "single" }))}
+        className="p-2 border rounded-md text-sm w-full"
+      />
+    </div>
 
-          {/* ROW 2 — DATE RANGE + CLEAR */}
-          <div className="grid grid-cols-2 md:grid-cols-6 gap-2">
-            <input
-              type="date"
-              value={filters.dateX_To}
-              onChange={(e) =>
-                setFilters((p) => ({
-                  ...p,
-                  dateX_To: e.target.value,
-                  onDate: "",
-                  dateMode: "range",
-                }))
-              }
-              className="p-2 border rounded-md text-sm"
-            />
+    {/* Date Range Group */}
+    <div className="flex flex-col gap-1 md:col-span-1">
+      <label className="text-xs font-medium text-gray-500">Date Range (From - To)</label>
+      <div className="flex gap-2">
+        <input
+          type="date"
+          value={filters.dateX_To}
+          onChange={(e) => setFilters((p) => ({ ...p, dateX_To: e.target.value, onDate: "", dateMode: "range" }))}
+          className="p-2 border rounded-md text-sm w-1/2"
+        />
+        <input
+          type="date"
+          value={filters.dateY}
+          onChange={(e) => setFilters((p) => ({ ...p, dateY: e.target.value, onDate: "", dateMode: "range" }))}
+          className="p-2 border rounded-md text-sm w-1/2"
+        />
+      </div>
+    </div>
+  </div>
 
-            <input
-              type="date"
-              value={filters.dateY}
-              onChange={(e) =>
-                setFilters((p) => ({
-                  ...p,
-                  dateY: e.target.value,
-                  onDate: "",
-                  dateMode: "range",
-                }))
-              }
-              className="p-2 border rounded-md text-sm"
-            />
-
-            <div className="hidden md:block" />
-            <div className="hidden md:block" />
-            <div className="hidden md:block" />
-
-            <button
-              onClick={clearFilters}
-              className="p-2 bg-gray-100 rounded-md text-sm hover:bg-gray-200"
-            >
-              Clear
-            </button>
-          </div>
-        </div>
-
+  {/* Action Buttons Row */}
+  <div className="flex justify-end gap-3 pt-2 border-t border-gray-100">
+    <button
+      onClick={clearFilters}
+      className="px-6 py-2 bg-gray-100 text-gray-600 rounded-md text-sm font-medium hover:bg-gray-200 transition-colors"
+    >
+      Clear Filters
+    </button>
+    <button
+      onClick={applyFilters}
+      className="px-8 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 transition-shadow shadow-md"
+    >
+      Apply Filters
+    </button>
+  </div>
+</div>
         <div className="fixed bottom-4 right-4 flex space-x-2">
           {/* Left (scroll left) */}
           <button
@@ -1003,6 +1011,27 @@ export default function SalesSection() {
                         </button>
                       )}
                     </td>
+                    <td className="py-4">
+
+                        <button
+                          className="text-green-600 cursor-pointer"
+                          onClick={() =>
+                          { console.log(sale.responsibleVendor.vendorName
+); setOpenChangeResposibleVendor({status:true,saleId:sale.id})}
+                        
+                          }
+                        >
+                          
+                      {
+  sale?.responsibleVendor?.vendorName
+    ? sale.responsibleVendor.vendorName
+    : "Select"
+}
+
+                        </button>
+                      
+
+                    </td>
                     <td>
                       <WhatsappChatCard
                         phone={`91${sale.ConfurmWhatsAppMobileNumber}`}
@@ -1105,6 +1134,29 @@ export default function SalesSection() {
             </button>
           </div>
         )}
+        {openChangeResposibleVendor.status && (
+  <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+    <div className="bg-white rounded-xl p-6 shadow-xl w-96 relative">
+      {/* Close Button */}
+      <button
+        className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+        onClick={() => setOpenChangeResposibleVendor({status:false,saleId:""})}
+      >
+        ✕
+      </button>
+
+      <h3 className="text-lg font-semibold mb-4">Select Vendor</h3>
+
+      {/* Your Component */}
+      <GetVenderData passVender={(data)=>{
+        console.log(data);
+updateResponsibleVendor(openChangeResposibleVendor.saleId,data);
+      }} />
+
+    </div>
+  </div>
+)}
+
         {modalOpen && selectedProductInfo && (
           <div className="mt-10" onClick={closeModal}>
             <div

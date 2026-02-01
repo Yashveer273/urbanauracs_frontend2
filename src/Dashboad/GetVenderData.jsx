@@ -96,7 +96,7 @@ export const GetVenderData = ({passVender} ) => {
   return (
     <div className=" bg-gray-50 p-2 sm:p-2 flex flex-col items-center">
       <div className="w-full max-w-2xl">
-        <h1 className="text-3xl font-extrabold text-indigo-700 mb-2 text-center">
+        <h1 className=" font-extrabold text-indigo-700 mb-2 text-center">
      Selecte Vendor
         </h1>
 

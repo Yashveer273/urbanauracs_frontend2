@@ -109,7 +109,10 @@ const ExportSalesData = () => {
           "CONVENICE FEE": totalConvenienceFee,
           "TOTAL AMOUNT": orderAmount + totalConvenienceFee,
           "STATUS": item.status || sale.status || "Pending",
-          "RESPONSIBLE": sale.responsible || "Not Assigned"
+          "RESPONSIBLE": sale.responsible || "Not Assigned",
+          "RESPONSIBLE_VENDOR": sale.responsibleVendor?.vendorName || "Not Assigned",
+          "RESPONSIBLE_vendorPhoneNo": sale.responsibleVendor?.vendorPhoneNo || "Not Assigned",
+          "RESPONSIBLE_Location": sale.responsibleVendor?.vendorLocation || "Not Assigned"
         });
       });
     });
