@@ -96,10 +96,7 @@ export const GetVenderData = ({passVender} ) => {
   return (
     <div className=" bg-gray-50 p-2 sm:p-2 flex flex-col items-center">
       <div className="w-full max-w-2xl">
-        <h1 className=" font-extrabold text-indigo-700 mb-2 text-center">
-     Selecte Vendor
-        </h1>
-
+    
         {/* Searchable Dropdown */}
         <div ref={wrapperRef} className="relative mb-3 shadow-xl rounded-xl bg-white">
           <div className="relative flex items-center border border-gray-300 rounded-xl">
