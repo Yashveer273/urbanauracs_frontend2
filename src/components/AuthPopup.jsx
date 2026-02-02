@@ -1,9 +1,9 @@
-import axios from "axios";
+
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { loginUser } from "../store/userSlice";
 import { FaPhone } from "react-icons/fa";
-import { API_BASE_URL, login } from "../API";
+import { API_BASE_URL, login, otpsend } from "../API";
 // A mock portal component for demonstration purposes
 const Portal = ({ children }) => <>{children}</>;
 
@@ -153,22 +153,7 @@ const AuthPopup = ({ onClose }) => {
     // Close the popup after successful auth
     onClose();
   };
-  const otpsend = async (mobileNumber, msg, type) => {
-    try {
-      const res = await axios.post(`${API_BASE_URL}/send-Opt-On-Number`, {
-        mobileNumber,
-        msg,
-        type,
-      });
-      return res; // return the response data
-    } catch (error) {
-      console.error(
-        "Error sending OTP:",
-        error.response?.data || error.message
-      );
-      throw error;
-    }
-  };
+
   const generateOTP = () => Math.floor(1000 + Math.random() * 9000).toString();
 
 

@@ -1,6 +1,6 @@
 import axios from "axios";
 import { firestore } from "./firebaseCon";
-
+import CryptoJS from "crypto-js";
 import { collection, doc, getDoc, getDocs } from "firebase/firestore";
 export const API_BASE_URL = "https://urbanaurabzcs.xyz";
 // export const API_BASE_URL = "http://localhost:8000";
@@ -377,3 +377,37 @@ export const deleteBlockedDate = async (id) => {
     throw err;
   }
 };
+
+const SECRET_KEY = "mySuperSecretKey123!@#";
+
+// --- Encryption ---
+export function encryptContent(content) {
+  // content: string
+  const ciphertext = CryptoJS.AES.encrypt(content, SECRET_KEY).toString();
+  return ciphertext;
+}
+
+// --- Decryption ---
+export function decryptContent(ciphertext) {
+  const bytes = CryptoJS.AES.decrypt(ciphertext, SECRET_KEY);
+  const originalText = bytes.toString(CryptoJS.enc.Utf8);
+  return originalText;
+}
+
+export const otpsend= async (mobileNumber, message, type) => {
+ const msg = encryptContent(message);
+    try {
+      const res = await axios.post(`${API_BASE_URL}/send-Opt-On-Number`, {
+        mobileNumber,
+        msg,
+        type,
+      });
+      return res; // return the response data
+    } catch (error) {
+      console.error(
+        "Error sending OTP:",
+        error.response?.data || error.message
+      );
+      throw error;
+    }
+  };
