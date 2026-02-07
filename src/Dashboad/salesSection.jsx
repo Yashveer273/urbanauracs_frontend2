@@ -394,7 +394,7 @@ export default function SalesSection() {
         phone_number: rowForm.phone,
         ConfurmWhatsAppMobileNumber: rowForm.WhatsApp_Mobile_Number,
         discount: rowForm.discount,
-        product_info: response.data.data.product_info,
+        product_info: response.data.data.product_info??{cart:[]},
       });
 
       setSalesData((prev) =>
@@ -556,19 +556,7 @@ export default function SalesSection() {
     setTempStatus("");
     setTempComment("");
   };
-  // -----------------------------------------------
-  // const openServiceStatusCard = (
-  //   orderId,
-  //   serviceId,
-  //   currentStatus,
-  //   currentComment = "",
-  //   isProduct = false,
-  //   index = null
-  // ) => {
-  //   setEditingStatus({ saleId: orderId, serviceId, isProduct, index });
-  //   setTempStatus(currentStatus);
-  //   setTempComment(currentComment);
-  // };
+  
   const saveServiceStatusCard = async () => {
     const { saleId, isProduct, serviceId, index } = editingStatus;
 
