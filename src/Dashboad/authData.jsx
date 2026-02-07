@@ -242,7 +242,7 @@ const fetchUsers = async (page) => {
       id: doc.id,
       ...doc.data(),
     }));
-
+console.log( newUsers);
     setAuthData(newUsers);
 
     // Store the last document of THIS page to use for the NEXT page

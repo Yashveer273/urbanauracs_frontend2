@@ -1015,7 +1015,7 @@ const Dashboard = () => {
       {/* --------------------------------------------------------------------------------------------------- */}
       <>
         {/* Main Content Area */}
-        <main className="flex-1 p-8 overflow-y-auto">{renderContent()}</main>
+        <main className="flex-1 p-8 overflow-y-auto     max-h-[101vh]">{renderContent()}</main>
 
         {/* Floating Action Button for adding a vendor */}
 

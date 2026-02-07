@@ -343,30 +343,42 @@ export default function SalesSection() {
     setRowForm({
       orderId: sale.orderId,
       name: sale.name || "",
+      BalanceAmount:
+        sale?.product_info?.cart?.reduce(
+          (sum, item) =>
+            sum +
+            Number(
+              item.item_price * item.quantity +
+                CalculateConvenienceFee(item.item_price * item.quantity)
+                  .convenienceFee,
+            ),
+          0,
+        ) -
+        Number(sale?.discount || 0) -
+        Number(sale?.payedAmount || 0),
       // email: sale.email || "",
-      phone: sale.phone_number || "",
+      phone: sale.phone_number || "non",
       WhatsApp_Mobile_Number: sale.ConfurmWhatsAppMobileNumber || "",
 
       // pincode: sale.pincode || "",
-      discount: sale.discount || "",
+      discount: sale.discount || "0",
 
-      // payableAmount: total - sale.payedAmount || "",
-      payedAmount: sale.payedAmount || "",
+      payedAmount: sale.payedAmount || "0",
+      booking_Date: sale.product_info.cart[0]?.location_booking_time,
+      booking_Time: sale.product_info.cart[0]?.SelectedServiceTime,
 
-      dateTime: sale.date_time
-        ? new Date(sale.date_time).toISOString().slice(0, 16)
-        : "",
+      // ,
     });
   };
   const saveEditedRow = async () => {
     try {
       let updateSalesData = {
         name: rowForm.name,
-
         phone_number: rowForm.phone,
         ConfurmWhatsAppMobileNumber: rowForm.WhatsApp_Mobile_Number,
         discount: rowForm.discount,
-        date_time: new Date(rowForm.dateTime).toISOString(),
+        location_booking_time: rowForm.booking_Date,
+        SelectedServiceTime: rowForm.booking_Time,
       };
       const response = await updateSale(rowForm.orderId, updateSalesData);
       if (response.status != 200) {
@@ -377,7 +389,13 @@ export default function SalesSection() {
 
       const saleRef = doc(firestore, "sales", editingRow);
 
-      await setDoc(saleRef, updateSalesData, { merge: true });
+      await updateDoc(saleRef, {
+        name: rowForm.name,
+        phone_number: rowForm.phone,
+        ConfurmWhatsAppMobileNumber: rowForm.WhatsApp_Mobile_Number,
+        discount: rowForm.discount,
+        product_info: response.data.data.product_info,
+      });
 
       setSalesData((prev) =>
         prev.map((s) =>
@@ -389,7 +407,8 @@ export default function SalesSection() {
                 phone_number: rowForm.phone,
                 WhatsApp_Mobile_Number: rowForm.WhatsApp_Mobile_Number,
                 discount: rowForm.discount,
-                date_time: new Date(rowForm.dateTime).toISOString(),
+                location_booking_time: rowForm.booking_Date,
+                SelectedServiceTime: rowForm.booking_Time,
               }
             : s,
         ),
@@ -932,18 +951,18 @@ export default function SalesSection() {
 
                     <td className="py-4 px-2">
                       ₹
-                      {sale?.product_info?.cart?.reduce(
+                      {Math.round( sale?.product_info?.cart?.reduce(
                         (sum, item) =>
                           sum + Number(item.item_price * item.quantity),
                         0,
-                      )}
+                      ))}
                     </td>
                     <td className="py-4 px-2">
                       ₹{Number(sale?.discount || 0)}
                     </td>
                     <td className="py-4 px-2">
                       ₹
-                      {sale?.product_info?.cart?.reduce(
+                      {Math.round(sale?.product_info?.cart?.reduce(
                         (sum, item) =>
                           sum +
                           Number(
@@ -952,25 +971,28 @@ export default function SalesSection() {
                             ).convenienceFee,
                           ),
                         0,
-                      )}
+                      ))}
                     </td>
 
                     <td className="py-4 px-2">
-                      ₹
-                      {sale?.product_info?.cart?.reduce(
-                        (sum, item) =>
-                          sum +
-                          Number(
-                            item.item_price * item.quantity +
-                              CalculateConvenienceFee(
-                                item.item_price * item.quantity,
-                              ).convenienceFee,
-                          ),
-                        0,
-                      ) -
-                        Number(sale?.discount || 0) -
-                        Number(sale?.payedAmount || 0)}
-                    </td>
+  ₹
+  {Math.round(
+    sale?.product_info?.cart?.reduce(
+      (sum, item) =>
+        sum +
+        Number(
+          item.item_price * item.quantity +
+            CalculateConvenienceFee(
+              item.item_price * item.quantity
+            ).convenienceFee
+        ),
+      0
+    ) -
+      Number(sale?.discount || 0) -
+      Number(sale?.payedAmount || 0)
+  )}
+</td>
+
                     <td className="py-4 px-2">₹{sale.payedAmount}</td>
 
                     <td className="py-4 px-2">
@@ -992,32 +1014,6 @@ export default function SalesSection() {
                         {sale.status || "Pending"}
                       </button>
                     </td>
-
-                    {/* <SendToVendorPopup
-        open={sendToOpen}
-        onClose={() => setSendToOpen(false)}
-        userNumber={state.phone_number || ""}
-        onSend={async (numbersPayload) => {
-         
-          const userMsg = `Hi from urbanauracs.com this is your invoice generated on ${normalizeDate(
-            showSendInvoice.generatedInvoiceDate_time
-          )} ${state.invoice}`;
-
-          const res = await sendToVenderUserPersonwhatsapp(numbersPayload, {
-            venederMsg: userMsg,
-            userMsg,
-          });
-         
-          if (res?.status === "success" && res?.results?.length) {
-            const successMessages = res.results
-              .map((r) => `✔ ${r.number}: ${r.response?.message}`)
-              .join("\n");
-
-            alert(successMessages); // or toast.success(...)
-            setSendToOpen(false);
-          }
-        }}
-      /> */}
                     <td className="py-4 px-2">
                       {responsiblePersons && responsiblePersons.length > 0 ? (
                         tagAccess?.includes("Admin") ? (
@@ -1170,17 +1166,33 @@ export default function SalesSection() {
             >
               Previous
             </button>
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-              <button
-                key={p}
-                onClick={() => setCurrentPage(p)}
-                className={`px-4 py-2 rounded-xl ${
-                  currentPage === p ? "bg-blue-600 text-white" : "bg-white"
-                }`}
-              >
-                {p}
-              </button>
-            ))}
+            {Array.from({ length: totalPages }, (_, i) => i + 1)
+              .filter((p) => {
+                return (
+                  p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1 // pages around current
+                );
+              })
+              .map((p, i, arr) => {
+                const prev = arr[i - 1];
+                const showDots = prev && p - prev > 1;
+
+                return (
+                  <React.Fragment key={p}>
+                    {showDots && <span className="px-2">...</span>}
+                    <button
+                      onClick={() => setCurrentPage(p)}
+                      className={`px-4 py-2 rounded-xl ${
+                        currentPage === p
+                          ? "bg-blue-600 text-white"
+                          : "bg-white"
+                      }`}
+                    >
+                      {p}
+                    </button>
+                  </React.Fragment>
+                );
+              })}
+
             <button
               onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
               disabled={currentPage === totalPages}
@@ -1592,46 +1604,112 @@ export default function SalesSection() {
             <h3 className="text-xl font-bold mb-4">Edit Sale</h3>
             {[
               "name",
-              // "email",
               "phone",
               "WhatsApp_Mobile_Number",
-
-              // "pincode",
               "discount",
-
+              "BalanceAmount",
               "payedAmount",
-              "dateTime",
+              "booking_Date",
+              "booking_Time",
             ].map((field) => (
-              <div className="mb-3" key={field}>
+              <div className="mb-3 relative" key={field}>
                 <label className="block font-medium mb-1">
-                  {field === "totalPrice"
-                    ? "Total Price"
-                    : field === "dateTime"
-                      ? "Date/Time"
-                      : field.charAt(0).toUpperCase() + field.slice(1)}
+                  {field.charAt(0).toUpperCase() + field.slice(1)}
                 </label>
-                <input
-                  type={
-                    field === "dateTime"
-                      ? "datetime-local"
-                      : field === "discount" || field === "payedAmount"
+
+                {/* 📅 DATE FIELD */}
+                {field === "booking_Date" && (
+                  <input
+                    type="date"
+                    className="border p-2 w-full rounded-md"
+                    value={rowForm[field]}
+                    min={new Date().toISOString().split("T")[0]}
+                    onChange={(e) =>
+                      setRowForm((prev) => ({
+                        ...prev,
+                        [field]: e.target.value,
+                      }))
+                    }
+                  />
+                )}
+
+                {/* ⏰ TIME SLOT FIELD */}
+                {field === "booking_Time" && (
+                  <>
+                    <input
+                      type="text"
+                      readOnly
+                      value={rowForm.booking_Time || ""}
+                      placeholder="Select Time Slot"
+                      onClick={() => setOpen((prev) => !prev)}
+                      className="border p-2 w-full rounded-md bg-zinc-100 cursor-pointer"
+                    />
+
+                    {open && (
+                      <div className="absolute z-50 mt-2 w-full bg-gray-900 rounded-xl shadow-xl p-4 max-h-60 overflow-y-auto">
+                        <div className="grid grid-cols-3 gap-3">
+                          {timeSlots.map((slot, index) => {
+                            const [start, end] = slot.split(" - ");
+                            return (
+                              <button
+                                type="button"
+                                key={index}
+                                onClick={() => {
+                                  setRowForm((prev) => ({
+                                    ...prev,
+                                    booking_Time: slot,
+                                  }));
+                                  setOpen(false);
+                                }}
+                                className={`px-3 py-2 rounded-lg transition flex flex-col items-center text-center
+                      ${
+                        rowForm.booking_Time === slot
+                          ? "bg-blue-600 text-white shadow-md"
+                          : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+                      }`}
+                              >
+                                <span className="text-sm font-semibold">
+                                  {start}
+                                </span>
+                                <span className="text-[10px] opacity-70">
+                                  to
+                                </span>
+                                <span className="text-sm font-semibold">
+                                  {end}
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {/* 🧾 OTHER FIELDS */}
+                {!["booking_Date", "booking_Time"].includes(field) && (
+                  <input
+                    type={
+                      field === "discount" || field === "payedAmount"
                         ? "number"
                         : "text"
-                  }
-                  className="border p-2 w-full rounded-md"
-                  value={rowForm[field]}
-                  onChange={(e) =>
-                    setRowForm((prev) => ({
-                      ...prev,
-                      [field]:
-                        field === "discount" || field === "payedAmount"
-                          ? Number(e.target.value)
-                          : e.target.value,
-                    }))
-                  }
-                />
+                    }
+                    className="border p-2 w-full rounded-md"
+                    value={rowForm[field]}
+                    onChange={(e) =>
+                      setRowForm((prev) => ({
+                        ...prev,
+                        [field]:
+                          field === "discount" || field === "payedAmount"
+                            ? Number(e.target.value)
+                            : e.target.value,
+                      }))
+                    }
+                  />
+                )}
               </div>
             ))}
+
             <div className="flex justify-end space-x-2 mt-4">
               <button
                 className="px-4 py-2 rounded-xl bg-gray-300"
