@@ -1,5 +1,15 @@
-import { EditIcon, PlusIcon, TrashIcon } from "lucide-react";
-import React from "react";
+import {
+  EditIcon,
+  PlusIcon,
+  TrashIcon,
+  TrendingUpIcon,
+  DatabaseBackup,
+  Loader2,
+} from "lucide-react";
+import CityHypePopup from "./CityHypePopup";
+import ServiceHypePopup from "./ServiceHypePopup";
+import React, { useState } from "react";
+import { migrateServiceDataPure } from "../API";
 
 const ServiceManager = ({
   services,
@@ -21,6 +31,71 @@ const ServiceManager = ({
   handleEditVendor,
   handleDeleteVendor,
 }) => {
+  console.log(
+    "---------------------------------------------------------",
+    services,
+  );
+
+  // States for City Hype
+  const [isCityHypeOpen, setIsCityHypeOpen] = useState(false);
+  const [selectedCity, setSelectedCity] = useState("Select City");
+
+  // States for Service Hype
+  const [isServiceHypeOpen, setIsServiceHypeOpen] = useState(false);
+  const [selectedServiceHype, setSelectedServiceHype] =
+    useState("Select Service");
+  const [isMigrateinProcess, setisMigrateinProcess] = useState(false);
+  // Handle Service Hype Update
+  const handleServiceHypeUpdate = (data) => {
+    console.log("Service Hype Update:", data);
+    const { service, adjustmentAmount } = data;
+    const amount = parseFloat(adjustmentAmount) || 0;
+
+    if (amount === 0) {
+      alert("Please enter a valid amount");
+      return;
+    }
+
+    // Update all vendors for the selected service
+    services.forEach((svc) => {
+      if (svc.ServiceName === service) {
+        svc.data.forEach((vendor) => {
+          vendor.services?.forEach((svc) => {
+            svc.price = (parseFloat(svc.price) || 0) + amount;
+          });
+        });
+      }
+    });
+
+    alert(`Successfully added ₹${amount} to all services in ${service}`);
+    setIsServiceHypeOpen(false);
+  };
+
+  // Handle City Hype Update
+  const handleCityHypeUpdate = (data) => {
+    console.log("City Hype Update:", data);
+    const { city, adjustmentAmount } = data;
+    const amount = parseFloat(adjustmentAmount) || 0;
+
+    if (amount === 0) {
+      alert("Please enter a valid amount");
+      return;
+    }
+
+    // Update all vendors in the selected city
+    services.forEach((svc) => {
+      svc.data.forEach((vendor) => {
+        if (vendor.location === city || vendor.vendorlocation === city) {
+          vendor.services?.forEach((svc) => {
+            svc.price = (parseFloat(svc.price) || 0) + amount;
+          });
+        }
+      });
+    });
+
+    alert(`Successfully added ₹${amount} to all services in ${city}`);
+    setIsCityHypeOpen(false);
+  };
   return (
     <>
       {/* ================= SERVICES LIST ================= */}
@@ -29,7 +104,84 @@ const ServiceManager = ({
           <h2 className="text-3xl font-bold text-gray-800 mb-6">
             Service Categories
           </h2>
+          <div className="flex flex-wrap items-center gap-3 mb-6">
+            <button
+              onClick={() => setIsServiceHypeOpen(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-700 font-semibold rounded-lg border border-indigo-100 hover:bg-indigo-100 transition-colors shadow-sm"
+            >
+              <TrendingUpIcon size={18} />
+              Hype by Service
+            </button>
 
+            <ServiceHypePopup
+              isOpen={isServiceHypeOpen}
+              onClose={() => setIsServiceHypeOpen(false)}
+              selectedService={selectedServiceHype}
+              onServiceClick={() => setSelectedServiceHype("")}
+              onSubmit={handleServiceHypeUpdate}
+              services={services.map((s) => s.ServiceName)}
+            />
+            <button
+              onClick={() => setIsCityHypeOpen(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-purple-50 text-purple-700 font-semibold rounded-lg border border-purple-100 hover:bg-purple-100 transition-colors shadow-sm"
+            >
+              <TrendingUpIcon size={18} />
+              Hype by City
+            </button>
+
+            {/* The Popup Call */}
+            <CityHypePopup
+              isOpen={isCityHypeOpen}
+              onClose={() => setIsCityHypeOpen(false)}
+              selectedCity={selectedCity}
+              onCityClick={() => setSelectedCity("")}
+              onSubmit={handleCityHypeUpdate}
+              cities={[
+                ...new Set(
+                  services.flatMap((s) => s.data.map((v) => v.location)),
+                ),
+              ]}
+            />
+            <button
+              onClick={async () => {
+                if (isMigrateinProcess) {
+                  return;
+                } else {
+                  setisMigrateinProcess(true);
+                  await migrateServiceDataPure(
+                    "homeCleaningServiceDB",
+                    "updatedCleaningServiceDB",
+                  );
+                  alert("Data extended to new collection successfully.");
+                }
+                setisMigrateinProcess(false);
+              }}
+              className={`
+        group flex items-center justify-center gap-3 px-6 py-2.5 
+        rounded-xl font-bold text-[10px] uppercase tracking-[0.25em] 
+        transition-all duration-300
+        ${isMigrateinProcess 
+          ? "bg-slate-900 text-slate-500 cursor-wait" 
+          : "bg-black text-white hover:bg-slate-800 hover:ring-4 hover:ring-slate-900/10 active:scale-95 shadow-xl shadow-black/20"
+        }
+      `}
+            >
+              {isMigrateinProcess ? (
+                <>
+                  <Loader2 size={16} className="animate-spin text-indigo-500" />
+                  <span>Backing up...</span>
+                </>
+              ) : (
+                <>
+                  <DatabaseBackup
+                    size={16}
+                    className="transition-transform group-hover:rotate-12"
+                  />
+                  <span>Save Service Backup</span>
+                </>
+              )}
+            </button>
+          </div>
           <p className="text-gray-500 mb-6">
             Select a category from the side menu to view and manage vendors.
           </p>
@@ -130,7 +282,7 @@ const ServiceManager = ({
                       e.stopPropagation();
                       // Standard browser confirmation dialog
                       const isConfirmed = window.confirm(
-                        "Are you sure you want to delete this service?"
+                        "Are you sure you want to delete this service?",
                       );
 
                       if (isConfirmed) {
@@ -218,7 +370,7 @@ const ServiceManager = ({
                       onClick={(e) => {
                         e.stopPropagation();
                         const isConfirmed = window.confirm(
-                          "Are you sure you want to delete this vendor?"
+                          "Are you sure you want to delete this vendor?",
                         );
 
                         if (isConfirmed) {

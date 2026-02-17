@@ -108,6 +108,7 @@ fetchSliderImages();
       )}
       <CityCards setMyCity={setMyCity}/> 
       <CartSidebar /> 
+       
       <HeroSection MyCity={MyCity} />
    
       <div ref={featuresRef}>

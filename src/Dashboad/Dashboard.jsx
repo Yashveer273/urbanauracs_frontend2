@@ -28,7 +28,6 @@ import { cities } from "./utility";
 import ExportSalesData from "./exportSalesData";
 import DashboardNavigator from "./DashboardNavigator";
 import BlockedDatesTable from "./blockDate";
-import AppBannerController from "./AppHomeCarousalAssetController";
 
 const PlusIcon = () => (
   <svg
@@ -934,19 +933,8 @@ const Dashboard = () => {
     }}
   >
     <HomeCarousalAssetController />
-
   </div>
-<div
-    style={{
-      background: "#fff",
-      borderRadius: "8px",
-      boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-      padding: "16px",
-    }}
-  >
-    <AppBannerController />
 
-  </div>
   {/* Second block */}
   <div
     style={{
@@ -962,10 +950,11 @@ const Dashboard = () => {
   {/* Third block spans 2 columns */}
   <div
     style={{
-       background: "#fff",
+      background: "#fff",
       borderRadius: "8px",
       boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
       padding: "16px",
+      gridColumn: "1 / -1", // span all columns
     }}
   >
     <BlockedDatesTable />
