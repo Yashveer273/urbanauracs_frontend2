@@ -2,8 +2,8 @@ import axios from "axios";
 import { firestore } from "./firebaseCon";
 import CryptoJS from "crypto-js";
 import { collection, doc, getDoc, getDocs,writeBatch } from "firebase/firestore";
-// export const API_BASE_URL = "https://urbanaurabzcs.xyz";
-export const API_BASE_URL = "http://localhost:8000";
+export const API_BASE_URL = "https://urbanaurabzcs.xyz";
+// export const API_BASE_URL = "http://localhost:8000";
 
 export const fetchImages = async () => {
   try {
