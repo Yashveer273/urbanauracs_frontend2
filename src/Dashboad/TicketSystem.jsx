@@ -14,23 +14,8 @@ import {
 } from "firebase/firestore";
 import { firestore } from "../firebaseCon"; // adjust path
 
-// ✅ Small popup notification for new ticket
-const NewTicketNotification = ({ ticket, onClose }) => {
-  if (!ticket) return null;
-  return (
-    <div className="fixed bottom-6 right-6 z-50">
-      <div className="bg-gray-800 text-white rounded-lg shadow-xl p-4 flex items-start space-x-4 animate-slide-in-right max-w-sm">
-        <div className="flex-1">
-          <h3 className="text-sm font-bold">New Ticket from {ticket.name}</h3>
-          <p className="text-xs text-gray-400 mt-1">Phone: {ticket.phone}</p>
-        </div>
-        <button onClick={onClose} className="text-gray-400 hover:text-white">
-          ✕
-        </button>
-      </div>
-    </div>
-  );
-};
+
+
 
 // ✅ Modal for ticket details & update
 const TicketDetailsModal = ({ ticket, onClose, onUpdateStatus }) => {

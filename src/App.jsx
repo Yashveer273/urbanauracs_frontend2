@@ -3,7 +3,7 @@ import React from "react";
 
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import HomePage from "./pages/HomePage";
-import Portfolio from "./portfolio";
+
 import CleaningService from "./pages/CleaningServices";
 import AboutUsPage from "./components/AboutUsPage";
 import ContactUs from "./components/ContactUs";
@@ -21,9 +21,7 @@ import Termsandconditions from "./pages/Termsandconditions";
 import Shippingpolicy from "./pages/Shippingpolicy";
 import ExportSalesData from "./Dashboad/exportSalesData";
 import AdminDashboard from "./chat/AdminDashboard";
-import CreateUser from "./chat/CreateUser";
-import UserDashboard from "./chat/UserDashboard";
-import UserLogin from "./chat/UserLogin";
+
 
 function App() {
   return (
@@ -31,9 +29,7 @@ function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/AdminChatDashboard" element={<AdminDashboard />} />
-        <Route path="/CreateUser" element={<CreateUser />} />
-       
-        <Route path="/UserLogin" element={<UserLogin  />} />
+        
         <Route path="/InvoiceApp" element={<InvoiceApp />} />
         <Route path="/PrivacyPolicy" element={<PrivacyPolicy />} />
         <Route

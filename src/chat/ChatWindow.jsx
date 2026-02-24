@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { collection, query, orderBy, onSnapshot, doc } from "firebase/firestore";
 import { firestore } from "../firebaseCon";
 import { deleteMessageByAdmin, markSeenByAdmin } from "./adminChatController";
-import { markSeenByUser } from "./userChatController";
+
 import { FiTrash2 } from "react-icons/fi";
 import MessageInput from "./MessageInput";
 
@@ -38,11 +38,9 @@ const ChatWindow = ({ selectedUser, currentUser, isAdmin }) => {
       setMessages(docs);
 
       // mark as seen depending on who is viewing
-      if (isAdmin) {
+  
         markSeenByAdmin(chatId).catch((e) => console.error(e));
-      } else if (currentUser && currentUser._id) {
-        markSeenByUser(currentUser._id).catch((e) => console.error(e));
-      }
+      
     });
 
     return () => unsub();

@@ -9,7 +9,7 @@ const UserList = ({ onSelectUser }) => {
 
   useEffect(() => {
     const unsub = onSnapshot(
-      collection(firestore, "testusers"),
+      collection(firestore, "User"),
       (snapshot) => {
         setUsers(
           snapshot.docs.map((doc) => ({
