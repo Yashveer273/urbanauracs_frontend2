@@ -1,0 +1,52 @@
+.dashboard {
+  display: flex;
+  height: 100vh;
+}
+
+.user-list {
+  width: 25%;
+  border-right: 1px solid #ddd;
+  padding: 10px;
+}
+
+.user-item {
+  padding: 10px;
+  cursor: pointer;
+}
+
+.chat-window {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+}
+
+.messages {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.msg {
+  margin: 5px;
+  padding: 8px;
+  border-radius: 6px;
+}
+
+.msg.admin {
+  background: #007bff;
+  color: white;
+  align-self: flex-end;
+}
+
+.msg.user {
+  background: #eee;
+  align-self: flex-start;
+}
+
+.input-box {
+  display: flex;
+}
+
+.input-box input {
+  flex: 1;
+}

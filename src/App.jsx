@@ -20,31 +20,34 @@ import CheckoutSummaryCard from "./pages/CartProductSummery";
 import Termsandconditions from "./pages/Termsandconditions";
 import Shippingpolicy from "./pages/Shippingpolicy";
 import ExportSalesData from "./Dashboad/exportSalesData";
+import AdminDashboard from "./chat/AdminDashboard";
+import CreateUser from "./chat/CreateUser";
+import UserDashboard from "./chat/UserDashboard";
+import UserLogin from "./chat/UserLogin";
 
 function App() {
-
-
   return (
     <Router>
       <Routes>
-        
-        
         <Route path="/" element={<HomePage />} />
-        <Route path="/" element={<Portfolio />} />
-        
-    
-        
+        <Route path="/AdminChatDashboard" element={<AdminDashboard />} />
+        <Route path="/CreateUser" element={<CreateUser />} />
+       
+        <Route path="/UserLogin" element={<UserLogin  />} />
         <Route path="/InvoiceApp" element={<InvoiceApp />} />
-        <Route path="/PrivacyPolicy" element={<PrivacyPolicy/>} />
-        <Route path="/RefundCancellationPolicy" element={<RefundCancellationPolicy/>} />
+        <Route path="/PrivacyPolicy" element={<PrivacyPolicy />} />
+        <Route
+          path="/RefundCancellationPolicy"
+          element={<RefundCancellationPolicy />}
+        />
         <Route path="/Dashboard" element={<Dasboard />} />
         <Route path="/Aboutus" element={<AboutUsPage />} />
         <Route path="/contact" element={<ContactUs />} />
         <Route path="/TermsAndConditions" element={<Termsandconditions />} />
-        <Route path="/PaymentGateway" element={<PaymentGateway/>} />
-        <Route path="/CartProductsSummery" element={<CheckoutSummaryCard/>} />
-        <Route path="/ShippingPolicy" element={<Shippingpolicy/>} />
-         <Route path="/exportsalesdata" element={<ExportSalesData />} />
+        <Route path="/PaymentGateway" element={<PaymentGateway />} />
+        <Route path="/CartProductsSummery" element={<CheckoutSummaryCard />} />
+        <Route path="/ShippingPolicy" element={<Shippingpolicy />} />
+        <Route path="/exportsalesdata" element={<ExportSalesData />} />
         <Route
           path="/PaymentGateway/PaymentStatus/:id/:amount"
           element={<PaymentStatus />}
@@ -58,16 +61,8 @@ function App() {
           element={<PaymentFailed />}
         />
 
-        <Route
-          path="/services/:parameter"
-          element={<CleaningService />}
-        />
-         <Route
-          path="/AccountMenu"
-          element={<AccountMenu />}
-        />
-        
-        
+        <Route path="/services/:parameter" element={<CleaningService />} />
+        <Route path="/AccountMenu" element={<AccountMenu />} />
       </Routes>
     </Router>
   );

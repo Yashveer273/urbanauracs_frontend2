@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { loginUser } from "../store/userSlice";
 import { FaPhone } from "react-icons/fa";
-import { API_BASE_URL, login, otpsend } from "../API";
+import {  login, otpsend, registorUser } from "../API";
 // A mock portal component for demonstration purposes
 const Portal = ({ children }) => <>{children}</>;
 
@@ -312,20 +312,14 @@ const AuthPopup = ({ onClose }) => {
       return;
     }
     
-    const response = await fetch(`${API_BASE_URL}/register`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
+    const response = await registorUser(
       
         username,
         mobileNumber,
         pincode,
         location,
         phoneType,
-      }),
-    });
+      );
     const data = await response.json();
 
     if (response.ok) {

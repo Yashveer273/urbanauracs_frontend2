@@ -1,72 +1,98 @@
 import axios from "axios";
 import { firestore } from "./firebaseCon";
 import CryptoJS from "crypto-js";
-import { collection, doc, getDoc, getDocs,writeBatch } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  writeBatch,
+} from "firebase/firestore";
 export const API_BASE_URL = "https://urbanaurabzcs.xyz";
 // export const API_BASE_URL = "http://localhost:8000";
 
+export const registorUser = async (
+  username,
+  mobileNumber,
+  pincode,
+  location,
+  phoneType,
+) => {
+  const res = await fetch(`${API_BASE_URL}/register`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      username,
+      mobileNumber,
+      pincode,
+      location,
+      phoneType,
+    }),
+  });
+  return res;
+};
 export const fetchImages = async () => {
   try {
     const sliderDocRef = doc(firestore, "homeCleaningSlider", "mainDoc");
     const snap = await getDoc(sliderDocRef);
 
     if (snap.exists()) {
-     
-    return  snap.data().data || []
-    } 
+      return snap.data().data || [];
+    }
   } catch (error) {
     console.error("Error fetching slider images:", error);
-    return []
+    return [];
   }
 };
 
-
-export const updateStatusOrCommentDB = async ( status,orderId) => {
-
+export const updateStatusOrCommentDB = async (status, orderId) => {
   try {
-    const response = await axios.post(
-      `${API_BASE_URL}/sales/updateStatus`,
-      { status,orderId }
-    );
+    const response = await axios.post(`${API_BASE_URL}/sales/updateStatus`, {
+      status,
+      orderId,
+    });
     return response.data;
   } catch (error) {
     console.error(
       "Error updating user:",
-      error.response?.data || error.message
+      error.response?.data || error.message,
     );
     throw error;
   }
 };
-export const updateServiceStatusOrCommentDB = async ( saleId,product_purchase_id, status) => {
-
-
+export const updateServiceStatusOrCommentDB = async (
+  saleId,
+  product_purchase_id,
+  status,
+) => {
   try {
     const response = await axios.post(
       `${API_BASE_URL}/sales/updateServiceStatus`,
-      {orderId:saleId,product_purchase_id, status}
+      { orderId: saleId, product_purchase_id, status },
     );
     return response.data;
   } catch (error) {
     console.error(
       "Error updating user:",
-      error.response?.data || error.message
+      error.response?.data || error.message,
     );
     throw error;
   }
 };
-
 
 export const updateUser = async (userId, updateData) => {
   try {
     const response = await axios.put(
       `${API_BASE_URL}/update/${userId}`,
-      updateData
+      updateData,
     );
     return response.data;
   } catch (error) {
     console.error(
       "Error updating user:",
-      error.response?.data || error.message
+      error.response?.data || error.message,
     );
     throw error;
   }
@@ -97,15 +123,14 @@ export const fetchSocialLinks = async () => {
   }
 };
 export const fetchdashAuth = async () => {
-
- const res = await axios.get(`${API_BASE_URL}/api/get-dashAuth`);
- return res;
-}
+  const res = await axios.get(`${API_BASE_URL}/api/get-dashAuth`);
+  return res;
+};
 
 export const fetchProdDataDESC = async () => {
   try {
     const snapshot = await getDocs(
-      collection(firestore, "homeCleaningServiceDB")
+      collection(firestore, "homeCleaningServiceDB"),
     );
 
     // Step 1: get raw data
@@ -122,8 +147,6 @@ export const fetchProdDataDESC = async () => {
         : [], // fallback
     }));
 
-    
-
     return result;
   } catch (error) {
     console.error("Error fetching services:", error);
@@ -134,24 +157,24 @@ export const migrateServiceDataPure = async (sourceColl, destinationColl) => {
   try {
     // 1. Get all documents from source
     const snapshot = await getDocs(collection(firestore, sourceColl));
-    
+
     // 2. Initialize a Batch (Atomic operation)
     const batch = writeBatch(firestore);
 
     snapshot.docs.forEach((document) => {
       // Extract the raw data exactly as it is in the DB
       const rawData = document.data();
-      
+
       // Create reference in the new collection using the SAME Document ID
       const newDocRef = doc(firestore, destinationColl, document.id);
-      
+
       // Set the data without any manipulation
       batch.set(newDocRef, rawData);
     });
 
     // 3. Execute the batch
     await batch.commit();
-    
+
     console.log(`Migration Complete: Moved ${snapshot.size} documents.`);
     return { success: true, count: snapshot.size };
   } catch (error) {
@@ -170,7 +193,7 @@ export const login = async (mobileNumber, logtoken) => {
   } catch (error) {
     console.error(
       "Error updating user:",
-      error.response?.data || error.message
+      error.response?.data || error.message,
     );
     throw error;
   }
@@ -180,9 +203,9 @@ export const updateSale = async (orderId, updateSalesData) => {
   try {
     const response = await axios.put(
       `${API_BASE_URL}/update/SalesData/${orderId}`,
-      updateSalesData
+      updateSalesData,
     );
-   
+
     return response;
   } catch (error) {
     console.error("❌ Update failed:", error);
@@ -196,10 +219,9 @@ export const getVendersData = async () => {
 export const getMyOrderHistory = async (userId, page = 1, limit = 10) => {
   try {
     const response = await axios.get(
-      `${API_BASE_URL}/order-history/${userId}?page=${page}&limit=${limit}`
+      `${API_BASE_URL}/order-history/${userId}?page=${page}&limit=${limit}`,
     );
 
- 
     return response;
   } catch (error) {
     console.error("❌ Failed to fetch order history:", error);
@@ -207,41 +229,37 @@ export const getMyOrderHistory = async (userId, page = 1, limit = 10) => {
   }
 };
 
-
-
 export const handleBuy = async (data, action) => {
   // Step 1: Load Razorpay SDK
-
 
   // Step 2: Create order on backend
 
   const res = await axios.post(`${API_BASE_URL}/BuyService/create-order`, data);
   const order = res.data;
-   if (!window.Razorpay) {
-        await new Promise((resolve) => {
-          const script = document.createElement("script");
-          script.src = "https://checkout.razorpay.com/v1/checkout.js";
-          script.onload = resolve;
-          document.body.appendChild(script);
-        });
-      }
+  if (!window.Razorpay) {
+    await new Promise((resolve) => {
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.onload = resolve;
+      document.body.appendChild(script);
+    });
+  }
 
   // Step 3: Open Razorpay checkout
   const options = {
     key: order.key,
-  currency: "INR",
-  amount: order.amount, 
-  name: "UrbenAuraServices",
-  description: "Order Payment",
-  order_id: order.orderId,
-  prefill: {
-    name: data.name,
-    email: data.user?.email,
-    contact: data.mobileNumber,
-  },
-    
-    handler: async function (response) {
+    currency: "INR",
+    amount: order.amount,
+    name: "UrbenAuraServices",
+    description: "Order Payment",
+    order_id: order.orderId,
+    prefill: {
+      name: data.name,
+      email: data.user?.email,
+      contact: data.mobileNumber,
+    },
 
+    handler: async function (response) {
       try {
         const res = await axios.post(
           `${API_BASE_URL}/BuyService/verify-payment`,
@@ -252,7 +270,7 @@ export const handleBuy = async (data, action) => {
             razorpay_signature: response.razorpay_signature,
             buyer_name: data.name, // <-- custom field
             message: "Payment Successful", // <-- custom field
-          }
+          },
         );
 
         await action(res, data);
@@ -264,7 +282,7 @@ export const handleBuy = async (data, action) => {
         return err.response;
       }
     },
-   
+
     theme: { color: "#cc4f33ff" },
   };
 
@@ -272,27 +290,26 @@ export const handleBuy = async (data, action) => {
   rzp.open();
 };
 
-
 export const handlePaymentLeft = async (data, action) => {
-
- 
-
   // Step 1: Create order on backend
 
-  const res = await axios.post(`${API_BASE_URL}/BuyService/handlePaymentLeft`, data);
+  const res = await axios.post(
+    `${API_BASE_URL}/BuyService/handlePaymentLeft`,
+    data,
+  );
   const order = res.data;
- if (!window.Razorpay) {
-        await new Promise((resolve) => {
-          const script = document.createElement("script");
-          script.src = "https://checkout.razorpay.com/v1/checkout.js";
-          script.onload = resolve;
-          document.body.appendChild(script);
-        });
-      }
+  if (!window.Razorpay) {
+    await new Promise((resolve) => {
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.onload = resolve;
+      document.body.appendChild(script);
+    });
+  }
   // Step 3: Open Razorpay checkout....
   const options = {
-     // <-- put your test key_id here
-    key:order.key, 
+    // <-- put your test key_id here
+    key: order.key,
     amount: order.amount,
     currency: order.currency,
     name: "My Home Cleaning Services",
@@ -310,7 +327,7 @@ export const handlePaymentLeft = async (data, action) => {
             razorpay_signature: response.razorpay_signature,
             buyer_name: data.name, // <-- custom field
             message: "Payment Successful", // <-- custom field
-          }
+          },
         );
 
         await action(res, data);
@@ -333,33 +350,43 @@ export const handlePaymentLeft = async (data, action) => {
   rzp.open();
 };
 
-
- export const sendToSingelPersonWhatsAppMessage = async (mobile, msg) => {
+export const sendToSingelPersonWhatsAppMessage = async (mobile, msg) => {
   try {
-    const response = await axios.get("http://localhost:8000/sendToSingelPerson-whatsapp", {
-      params: { mobile, msg }
-    });
+    const response = await axios.get(
+      "http://localhost:8000/sendToSingelPerson-whatsapp",
+      {
+        params: { mobile, msg },
+      },
+    );
 
- 
     return response.data;
-
   } catch (error) {
-    console.error("Error sending WhatsApp message:", error.response?.data || error.message);
+    console.error(
+      "Error sending WhatsApp message:",
+      error.response?.data || error.message,
+    );
     throw error;
   }
 };
 
-export const sendToVenderUserPersonwhatsapp = async (numbersPayload,msgPayload) => {
+export const sendToVenderUserPersonwhatsapp = async (
+  numbersPayload,
+  msgPayload,
+) => {
   try {
-    const response = await axios.post(`${API_BASE_URL}/sendToVender-User-Person-whatsapp`, {numbersPayload,msgPayload});
+    const response = await axios.post(
+      `${API_BASE_URL}/sendToVender-User-Person-whatsapp`,
+      { numbersPayload, msgPayload },
+    );
     return response.data;
   } catch (error) {
-    console.error("Error sending WhatsApp numbers:", error.response?.data || error.message);
+    console.error(
+      "Error sending WhatsApp numbers:",
+      error.response?.data || error.message,
+    );
     return error;
   }
 };
-
-
 
 // 🔹 Get all blocked dates
 export const getBlockedDates = async () => {
@@ -375,11 +402,14 @@ export const getBlockedDates = async () => {
 // 🔹 Add a new blocked date
 export const addBlockedDate = async (date) => {
   try {
-    console.log("Adding blocked date:", date)
+    console.log("Adding blocked date:", date);
     const res = await axios.post(`${API_BASE_URL}/api/block-dates`, { date });
     return res.data;
   } catch (err) {
-    console.error("Error adding blocked date:", err.response?.data || err.message);
+    console.error(
+      "Error adding blocked date:",
+      err.response?.data || err.message,
+    );
     throw err;
   }
 };
@@ -387,10 +417,16 @@ export const addBlockedDate = async (date) => {
 // 🔹 Edit a blocked date
 export const editBlockedDate = async (id, date, blocked) => {
   try {
-    const res = await axios.put(`${API_BASE_URL}/api/block-dates/${id}`, { date, blocked });
+    const res = await axios.put(`${API_BASE_URL}/api/block-dates/${id}`, {
+      date,
+      blocked,
+    });
     return res.data;
   } catch (err) {
-    console.error("Error editing blocked date:", err.response?.data || err.message);
+    console.error(
+      "Error editing blocked date:",
+      err.response?.data || err.message,
+    );
     throw err;
   }
 };
@@ -401,7 +437,10 @@ export const deleteBlockedDate = async (id) => {
     const res = await axios.delete(`${API_BASE_URL}/api/block-dates/${id}`);
     return res.data;
   } catch (err) {
-    console.error("Error deleting blocked date:", err.response?.data || err.message);
+    console.error(
+      "Error deleting blocked date:",
+      err.response?.data || err.message,
+    );
     throw err;
   }
 };
@@ -422,20 +461,17 @@ export function decryptContent(ciphertext) {
   return originalText;
 }
 
-export const otpsend= async (mobileNumber, message, type) => {
- const msg = encryptContent(message);
-    try {
-      const res = await axios.post(`${API_BASE_URL}/send-Opt-On-Number`, {
-        mobileNumber,
-        msg,
-        type,
-      });
-      return res; // return the response data
-    } catch (error) {
-      console.error(
-        "Error sending OTP:",
-        error.response?.data || error.message
-      );
-      throw error;
-    }
-  };
+export const otpsend = async (mobileNumber, message, type) => {
+  const msg = encryptContent(message);
+  try {
+    const res = await axios.post(`${API_BASE_URL}/send-Opt-On-Number`, {
+      mobileNumber,
+      msg,
+      type,
+    });
+    return res; // return the response data
+  } catch (error) {
+    console.error("Error sending OTP:", error.response?.data || error.message);
+    throw error;
+  }
+};
