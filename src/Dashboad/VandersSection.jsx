@@ -66,7 +66,7 @@ const VendorFormModal = ({ isOpen, onClose, onSubmit, initialData, isEdit }) => 
 
     return (
         <div className="fixed inset-0 bg-gray-900 bg-opacity-75 z-50 flex items-center justify-center p-4 transition-opacity duration-300">
-            <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg p-6 transform transition-all duration-300 scale-100" onClick={e => e.stopPropagation()}>
+            <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg p-4 md:p-6 transform transition-all duration-300 scale-100" onClick={e => e.stopPropagation()}> {/* Shivani */}
                 <h3 className="text-2xl font-bold mb-4 text-gray-800">
                     {isEdit ? "Edit Vendor" : "Create New Vendor"}
                 </h3>
@@ -340,20 +340,20 @@ const VandersSection = () => {
         }
 
         return vendors.map(vendor => (
-            <tr key={vendor._id} className="hover:bg-gray-50 transition duration-150">
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+            <tr key={vendor._id} className="hover:bg-gray-50 transition duration-150"> {/* Shivani */}
+                <td className="px-3 md:px-6 py-3 md:py-4 whitespace-nowrap text-sm font-medium text-gray-900"> 
                     {vendor._id}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                <td className="px-3 md:px-6 py-3 md:py-4 whitespace-nowrap text-sm text-gray-700">
                     {vendor.vendorName}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                <td className="px-3 md:px-6 py-3 md:py-4 whitespace-nowrap text-sm text-gray-700">
                     {vendor.vendorLocation}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                <td className="px-3 md:px-6 py-3 md:py-4 whitespace-nowrap text-sm text-gray-700">
                     {vendor.vendorPhoneNo}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                <td className="px-3 md:px-6 py-3 md:py-4 whitespace-nowrap text-sm text-gray-700">
                     {vendor.vendorImage ? (
                         <Link to={vendor.vendorImage} className="text-blue-500 hover:text-blue-700 truncate block max-w-xs">
                             View Image
@@ -362,13 +362,13 @@ const VandersSection = () => {
                         <span className="text-gray-400">N/A</span>
                     )}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                <td className="px-3 md:px-6 py-3 md:py-4 whitespace-nowrap text-sm text-gray-700">
                     {vendor.rating !== null && vendor.rating !== undefined ? `${vendor.rating} / 5` : 'N/A'}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                <td className="px-3 md:px-6 py-3 md:py-4 whitespace-nowrap text-sm text-gray-700">
                     {vendor.reviews !== null && vendor.reviews !== undefined ? vendor.reviews : 'N/A'}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                <td className="px-3 md:px-6 py-3 md:py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
                     <button
                         onClick={() => handleOpenEdit(vendor)}
                         className="text-indigo-600 hover:text-indigo-900 p-2 rounded-full hover:bg-indigo-50 transition duration-150"
@@ -390,9 +390,7 @@ const VandersSection = () => {
 
 
     return (
-        <div className="p-4 md:p-8 bg-gray-100" style={{
-    width: "100%"
-}}>
+        <div className="p-4 md:p-8 bg-gray-100 w-full max-w-7xl mx-auto">    {/* Shivani */}
             <style>
                 {`
                     /* Custom scrollbar for responsive table */
@@ -403,7 +401,7 @@ const VandersSection = () => {
             </style>
 
             {/* Notification Area */}
-            <div className="fixed top-4 right-4 z-50 space-y-2">
+            <div className="fixed top-4 right-4 left-4 md:left-auto z-50 space-y-2"> {/* Shivani */}
                 {notification && (
                     <Notification
                         message={notification.message}
@@ -415,19 +413,19 @@ const VandersSection = () => {
 
             {/* Header */}
             <header className="mb-8 bg-white p-6 rounded-xl shadow-md">
-                <h1 className="text-4xl font-extrabold text-gray-800 border-b pb-2">
+                <h1 className="text-2xl md:text-4xl font-extrabold text-gray-800 border-b pb-2">
                     Vendor Management System
                 </h1>
                 <p className="text-gray-500 mt-2">Manage vendor information.</p>
             </header>
 
             {/* Action Bar */}
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">   {/* Shivani */}
                 <h2 className="text-2xl font-bold text-gray-700">Vendor List</h2>
                 <button
                     onClick={handleOpenCreate}
-                    className="flex items-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-xl shadow-lg transition duration-200 transform hover:scale-[1.02]"
-                >
+                    className="flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-xl shadow-lg transition duration-200 transform hover:scale-[1.02] w-full sm:w-auto"
+                >     {/* Shivani */}
                     <PlusCircle className="w-5 h-5 mr-2" />
                     Add New Vendor
                 </button>
@@ -436,7 +434,7 @@ const VandersSection = () => {
             {/* Vendors Table */}
             <div className="bg-white shadow-xl rounded-xl overflow-hidden">
                 <div className="table-container overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
+                    <table className="min-w-[900px] w-full divide-y divide-gray-200">   {/* Shivani */}
                         <thead className="bg-gray-50">
                             <tr>
                                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -451,7 +449,7 @@ const VandersSection = () => {
                                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Vendor Phone No.
                                 </th>
-                              
+                            
                                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Image URL
                                 </th>

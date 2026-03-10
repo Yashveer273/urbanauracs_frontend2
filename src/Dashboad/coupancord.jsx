@@ -87,7 +87,8 @@ const CouponManager = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8 font-sans">
+    <div className="w-full bg-gray-100 p-3 sm:p-4 md:p-6 font-sans">
+      <div className="w-full max-w-2xl mx-auto">
       <h1 className="text-2xl font-bold mb-6">🎟 Coupon Manager</h1>
 
       {/* ✅ Notification */}
@@ -104,7 +105,7 @@ const CouponManager = () => {
       )}
 
       {/* ✅ Create Coupon Card */}
-      <div style={{ display: "flex" ,gap:"14px"}}><div className="bg-white shadow-lg rounded-xl p-6 mb-8 max-w-lg">
+      <div className="flex flex-col md:flex-row gap-4"><div className="bg-white shadow-lg rounded-xl p-3 sm:p-4 md:p-6 mb-5 w-full">
         <h2 className="text-lg font-bold mb-4">Create New Coupon</h2>
         <form className="space-y-4" onSubmit={handleSubmit}>
           <input
@@ -112,7 +113,7 @@ const CouponManager = () => {
             placeholder="Coupon Code"
             value={form.code}
             onChange={(e) => setForm({ ...form, code: e.target.value })}
-            className="w-full p-2 border rounded-lg"
+            className="w-full px-2 py-1.5 border rounded-lg text-sm"
             required
           />
           <input
@@ -120,7 +121,7 @@ const CouponManager = () => {
             placeholder="Discount %"
             value={form.discount}
             onChange={(e) => setForm({ ...form, discount: e.target.value })}
-            className="w-full p-2 border rounded-lg"
+            className="w-full px-2 py-1.5 border rounded-lg text-sm"
             required
           />
           <input
@@ -128,12 +129,12 @@ const CouponManager = () => {
             value={form.expiresAt}
             min={new Date().toISOString().split("T")[0]} // prevent past dates
             onChange={(e) => setForm({ ...form, expiresAt: e.target.value })}
-            className="w-full p-2 border rounded-lg"
+            className="w-full px-2 py-1.5 border rounded-lg text-sm"
             required
           />
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
+            className="w-full bg-blue-600 text-white py-1.5 rounded-lg text-sm hover:bg-blue-700 transition"
           >
             Create Coupon
           </button>
@@ -143,35 +144,36 @@ const CouponManager = () => {
       
 
       {/* ✅ Search Bar */}
-      <div className="mb-4 flex items-center gap-2">
-        <input
-          type="text"
-          placeholder="Search by code..."
-          value={searchTerm}
-          onChange={(e) => {
-            setSearchTerm(e.target.value);
-            setCurrentPage(1); // reset to first page when searching
-          }}
-          className="w-1/3 p-2 border rounded-lg"
-        />
-        <button
-          onClick={fetchCoupons}
-          className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition"
-        >
-          🔄 Refresh
-        </button>
-      </div>
+      <div className="mb-6 flex flex-col sm:flex-row gap-3 sm:items-center">
+  <input
+    type="text"
+    placeholder="Search by code..."
+    value={searchTerm}
+    onChange={(e) => {
+      setSearchTerm(e.target.value);
+      setCurrentPage(1);
+    }}
+    className="w-full sm:w-56 px-2 py-1.5 border rounded-lg text-sm"
+  />
+
+  <button
+    onClick={fetchCoupons}
+    className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition w-fit"
+  >
+    🔄 Refresh
+  </button>
+</div>
 
       {/* ✅ Coupon Table */}
-      <div className="bg-white shadow-lg rounded-xl p-6 overflow-x-auto">
+      <div className="bg-white shadow-lg rounded-xl p-3 sm:p-5 overflow-x-auto">
         <h2 className="text-lg font-bold mb-4">All Coupons</h2>
-        <table className="w-full border border-gray-300 rounded-lg overflow-hidden">
+        <table className="min-w-[350px] w-full border border-gray-300 rounded-lg overflow-hidden text-xs sm:text-sm">
           <thead className="bg-gray-200 text-gray-700">
             <tr>
-              <th className="p-2 border">Code</th>
-              <th className="p-2 border">Discount %</th>
-              <th className="p-2 border">Expires At</th>
-              <th className="p-2 border">Actions</th>
+              <th className="px-2 py-1 border text-xs">Code</th>
+              <th className="px-2 py-1 border text-xs">Discount %</th>
+              <th className="px-2 py-1 border text-xs">Expires At</th>
+              <th className="px-2 py-1 border text-xs">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -186,7 +188,7 @@ const CouponManager = () => {
                   <td className="p-2 border">
                     <button
                       onClick={() => handleDelete(c._id)}
-                      className="bg-red-500 text-white px-3 py-1 rounded-lg hover:bg-red-600 transition"
+                      className="bg-red-500 text-white px-2 py-0.5 rounded-md text-xs hover:bg-red-600 transition"
                     >
                       ❌ Delete
                     </button>
@@ -204,11 +206,11 @@ const CouponManager = () => {
         </table>
 
         {/* ✅ Pagination Controls */}
-        <div className="flex justify-center items-center gap-4 mt-4">
+        <div className="flex flex-wrap justify-center items-center gap-3 mt-5 text-sm">
   <button
     disabled={currentPage === 1}
     onClick={() => setCurrentPage((prev) => prev - 1)}
-    className={`px-4 py-1.5 rounded-lg transition ${
+    className={`px-3 py-1 rounded-lg text-xs transition ${
       currentPage === 1
         ? "bg-gray-300 text-gray-500 cursor-not-allowed"
         : "bg-blue-600 text-white hover:bg-blue-700"
@@ -233,7 +235,7 @@ const CouponManager = () => {
     Next ➡
   </button>
 </div>
-
+</div>
       </div>
     </div>
   );

@@ -121,7 +121,7 @@ export default function TicketDashboard() {
     setPageCursors(newCursors);
 
     setCurrentPage(pageNumber);
- 
+
   };
 
   // 🔹 Update ticket status
@@ -163,17 +163,17 @@ export default function TicketDashboard() {
   });
 
   return (
-    <div className="bg-gray-100 min-h-screen p-6">
+    <div className="bg-gray-100 min-h-screen p-4 md:p-6 w-full">
       <h1 className="text-2xl font-bold mb-6">Ticket Dashboard</h1>
 
       {/* 🔍 Filters */}
-      <div className="flex gap-3 mb-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4 w-full">
         <input
           type="text"
           placeholder="Search name or phone..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="border px-4 py-2 rounded-lg w-1/2"
+          className="border px-4 py-2 rounded-lg w-full"
         />
         <input
           type="date"
@@ -184,8 +184,8 @@ export default function TicketDashboard() {
       </div>
 
       {/* 📋 Table */}
-      <div className="bg-white shadow rounded-lg overflow-y-auto max-h-[70vh]">
-        <table className="min-w-full">
+      <div className="bg-white shadow rounded-lg overflow-auto max-h-[70vh] w-full">
+        <table className="w-full min-w-[600px]">
           <thead className="bg-gray-50 sticky top-0">
             <tr>
               <th className="px-4 py-2 text-left">Name</th>
@@ -204,7 +204,9 @@ export default function TicketDashboard() {
               >
                 <td className="px-4 py-2">{ticket.name}</td>
                 <td className="px-4 py-2">{ticket.phone}</td>
-                <td className="px-4 py-2">{ticket.message}</td>
+                <td className="px-4 py-2 max-w-[200px] break-words">
+                  {ticket.message}
+                </td>
                 <td className="px-4 py-2">
                   <span
                     className={`px-2 py-1 text-xs rounded-full ${getStatusClasses(
@@ -237,9 +239,8 @@ export default function TicketDashboard() {
           <button
             key={i}
             onClick={() => fetchPage(i + 1)}
-            className={`px-3 py-1 rounded ${
-              currentPage === i + 1 ? "bg-indigo-600 text-white" : "bg-gray-200"
-            }`}
+            className={`px-3 py-1 rounded ${currentPage === i + 1 ? "bg-indigo-600 text-white" : "bg-gray-200"
+              }`}
           >
             {i + 1}
           </button>

@@ -80,7 +80,7 @@ export default function HomeCarousalAssetController() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4 sm:p-8 flex flex-col items-center font-sans">
+    <div className="min-h-screen bg-gray-100 p-4 sm:p-8 flex flex-col font-sans w-full">
       <h1 className="text-4xl font-extrabold text-gray-800 mb-6 sm:mb-8 ">
         Website Home Page Slider Controller
       </h1>
@@ -108,12 +108,12 @@ export default function HomeCarousalAssetController() {
       </div>
 
       {/* Image gallery */}
-      <div className="w-140 overflow-y-auto">
+      <div className="w-full overflow-y-auto">
         <h2 className="text-2xl font-semibold text-gray-700 mb-4">
           Slider Images
         </h2>
         {images.length > 0 ? (
-          <div className="flex gap-6 w-240">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 w-full">
             {images.map((image, index) => (
               <div
                 key={index}

@@ -21,6 +21,7 @@ import Termsandconditions from "./pages/Termsandconditions";
 import Shippingpolicy from "./pages/Shippingpolicy";
 import ExportSalesData from "./Dashboad/exportSalesData";
 import AdminDashboard from "./chat/AdminDashboard";
+import NotificationDashboard from "./Dashboad/Notificationcontroller";
 
 
 function App() {
@@ -44,6 +45,7 @@ function App() {
         <Route path="/CartProductsSummery" element={<CheckoutSummaryCard />} />
         <Route path="/ShippingPolicy" element={<Shippingpolicy />} />
         <Route path="/exportsalesdata" element={<ExportSalesData />} />
+        <Route path="/NotificationController" element={<NotificationDashboard />} />
         <Route
           path="/PaymentGateway/PaymentStatus/:id/:amount"
           element={<PaymentStatus />}

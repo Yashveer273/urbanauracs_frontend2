@@ -20,7 +20,7 @@ import CouponManager from "./coupancord";
 import HomeCarousalAssetController from "./HomeCarousalAssetController";
 import SocialLinksManager from "./socialMedia";
 import VandersSection from "./VandersSection";
-
+import NotificationDashboard from "./Notificationcontroller";
 import { GetVenderData } from "./GetVenderData";
 import ServiceManager from "./ServiceManager";
 import { cities } from "./utility";
@@ -851,18 +851,18 @@ const Dashboard = () => {
           </>
         );
       case "sales":
-        return (
-          <div className="flex flex-col items-center justify-center h-full p-8">
-            {tagAccess.includes("Sales") || tagAccess.includes("Admin") ? (
-              <SalesSection />
-            ) : (
-              <LockedBox
-                className="flex justify-center items-center h-screen"
-                label="Sales"
-              />
-            )}
-          </div>
-        );
+  return (
+    <div className="w-full">
+      {tagAccess.includes("Sales") || tagAccess.includes("Admin") ? (
+        <SalesSection />
+      ) : (
+        <LockedBox
+          className="flex justify-center items-center h-screen"
+          label="Sales"
+        />
+      )}
+    </div>
+  );
       case "Ticket":
         return (
           <div className="">
@@ -893,6 +893,23 @@ const Dashboard = () => {
             )}
           </div>
         );
+        case "Notification":
+        return (
+          <div className="">
+            {tagAccess.includes("Xl File Manager") ||
+            tagAccess.includes("Admin") ? (
+              <div className="flex">
+                {/* This is the component we just coded */}
+                <NotificationDashboard />
+              </div>
+            ) : (
+              <LockedBox
+                className="flex justify-center items-center h-screen"
+                label="Notification Controller  "
+              />
+            )}
+          </div>
+        ); 
       case "Coupon-Manager":
         return (
           <div className="">
@@ -914,15 +931,7 @@ const Dashboard = () => {
           <div className="">
             {tagAccess.includes("Website Content") ||
             tagAccess.includes("Admin") ? (
-              <div
-  style={{
-    display: "grid",
-    gridTemplateColumns: "repeat(2, 1fr)", // two equal columns
-    gridAutoRows: "minmax(100px, auto)",
-    gap: "16px",
-    padding: "16px",
-  }}
->
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">          {/* Shivani */}
   {/* First block */}
   <div
     style={{
@@ -1003,8 +1012,8 @@ const Dashboard = () => {
   return isAuthenticated != true ? (
     <DashboardLogin />
   ) : (
-    <div className="flex bg-gray-100 min-h-screen font-sans">
-     
+    <div className="flex flex-col md:flex-row bg-gray-100 min-h-screen font-sans"> {/* Shivani */}
+    
       <DashboardNavigator
         activeTab={activeTab}
         handleTabClick={handleTabClick}
@@ -1015,7 +1024,7 @@ const Dashboard = () => {
       {/* --------------------------------------------------------------------------------------------------- */}
       <>
         {/* Main Content Area */}
-        <main className="flex-1 p-8 overflow-y-auto     max-h-[101vh]">{renderContent()}</main>
+        <main className="flex-1 w-full p-2 md:p-8 overflow-y-auto">{renderContent()}</main>    {/* Shivani */}
 
         {/* Floating Action Button for adding a vendor */}
 
@@ -1034,8 +1043,8 @@ const Dashboard = () => {
                   location: "",
                 });
               }}
-              className="fixed bottom-8 right-8 w-14 h-14 bg-green-500 text-white text-3xl font-bold rounded-full shadow-lg flex items-center justify-center hover:bg-green-600 transition-colors duration-200 z-50"
-            >
+              className="fixed bottom-6 right-6 md:bottom-8 md:right-8 w-14 h-14 bg-green-500 text-white text-3xl font-bold rounded-full shadow-lg flex items-center justify-center hover:bg-green-600 transition-colors duration-200 z-50"
+            > {/* Shivani */}
               <PlusIcon className="w-6 h-6" />
             </button>
           )}
@@ -1045,8 +1054,8 @@ const Dashboard = () => {
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <form
               onSubmit={editingVendorId ? handleUpdateVendor : handleAddVendor}
-              className="bg-white p-6 rounded-xl shadow-lg w-full max-w-lg"
-            >
+              className="bg-white p-4 md:p-6 rounded-xl shadow-lg w-full max-w-lg" 
+            > {/* Shivani */}
               <h3 className="text-xl font-semibold mb-4">
                 {editingVendorId ? "Edit Vendor" : "Add New Vendor"}
               </h3>
@@ -1499,8 +1508,8 @@ const Dashboard = () => {
                 <img
                   src={selectedVendorService.serviceImage}
                   alt={selectedVendorService.title}
-                  className="w-full h-80 object-cover"
-                />
+                  className="w-full h-56 md:h-80 object-cover"
+                /> {/*Shivani */}
                 <div className="p-8">
                   <h1 className="text-4xl font-extrabold text-gray-900 mb-2">
                     {selectedVendorService.title}

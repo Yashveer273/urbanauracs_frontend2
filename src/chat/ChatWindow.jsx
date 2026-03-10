@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { collection, query, orderBy, onSnapshot, doc } from "firebase/firestore";
 import { firestore } from "../firebaseCon";
 import { deleteMessageByAdmin, markSeenByAdmin } from "./adminChatController";
-
+import MediaMessage from "./mediamessages";
 import { FiTrash2 } from "react-icons/fi";
 import MessageInput from "./MessageInput";
 
@@ -144,7 +144,7 @@ const ChatWindow = ({ selectedUser, currentUser, isAdmin }) => {
                   : "bg-white text-gray-800 rounded-bl-none"
               }`}
             >
-              <p className="text-sm">{msg.text}</p>
+              <MediaMessage text={msg.text} senderRole={msg.senderRole} />
 
               <div className="text-xs mt-1 opacity-70 text-right">
                 {msg.seen ? "✓✓" : "✓"}

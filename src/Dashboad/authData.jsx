@@ -318,55 +318,55 @@ const modalStyle = {
 
   // Render the component
   return (
-     <div className="max-w-12xl mx-auto transition-opacity duration-500">
+     <div className="w-full px-2 sm:px-4 md:px-6 transition-opacity duration-500"> {/* Shivani */}
       {/* Main Content */}
-      <main className="flex-1  md:p-8 overflow-auto">
-        <h2 className="text-3xl font-bold text-gray-800 mb-6">
+      <main className="flex-1 p-2 sm:p-4 md:p-6 overflow-auto">
+        <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800 mb-4 md:mb-6">  {/* Shivani */}
           User Authentication Dashboard
         </h2>
 
         {/* Graphs Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-6">
           {/* Last 7 Days Registrations Graph */}
-          <div className="bg-white p-6 rounded-xl shadow-md">
+          <div className="bg-white p-4 md:p-6 rounded-xl shadow-md w-full"> {/* Shivani */}
             <h3 className="text-xl font-semibold text-gray-800 mb-4">
               Last 7 Days Registration Trend
             </h3>
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="100%" height={260}>
               <LineChart
                 data={last7DaysData}
-                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                margin={{ top: 5, right: 5, left: -10, bottom: 0 }}
               >
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="formattedDate" />
-                <YAxis />
+                <XAxis dataKey="formattedDate" tick={{ fontSize: 12 }} />
+                <YAxis width={20} />
                 <Tooltip />
-                <Legend />
+                {window.innerWidth > 640 && <Legend />}
                 <Line
                   type="monotone"
                   dataKey="registrations"
                   stroke="#8884d8"
-                  activeDot={{ r: 8 }}
+                  activeDot={{ r: 6 }}
                 />
               </LineChart>
             </ResponsiveContainer>
           </div>
 
           {/* Monthly Registrations Progress Graph */}
-          <div className="bg-white p-6 rounded-xl shadow-md">
+          <div className="bg-white p-4 md:p-6 rounded-xl shadow-md">
             <h3 className="text-xl font-semibold text-gray-800 mb-4">
               {monthlyGraphTitle}
             </h3>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart
                 data={monthlyRegistrationsData}
-                margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                margin={{ top: 5, right: 5, left: -10, bottom: 0 }}
               >
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="formattedDate" />
-                <YAxis />
+                <XAxis dataKey="formattedDate" tick={{ fontSize: 12 }} />
+                <YAxis width={20} />
                 <Tooltip />
-                <Legend />
+                {window.innerWidth > 640 && <Legend />}
                 <Bar dataKey="registrations" fill="#82ca9d" />
               </BarChart>
             </ResponsiveContainer>
@@ -378,7 +378,7 @@ const modalStyle = {
         <h2 className="text-2xl font-bold text-gray-800 mb-6">User Records</h2>
 
         {/* Search and filters */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 p-4 bg-white rounded-xl shadow-md">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6 p-4 bg-white rounded-xl shadow-md"> {/* Shivani */}
           <input
             type="text"
             placeholder="Search by Username"
@@ -418,30 +418,29 @@ const modalStyle = {
         </div>
 
         {/* User Records Table */}
-        <div className="table-container bg-white p-6 rounded-xl shadow-md overflow-x-auto">
-          <table className="w-full text-left table-auto border-collapse">
+        <div className="bg-white p-4 md:p-6 rounded-xl shadow-md overflow-x-auto w-full">
+          <table className="min-w-[700px] md:min-w-[900px] w-full text-left table-auto border-collapse">   {/* Shivani */}
             <thead>
               <tr className="bg-gray-100 text-black uppercase text-sm leading-normal rounded-xl">
-                <th className="py-3 px-6 border-b border-gray-200 rounded-tl-xl">
+                <th className="py-3 px-4 md:px-6 border-b border-gray-200 rounded-tl-xl">
                   Username
                 </th>
-               
-                <th className="py-3 px-6 border-b border-gray-200">
+                <th className="py-3 px-4 md:px-6 border-b border-gray-200">
                   Mobile Number
                 </th>
-                <th className="py-3 px-6 border-b border-gray-200">
+                <th className="py-3 px-4 md:px-6 border-b border-gray-200">
                   WhatsApp Mobile Number
                 </th>
                 
-                <th className="py-3 px-6 border-b border-gray-200">
+                <th className="py-3 px-4 md:px-6 border-b border-gray-200">
                   Is WhatsApp
                 </th>
-                <th className="py-3 px-6 border-b border-gray-200">
+                <th className="py-3 px-4 md:px-6 border-b border-gray-200">
               Action
                 </th>
-                <th className="py-3 px-6 border-b border-gray-200">Location</th>
-                <th className="py-3 px-6 border-b border-gray-200">Pincode</th>
-                <th className="py-3 px-6 border-b border-gray-200 rounded-tr-xl">
+                <th className="py-3 px-4 md:px-6 border-b border-gray-200">Location</th>
+                <th className="py-3 px-4 md:px-6 border-b border-gray-200">Pincode</th>
+                <th className="py-3 px-4 md:px-6 border-b border-gray-200 rounded-tr-xl">
                   Registered On
                 </th>
               </tr>
@@ -453,12 +452,11 @@ const modalStyle = {
                   key={index}
                   className="hover:bg-gray-50 border-b border-gray-200 "
                 >
-                  <td className="py-4 px-6">{user.username}</td>
-                 
-                  <td className="py-4 px-6">{user.mobileNumber}</td>
-                  <td className="py-4 px-6">{user.ConfurmWhatsAppMobileNumber}</td>
-                  <td className="py-4 px-6">{user.phoneType}</td>
-                  <td className="py-4 px-6">
+                  <td className="py-3 px-4 md:px-6">{user.username}</td>     {/* Shivani */}
+                  <td className="py-3 px-4 md:px-6">{user.mobileNumber}</td>    {/* Shivani */}
+                  <td className="py-3 px-4 md:px-6">{user.ConfurmWhatsAppMobileNumber}</td>    {/* Shivani */}
+                  <td className="py-3 px-4 md:px-6">{user.phoneType}</td>    {/* Shivani */}
+                  <td className="py-3 px-4 md:px-6">      {/* Shivani */}
                 <button
                   onClick={() => handleEditClick(user)}
                   className="bg-blue-500 text-white px-3 py-1 rounded-lg hover:bg-blue-600"
@@ -466,7 +464,7 @@ const modalStyle = {
                   Edit
                 </button>
               </td>
-                  <td className="py-4 px-6">
+                  <td className="py-3 px-4 md:px-6">
   <span
     onClick={() => setSelectedLocation(user.location)}
     style={{ cursor: "pointer", color: "#2563eb" }}
@@ -477,8 +475,8 @@ const modalStyle = {
   </span>
 </td>
 
-                  <td className="py-4 px-6">{user.pincode}</td>
-                  <td className="py-4 px-6">
+                  <td className="py-3 px-4 md:px-6">{user.pincode}</td>  {/* Shivani */}
+                  <td className="py-3 px-4 md:px-6">{/* Shivani */}
                     {user.created?.toDate
                       ? new Date(user.created.toDate()).toLocaleString()
                       : new Date(user.created).toLocaleString()}
@@ -500,7 +498,7 @@ const modalStyle = {
           </table>
           {editingUser && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-          <div className="bg-white p-6 rounded-xl shadow-xl w-96">
+          <div className="bg-white p-6 rounded-xl shadow-xl w-full max-w-md">   {/* Shivani */}
             <h3 className="text-lg font-semibold mb-4 text-gray-700">
               Edit User: {editingUser.username}
             </h3>
@@ -574,7 +572,7 @@ const modalStyle = {
         </div>
 
         {/* Pagination Buttons */}
-        <div className="flex flex-col items-center mt-6 space-y-3">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mt-6 gap-3">   {/* Shivani */}
           {/* Page Info */}
           <p className="text-gray-600 font-medium">
             Page {currentPage} of {totalPages}

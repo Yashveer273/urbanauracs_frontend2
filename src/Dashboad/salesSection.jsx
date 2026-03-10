@@ -394,7 +394,7 @@ export default function SalesSection() {
         phone_number: rowForm.phone,
         ConfurmWhatsAppMobileNumber: rowForm.WhatsApp_Mobile_Number,
         discount: rowForm.discount,
-        product_info: response.data.data.product_info??{cart:[]},
+        product_info: response.data.data.product_info ?? { cart: [] },
       });
 
       setSalesData((prev) =>
@@ -556,7 +556,7 @@ export default function SalesSection() {
     setTempStatus("");
     setTempComment("");
   };
-  
+
   const saveServiceStatusCard = async () => {
     const { saleId, isProduct, serviceId, index } = editingStatus;
 
@@ -659,19 +659,23 @@ export default function SalesSection() {
     "06:00 PM - 08:00 PM",
   ];
   return (
-    <div className="flex flex-col min-h-screen font-sans bg-gray-100 w-300">
+    <div className="flex flex-col min-h-screen font-sans bg-gray-100 w-full">
+      {" "}
+      {/*Shivani*/}
       <main className="flex-1 p-4 md:p-8 overflow-auto">
-        <h2 className="text-3xl font-bold mb-6">Sales Dashboard</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          <div className="bg-white p-6 rounded-xl shadow-md">
+        <h2 className="text-2xl md:text-3xl font-bold mb-4 md:mb-6">
+          Sales Dashboard
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-8">
+          <div className="bg-white p-4 md:p-6 rounded-xl shadow-md w-full min-h-[320px]">
             <h3 className="text-xl font-semibold mb-4">
               Last 7 Days Sales Trend
             </h3>
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="100%" height={280}>
               <LineChart data={last7DaysData}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="formattedDate" />
-                <YAxis />
+                <XAxis dataKey="formattedDate" tick={{ fontSize: 10 }} />
+                <YAxis tick={{ fontSize: 10 }} width={30} />
                 <Tooltip />
                 <Legend />
                 <Line
@@ -683,11 +687,11 @@ export default function SalesSection() {
               </LineChart>
             </ResponsiveContainer>
           </div>
-          <div className="bg-white p-6 rounded-xl shadow-md">
+          <div className="bg-white p-4 md:p-6 rounded-xl shadow-md w-full min-h-[320px]">
             <h3 className="text-xl font-semibold mb-4">
               Monthly Sales Progress
             </h3>
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="100%" height={280}>
               <BarChart data={monthlySalesData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="formattedDate" />
@@ -702,7 +706,9 @@ export default function SalesSection() {
 
         <div className="bg-white rounded-lg shadow-sm p-4 mb-4">
           {/* Filter Inputs Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+            {" "}
+            {/*Shivani*/}
             <div className="flex flex-col gap-1">
               <label className="text-xs font-medium text-gray-500">Phone</label>
               <input
@@ -715,7 +721,6 @@ export default function SalesSection() {
                 className="p-2 border rounded-md text-sm w-full"
               />
             </div>
-
             <div className="flex flex-col gap-1">
               <label className="text-xs font-medium text-gray-500">Name</label>
               <input
@@ -728,7 +733,6 @@ export default function SalesSection() {
                 className="p-2 border rounded-md text-sm w-full"
               />
             </div>
-
             <div className="flex flex-col gap-1">
               <label className="text-xs font-medium text-gray-500">
                 Order ID
@@ -743,7 +747,6 @@ export default function SalesSection() {
                 className="p-2 border rounded-md text-sm w-full"
               />
             </div>
-
             <div className="flex flex-col gap-1">
               <label className="text-xs font-medium text-gray-500">
                 Status
@@ -770,7 +773,6 @@ export default function SalesSection() {
                 ))}
               </select>
             </div>
-
             <div className="flex flex-col gap-1">
               <label className="text-xs font-medium text-gray-500">
                 Responsible Person
@@ -790,7 +792,6 @@ export default function SalesSection() {
                 ))}
               </select>
             </div>
-
             {/* Vendor Search (Assuming GetVenderData renders a search input) */}
             <div className="flex flex-col gap-1">
               <GetVenderData
@@ -802,7 +803,6 @@ export default function SalesSection() {
                 }
               />
             </div>
-
             <div className="flex flex-col gap-1">
               <label className="text-xs font-medium text-gray-500">
                 Single Date
@@ -822,7 +822,6 @@ export default function SalesSection() {
                 className="p-2 border rounded-md text-sm w-full"
               />
             </div>
-
             {/* Date Range Group */}
             <div className="flex flex-col gap-1 md:col-span-1">
               <label className="text-xs font-medium text-gray-500">
@@ -894,12 +893,16 @@ export default function SalesSection() {
         </div>
         <WhatsAppChatBox />
         <div
-          className="table-container bg-white p-6 rounded-xl shadow-md overflow-x-auto"
+          className="table-container bg-white p-4 md:p-6 rounded-xl shadow-md w-full min-h-[280px] overflow-x-auto"
           ref={tableContainerRef}
         >
+          {" "}
+          {/* Shivani */}
           <table className="w-full table-auto border-collapse">
             <thead>
-              <tr className="bg-gray-100 text-gray-600 uppercase text-sm">
+              <tr className="bg-gray-100 text-gray-600 uppercase text-xs md:text-sm">
+                {" "}
+                {/* Shivani */}
                 {tableHeaders.map((h) => (
                   <th key={h} className="py-3 px-6">
                     {h}
@@ -922,13 +925,15 @@ export default function SalesSection() {
                       </button>
                     </td>
 
-                    <td className="py-4 px-2">{sale.name}</td>
+                    <td className="py-3 px-2 text-xs md:text-sm">
+                      {sale.name}
+                    </td>
 
-                    <td className="py-4 px-2">
+                    <td className="py-3 px-2 text-xs md:text-sm">
                       {sale.phone_number}
                       <br /> /W {sale.ConfurmWhatsAppMobileNumber}
                     </td>
-                    <td className="py-4 px-2">
+                    <td className="py-3 px-2 text-xs md:text-sm">
                       <button
                         onClick={() => showProductInfo(sale)}
                         className="text-blue-600 cursor-pointer"
@@ -937,58 +942,64 @@ export default function SalesSection() {
                       </button>
                     </td>
 
-                    <td className="py-4 px-2">
+                    <td className="py-3 px-2 text-xs md:text-sm">
                       ₹
-                      {Math.round( sale?.product_info?.cart?.reduce(
-                        (sum, item) =>
-                          sum + Number(item.item_price * item.quantity),
-                        0,
-                      ))}
+                      {Math.round(
+                        sale?.product_info?.cart?.reduce(
+                          (sum, item) =>
+                            sum + Number(item.item_price * item.quantity),
+                          0,
+                        ),
+                      )}
                     </td>
-                    <td className="py-4 px-2">
+                    <td className="py-3 px-2 text-xs md:text-sm">
                       ₹{Number(sale?.discount || 0)}
                     </td>
-                    <td className="py-4 px-2">
+                    <td className="py-3 px-2 text-xs md:text-sm">
                       ₹
-                      {Math.round(sale?.product_info?.cart?.reduce(
-                        (sum, item) =>
-                          sum +
-                          Number(
-                            CalculateConvenienceFee(
-                              item.item_price * item.quantity,
-                            ).convenienceFee,
-                          ),
-                        0,
-                      ))}
+                      {Math.round(
+                        sale?.product_info?.cart?.reduce(
+                          (sum, item) =>
+                            sum +
+                            Number(
+                              CalculateConvenienceFee(
+                                item.item_price * item.quantity,
+                              ).convenienceFee,
+                            ),
+                          0,
+                        ),
+                      )}
                     </td>
 
-                    <td className="py-4 px-2">
-  ₹
-  {Math.round(
-    sale?.product_info?.cart?.reduce(
-      (sum, item) =>
-        sum +
-        Number(
-          item.item_price * item.quantity +
-            CalculateConvenienceFee(
-              item.item_price * item.quantity
-            ).convenienceFee
-        ),
-      0
-    ) -
-      Number(sale?.discount || 0) -
-      Number(sale?.payedAmount || 0)
-  )}
-</td>
+                    <td className="py-3 px-2 text-xs md:text-sm">
+                      ₹
+                      {Math.round(
+                        sale?.product_info?.cart?.reduce(
+                          (sum, item) =>
+                            sum +
+                            Number(
+                              item.item_price * item.quantity +
+                                CalculateConvenienceFee(
+                                  item.item_price * item.quantity,
+                                ).convenienceFee,
+                            ),
+                          0,
+                        ) -
+                          Number(sale?.discount || 0) -
+                          Number(sale?.payedAmount || 0),
+                      )}
+                    </td>
 
-                    <td className="py-4 px-2">₹{sale.payedAmount}</td>
+                    <td className="py-3 px-2 text-xs md:text-sm">
+                      ₹{sale.payedAmount}
+                    </td>
 
-                    <td className="py-4 px-2">
+                    <td className="py-3 px-2 text-xs md:text-sm">
                       {normalizeDate(sale.date_time)}
                       <br />
                       {new Date(sale.date_time).toLocaleTimeString()}
                     </td>
-                    <td className="py-4 px-2">
+                    <td className="py-3 px-2 text-xs md:text-sm">
                       <button
                         onClick={() =>
                           openStatusCard(
@@ -1002,7 +1013,7 @@ export default function SalesSection() {
                         {sale.status || "Pending"}
                       </button>
                     </td>
-                    <td className="py-4 px-2">
+                    <td className="py-3 px-2 text-xs md:text-sm">
                       {responsiblePersons && responsiblePersons.length > 0 ? (
                         tagAccess?.includes("Admin") ? (
                           <select
@@ -1010,11 +1021,8 @@ export default function SalesSection() {
                             onChange={(e) =>
                               updateResponsiblePerson(sale.id, e.target.value)
                             }
-                            className="
-          w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white
-          focus:outline-none focus:ring-2 focus:ring-blue-500
-        "
-                          >
+                            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white
+          focus:outline-none focus:ring-2 focus:ring-blue-500">
                             {responsiblePersons.map((person) => (
                               <option
                                 key={person._id}
@@ -1120,7 +1128,7 @@ export default function SalesSection() {
                       />
                     </td>
 
-                    <td className="py-4 px-2">
+                    <td className="py-3 px-2 text-xs md:text-sm">
                       <button
                         className="bg-blue-600 cursor-pointer text-white px-3 py-1 rounded-md"
                         onClick={() => navigate("/InvoiceApp", { state: sale })}
@@ -1146,7 +1154,9 @@ export default function SalesSection() {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex justify-center items-center space-x-2 mt-6">
+          <div className="flex flex-wrap justify-center items-center gap-2 mt-6">
+            {" "}
+            {/* Shivani */}
             <button
               onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
               disabled={currentPage === 1}
@@ -1180,7 +1190,6 @@ export default function SalesSection() {
                   </React.Fragment>
                 );
               })}
-
             <button
               onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
               disabled={currentPage === totalPages}
@@ -1356,7 +1365,7 @@ export default function SalesSection() {
                 Edit Service Items
               </h4>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                 {selectedProductInfo.cart.map((item, index) => (
                   <div
                     key={index}
@@ -1461,9 +1470,7 @@ export default function SalesSection() {
           </div>
         )}
       </main>
-
       {/* Modal */}
-
       {editingStatus.saleId && (
         <div className="fixed inset-0 z-100 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white p-6 rounded-xl w-80 shadow-lg">
@@ -1507,7 +1514,6 @@ export default function SalesSection() {
           </div>
         </div>
       )}
-
       {editingStatus.serviceId && (
         <div className="fixed inset-0 z-100 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white p-6 rounded-xl w-80 shadow-lg">
@@ -1551,7 +1557,6 @@ export default function SalesSection() {
           </div>
         </div>
       )}
-
       {viewComment.saleId && (
         <div
           className="fixed inset-0 z-100 flex items-center justify-center bg-black bg-opacity-50"
@@ -1586,7 +1591,7 @@ export default function SalesSection() {
           onClick={() => setEditingRow(null)}
         >
           <div
-            className="bg-white p-6 rounded-xl w-full max-w-md shadow-lg mb-8 max-h-[80vh] overflow-y-auto"
+            className="bg-white p-6 rounded-xl w-[95%] md:max-w-md shadow-lg mb-8 max-h-[80vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <h3 className="text-xl font-bold mb-4">Edit Sale</h3>
@@ -1715,7 +1720,6 @@ export default function SalesSection() {
           </div>
         </div>
       )}
-
       {isEditCartModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[101]">
           <div className="bg-white p-6 rounded-lg shadow-lg w-96 max-h-[90vh] overflow-y-auto">

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { collection, query, getDocs, orderBy } from 'firebase/firestore';
 import { firestore } from '../firebaseCon'; 
 import * as XLSX from 'xlsx';
-import { Search, FileSpreadsheet, Loader2, Download, ChevronLeft, ChevronRight } from 'lucide-react';
+import { FileSpreadsheet, Loader2, Download, ChevronLeft, ChevronRight } from 'lucide-react';
 import { normalizeDate } from "./utility";
 import { CalculateConvenienceFee } from "../components/TexFee"; 
 
@@ -139,8 +139,8 @@ const ExportSalesData = () => {
 
   return (
     <div className="flex flex-col min-h-screen font-sans bg-gray-100 w-full p-4 md:p-8">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-3xl font-bold">Export Panel (By Service Date)</h2>
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">  {/* Shivani */}
+        <h2 className="text-2xl md:text-3xl font-bold">Export Panel (By Service Date)</h2> {/* Shivani */}
         {previewData.length > 0 && (
           <button onClick={exportToExcel} className="flex items-center gap-2 bg-emerald-600 text-white px-6 py-2 rounded-xl shadow-md font-bold">
             <FileSpreadsheet size={20} /> Download Excel
@@ -149,7 +149,7 @@ const ExportSalesData = () => {
       </div>
 
       {/* Date Filter Box */}
-      <div className="bg-white rounded-lg shadow-sm p-4 mb-4 border border-gray-200 grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="bg-white rounded-lg shadow-sm p-4 mb-4 border border-gray-200 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"> {/* Shivani */}
           <div className="flex flex-col">
             <label className="text-xs font-bold text-gray-500 mb-1">Service Start Date</label>
             <input type="date" className="p-2 border rounded-md text-sm" value={startDate} onChange={e => setStartDate(e.target.value)} />
@@ -169,20 +169,20 @@ const ExportSalesData = () => {
       {/* MAIN TABLE (Summary) */}
       <div className="bg-white p-6 rounded-xl shadow-md overflow-x-auto mb-10 border border-gray-100">
         <h3 className="text-lg font-bold mb-4 text-gray-700 border-l-4 border-blue-600 pl-3">Order Summaries</h3>
-        <table className="w-full table-auto border-collapse">
+        <table className="min-w-[1100px] w-full table-auto border-collapse">
           <thead>
             <tr className="bg-gray-100 text-gray-600 uppercase text-[11px] font-black tracking-wider">
-              {mainTableHeaders.map((h) => <th key={h} className="py-4 px-6 text-left border-b">{h}</th>)}
+              {mainTableHeaders.map((h) => <th key={h} className="py-3 px-3 md:px-6 text-left border-b">{h}</th>)}
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
             {currentData.length ? currentData.map((sale, i) => (
               <tr key={i} className={`hover:bg-indigo-50/30 transition-colors text-sm ${selectedSale?.id === sale.id ? 'bg-indigo-50' : ''}`}>
-                <td className="py-4 px-6">{sale.S_orderId}</td>
-                <td className="py-4 px-6">{sale.orderId}</td>
-                <td className="py-4 px-6 font-semibold">{sale.name}</td>
-                <td className="py-4 px-6 text-gray-500">{sale.phone_number}</td>
-                <td className="py-4 px-6">
+                <td className="py-3 px-3 md:px-6">{sale.S_orderId}</td>
+                <td className="py-3 px-3 md:px-6">{sale.orderId}</td>
+                <td className="py-3 px-3 md:px-6 font-semibold">{sale.name}</td>
+                <td className="py-3 px-3 md:px-6 text-gray-500">{sale.phone_number}</td>
+                <td className="py-3 px-3 md:px-6">
                   <button 
                     onClick={() => { setSelectedSale(sale); setDetailsPage(1); }} 
                     className={`px-3 py-1 rounded-md font-bold text-xs ${selectedSale?.id === sale.id ? 'bg-blue-600 text-white' : 'text-blue-600 border border-blue-600 hover:bg-blue-50'}`}
@@ -190,13 +190,13 @@ const ExportSalesData = () => {
                     {selectedSale?.id === sale.id ? "Showing Below" : "View Details"}
                   </button>
                 </td>
-                <td className="py-4 px-6 font-bold">₹{sale.total_price}</td>
-                <td className="py-4 px-6 text-black">₹{sale.discount || 0}</td>
-                <td className="py-4 px-6 text-black">₹{Number(sale.total_price || 0) - Number(sale.payedAmount || 0)}</td>
-                <td className="py-4 px-6 text-green-600 font-bold">₹{sale.payedAmount}</td>
-                <td className="py-4 px-6 text-xs text-gray-400">{normalizeDate(sale.date_time)}</td>
-                <td className="py-4 px-6 font-bold text-indigo-600">{sale.status || "Pending"}</td>
-                <td className="py-4 px-6 text-gray-400">{sale.responsible || "—"}</td>
+                <td className="py-3 px-3 md:px-6 font-bold">₹{sale.total_price}</td>
+                <td className="py-3 px-3 md:px-6 text-black">₹{sale.discount || 0}</td>
+                <td className="py-3 px-3 md:px-6 text-black">₹{Number(sale.total_price || 0) - Number(sale.payedAmount || 0)}</td>
+                <td className="py-3 px-3 md:px-6 text-green-600 font-bold">₹{sale.payedAmount}</td>
+                <td className="py-3 px-3 md:px-6 text-xs text-gray-400">{normalizeDate(sale.date_time)}</td>
+                <td className="py-3 px-3 md:px-6 font-bold text-indigo-600">{sale.status || "Pending"}</td>
+                <td className="py-3 px-3 md:px-6 text-gray-400">{sale.responsible || "—"}</td>
               </tr>
             )) : <tr><td colSpan={12} className="py-10 text-center text-gray-300 font-bold">NO SALES FOUND FOR THIS SERVICE DATE RANGE</td></tr>}
           </tbody>
@@ -216,15 +216,15 @@ const ExportSalesData = () => {
       
       {selectedSale && (
         <div className="bg-white p-6 rounded-xl shadow-xl border-t-4 border-indigo-600 animate-in slide-in-from-top duration-300">
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="text-xl font-black text-gray-800">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-6"> {/* Shivani */}
+            <h3 className="text-lg md:text-xl font-black text-gray-800"> {/* Shivani */}
                 Service Breakdown: {selectedSale.name} ({selectedSale.phone_number})
             </h3>
             <button onClick={() => setSelectedSale(null)} className="text-gray-400 hover:text-red-500 font-bold text-xl">&times; Close Breakdown</button>
           </div>
           
           <div className="overflow-x-auto">
-            <table className="w-full table-auto border-collapse">
+            <table className="min-w-[1000px] w-full table-auto border-collapse">
               <thead>
                 <tr className="bg-gray-50 text-gray-500 uppercase text-[10px] font-black">
                   {["Service ID", "Service Details", "Service Date/ Time", "Booking Address", "Order Amount", "Quantity", "Convenience Fee", "Total", "Status"].map((h) => <th key={h} className="py-3 px-6 text-left border-b">{h}</th>)}
@@ -233,23 +233,23 @@ const ExportSalesData = () => {
               <tbody>
                 {currentDetailData.map((item, i) => (
                   <tr key={i} className={`hover:bg-gray-50 border-b text-sm ${item.location_booking_time >= startDate && item.location_booking_time <= endDate ? 'bg-green-50/50' : ''}`}>
-                    <td className="py-4 px-6">{item.product_purchase_id}</td>
-                    <td className="py-4 px-6 max-w-[300px]">
+                    <td className="py-3 px-3 md:px-6">{item.product_purchase_id}</td>
+                    <td className="py-3 px-3 md:px-6 max-w-[300px]">
                       <div className="font-bold text-gray-700">{item.product_name}</div>
                       <div className="text-xs text-gray-400 italic">{item.description}</div>
                     </td>
-                    <td className="py-4 px-6 text-xs">
+                    <td className="py-3 px-3 md:px-6 text-xs">
                         <span className={item.location_booking_time >= startDate && item.location_booking_time <= endDate ? 'font-bold text-green-700' : ''}>
-                             {item.location_booking_time}
+                            {item.location_booking_time}
                         </span>
                         <br/>{item.SelectedServiceTime}
                     </td>
-                    <td className="py-4 px-6">{item.bookingAddress}</td>
-                    <td className="py-4 px-6">₹{item.item_price}</td>
-                    <td className="py-4 px-6 font-bold">{item.quantity}</td>
-                    <td className="py-4 px-6 text-gray-400">₹{CalculateConvenienceFee(item.item_price * item.quantity).convenienceFee}</td>
-                    <td className="py-4 px-6 font-black text-blue-600">₹{item.item_price * item.quantity + CalculateConvenienceFee(item.item_price * item.quantity).convenienceFee}</td>
-                    <td className="py-4 px-6">
+                    <td className="py-3 px-3 md:px-6">{item.bookingAddress}</td>
+                    <td className="py-3 px-3 md:px-6">₹{item.item_price}</td>
+                    <td className="py-3 px-3 md:px-6 font-bold">{item.quantity}</td>
+                    <td className="py-3 px-3 md:px-6 text-gray-400">₹{CalculateConvenienceFee(item.item_price * item.quantity).convenienceFee}</td>
+                    <td className="py-3 px-3 md:px-6 font-black text-blue-600">₹{item.item_price * item.quantity + CalculateConvenienceFee(item.item_price * item.quantity).convenienceFee}</td>
+                    <td className="py-3 px-3 md:px-6">
                         <span className="px-2 py-1 rounded bg-green-50 text-green-700 text-[10px] font-bold uppercase">{item.status || "Started"}</span>
                     </td>
                   </tr>

@@ -100,11 +100,11 @@ const ServiceManager = ({
     <>
       {/* ================= SERVICES LIST ================= */}
       {!selectedService && (
-        <div className="max-w-6xl mx-auto transition-opacity duration-500">
-          <h2 className="text-3xl font-bold text-gray-800 mb-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 transition-opacity duration-500"> {/* Shivani */}
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-6">     {/* Shivani */}
             Service Categories
           </h2>
-          <div className="flex flex-wrap items-center gap-3 mb-6">
+          <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-6">   {/* Shivani */}
             <button
               onClick={() => setIsServiceHypeOpen(true)}
               className="flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-700 font-semibold rounded-lg border border-indigo-100 hover:bg-indigo-100 transition-colors shadow-sm"
@@ -188,7 +188,7 @@ const ServiceManager = ({
 
           {/* Add Service */}
           <div className="bg-white p-6 rounded-xl shadow-lg mb-8">
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex flex-col md:flex-row gap-4">       {/* Shivani */}
               <input
                 type="text"
                 className="flex-1 p-3 border rounded-lg focus:ring-2 focus:ring-indigo-500"
@@ -209,13 +209,13 @@ const ServiceManager = ({
           </div>
 
           {/* Services Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">           {/* Shivani */}
             {services.map((service) => (
               <div
                 key={service.id}
                 onClick={() => handleSelectService(service)}
-                className="bg-white p-6 rounded-xl shadow-md cursor-pointer hover:scale-105 transition"
-              >
+                className="bg-white p-4 md:p-6 rounded-xl shadow-md cursor-pointer hover:scale-105 transition"     
+              >    {/* Shivani */}
                 {editingServiceId === service.id ? (
                   <input
                     autoFocus
@@ -303,7 +303,7 @@ const ServiceManager = ({
 
       {/* ================= VENDORS LIST ================= */}
       {selectedService && (
-        <div className="max-w-4xl mx-auto transition-opacity duration-500">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 transition-opacity duration-500"> {/* Shivani */}
           <button
             onClick={handleClosePanel}
             className="mb-4 px-4 py-2 bg-gray-300 rounded"
@@ -316,7 +316,7 @@ const ServiceManager = ({
           </h2>
 
           {selectedService.data.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">     /* Shivani */
               {selectedService.data.map((vendor) => (
                 <div
                   key={vendor.vendorId}

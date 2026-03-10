@@ -8,8 +8,9 @@ import {
   getDocs,
   writeBatch,
 } from "firebase/firestore";
-export const API_BASE_URL = "https://urbanaurabzcs.xyz";
+// export const API_BASE_URL = "https://urbanaurabzcs.xyz";
 // export const API_BASE_URL = "http://localhost:8000";
+export const API_BASE_URL = "http://192.168.29.147:8000";
 
 export const registorUser = async (
   username,
@@ -473,5 +474,39 @@ export const otpsend = async (mobileNumber, message, type) => {
   } catch (error) {
     console.error("Error sending OTP:", error.response?.data || error.message);
     throw error;
+  }
+};
+
+export const Notificationsend = async (payload) => {
+  try {
+    console.log("Sending Notification Payload:", payload);
+
+    const res = await axios.post(`${API_BASE_URL}/api/send-notification`, payload, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    console.log("Notification API Response:", res.data);
+
+    return res.data;
+  } catch (error) {
+    console.error("Notification API Error:", error.response || error.message);
+
+    return {
+      success: false,
+      message: error.response?.data?.message || "Failed to send notification",
+    };
+  }
+};
+export const FetchAllUsers = async () => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}/api/all-users`);
+    console.log(response);
+    
+    return response.data; // This returns the { success, total, users } object
+  } catch (error) {
+    console.error("API Error (FetchAllUsers):", error);
+    return { success: false, users: [], message: error.message };
   }
 };
