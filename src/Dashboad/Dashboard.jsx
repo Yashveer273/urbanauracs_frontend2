@@ -1026,7 +1026,7 @@ const Dashboard = () => {
         {/* Main Content Area */}
         <main className="flex-1 w-full p-2 md:p-8  h-[100vh] overflow-auto">{renderContent()}</main>    {/* Shivani */}
 
-        {/* Floating Action Button for adding a vendor */}
+     
 
         {activeTab === "services" &&
           selectedService &&
