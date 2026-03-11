@@ -896,7 +896,7 @@ const Dashboard = () => {
         case "Notification":
         return (
           <div className="">
-            {tagAccess.includes("Xl File Manager") ||
+            {tagAccess.includes("Notification") ||
             tagAccess.includes("Admin") ? (
               <div className="flex">
                 {/* This is the component we just coded */}
@@ -1024,7 +1024,7 @@ const Dashboard = () => {
       {/* --------------------------------------------------------------------------------------------------- */}
       <>
         {/* Main Content Area */}
-        <main className="flex-1 w-full p-2 md:p-8 overflow-y-auto">{renderContent()}</main>    {/* Shivani */}
+        <main className="flex-1 w-full p-2 md:p-8  h-[100vh] overflow-auto">{renderContent()}</main>    {/* Shivani */}
 
         {/* Floating Action Button for adding a vendor */}
 
