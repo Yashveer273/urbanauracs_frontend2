@@ -8,9 +8,9 @@ import {
   getDocs,
   writeBatch,
 } from "firebase/firestore";
-export const API_BASE_URL = "https://urbanaurabzcs.xyz";
+// export const API_BASE_URL = "https://urbanaurabzcs.xyz";
 // export const API_BASE_URL = "http://localhost:8000";
-// export const API_BASE_URL = "http://192.168.1.7:8000";
+export const API_BASE_URL = "http://192.168.29.147:8000";
 
 export const registorUser = async (
   username,
@@ -510,3 +510,28 @@ export const FetchAllUsers = async () => {
     return { success: false, users: [], message: error.message };
   }
 };
+
+export const BannerManagementAPI = async (action, data = {}) => {
+  try {
+
+    if (action === "get") {
+      const res = await axios.get(`${API_BASE_URL}/api/banner/get-banners`);
+      return res.data;
+    }
+
+    if (action === "add") {
+      const res = await axios.post(`${API_BASE_URL}/api/banner/add-banner`, data);
+      return res.data;
+    }
+
+    if (action === "delete") {
+      const res = await axios.delete(`${API_BASE_URL}/api/banner/delete-banner/${data.id}`);
+      return res.data;
+    }
+
+  } catch (error) {
+    console.error("Banner API Error:", error);
+    return { success: false, message: error.message };
+  }
+};
+  

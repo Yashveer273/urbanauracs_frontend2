@@ -22,7 +22,7 @@ import Shippingpolicy from "./pages/Shippingpolicy";
 import ExportSalesData from "./Dashboad/exportSalesData";
 import AdminDashboard from "./chat/AdminDashboard";
 import NotificationDashboard from "./Dashboad/Notificationcontroller";
-
+import BannerManagement from "./Dashboad/BannerManagement";
 
 function App() {
   return (
@@ -46,6 +46,7 @@ function App() {
         <Route path="/ShippingPolicy" element={<Shippingpolicy />} />
         <Route path="/exportsalesdata" element={<ExportSalesData />} />
         <Route path="/NotificationController" element={<NotificationDashboard />} />
+        <Route path="/BannerManagement" element={<BannerManagement />} />
         <Route
           path="/PaymentGateway/PaymentStatus/:id/:amount"
           element={<PaymentStatus />}
@@ -58,7 +59,6 @@ function App() {
           path="/PaymentGateway/PaymentFailed/:id/:amount"
           element={<PaymentFailed />}
         />
-
         <Route path="/services/:parameter" element={<CleaningService />} />
         <Route path="/AccountMenu" element={<AccountMenu />} />
       </Routes>

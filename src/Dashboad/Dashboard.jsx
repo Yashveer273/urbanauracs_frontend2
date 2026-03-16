@@ -21,6 +21,7 @@ import HomeCarousalAssetController from "./HomeCarousalAssetController";
 import SocialLinksManager from "./socialMedia";
 import VandersSection from "./VandersSection";
 import NotificationDashboard from "./Notificationcontroller";
+import BannerManagement from "./BannerManagement";
 import { GetVenderData } from "./GetVenderData";
 import ServiceManager from "./ServiceManager";
 import { cities } from "./utility";
@@ -906,6 +907,23 @@ const Dashboard = () => {
               <LockedBox
                 className="flex justify-center items-center h-screen"
                 label="Notification Controller  "
+              />
+            )}
+          </div>
+        ); 
+        case "Banner":
+        return (
+          <div className="">
+            {tagAccess.includes("Banner") ||
+            tagAccess.includes("Admin") ? (
+              <div className="flex">
+                {/* This is the component we just coded */}
+                <BannerManagement />
+              </div>
+            ) : (
+              <LockedBox
+                className="flex justify-center items-center h-screen"
+                label="Banner Management"
               />
             )}
           </div>
