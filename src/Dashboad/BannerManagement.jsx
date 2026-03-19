@@ -48,6 +48,7 @@ const BannerManagement = () => {
       try {
         finalImageUrl = await uploadToCloudinary();
       } catch (err) {
+        print(err);
         alert("Upload failed");
         setLoading(false);
         return;
