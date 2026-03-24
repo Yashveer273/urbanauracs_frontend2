@@ -134,7 +134,7 @@ const DashboardContrller = () => {
       )}
 
       {/* Add/Update User Form */}
-      <div className="max-w-xl mx-auto bg-white rounded-xl shadow-lg p-8 mb-8">
+      <div className=" mx-auto bg-white rounded-xl shadow-lg p-8 mb-8">
         <h2 className="text-2xl font-semibold mb-6 text-gray-700">{isEditing ? "Edit User Permissions" : "Add New User"}</h2>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">

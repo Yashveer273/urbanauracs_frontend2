@@ -25,10 +25,11 @@ import BannerManagement from "./BannerManagement";
 import { GetVenderData } from "./GetVenderData";
 import ServiceManager from "./ServiceManager";
 import { cities } from "./utility";
-
+import AdminDashboard from "../chat/AdminDashboard";
 import ExportSalesData from "./exportSalesData";
 import DashboardNavigator from "./DashboardNavigator";
 import BlockedDatesTable from "./blockDate";
+import AddAppBanner from "./AddAppBanner";
 
 const PlusIcon = () => (
   <svg
@@ -810,7 +811,7 @@ const Dashboard = () => {
     switch (activeTab) {
       case "auth":
         return (
-          <div className="flex flex-col items-center justify-center h-full p-8">
+          <div className="flex flex-col items-center h-full p-8">
             {/* <AuthDashboard /> */}
             {tagAccess.includes("Users") || tagAccess.includes("Admin") ? (
               <AuthDashboard />
@@ -911,6 +912,23 @@ const Dashboard = () => {
             )}
           </div>
         ); 
+        case "Chat-Controller":
+        return (
+          <div className="">
+            {tagAccess.includes("Chat Controller") ||
+            tagAccess.includes("Admin") ? (
+              <div className="flex">
+                {/* This is the component we just coded */}
+                <AdminDashboard />
+              </div>
+            ) : (
+              <LockedBox
+                className="flex justify-center items-center h-screen"
+                label="Chat Controller  "
+              />
+            )}
+          </div>
+        ); 
         case "Banner":
         return (
           <div className="">
@@ -986,6 +1004,18 @@ const Dashboard = () => {
   >
     <BlockedDatesTable />
   </div>
+   <div
+    style={{
+      background: "#fff",
+      borderRadius: "8px",
+      boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+      padding: "16px",
+      gridColumn: "1 / -1", // span all columns
+    }}
+  >
+    <AddAppBanner />
+  </div>
+  
 </div>
 
             ) : (

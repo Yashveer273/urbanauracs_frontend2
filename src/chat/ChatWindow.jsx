@@ -70,7 +70,7 @@ const ChatWindow = ({ selectedUser, currentUser, isAdmin }) => {
 
   if (!selectedUser && isAdmin)
     return (
-      <div className="flex items-center justify-center h-full text-gray-400 text-lg">
+      <div className="flex items-center justify-center h-full text-gray-400 text-lg ">
         Select a conversation
       </div>
     );
@@ -87,7 +87,7 @@ const ChatWindow = ({ selectedUser, currentUser, isAdmin }) => {
 
       {/* Header */}
       <div className="flex items-center gap-3 p-4 bg-white border-b border-gray-200 shadow-sm">
-        <div className="w-10 h-10 rounded-full bg-indigo-500 text-white flex items-center justify-center font-semibold">
+        <div className="w-10 h-10 rounded-full bg-[#f87559] text-white flex items-center justify-center font-semibold">
           {isAdmin
             ? selectedUser?.username?.charAt(0).toUpperCase()
             : "C"}
@@ -140,7 +140,7 @@ const ChatWindow = ({ selectedUser, currentUser, isAdmin }) => {
             <div
               className={`relative group max-w-md px-4 py-2 rounded-2xl shadow-md transform hover:scale-[1.02] transition ${
                 msg.senderRole === "admin"
-                  ? "bg-indigo-600 text-white rounded-br-none"
+                  ? "bg-[#f87559] text-white rounded-br-none"
                   : "bg-white text-gray-800 rounded-bl-none"
               }`}
             >

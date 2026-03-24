@@ -30,7 +30,7 @@ const UserList = ({ onSelectUser }) => {
     <div className="flex flex-col h-full">
 
       {/* Header */}
-      <div className="p-5 border-b border-gray-200 bg-indigo-600 text-white">
+      <div className="p-5 border-b bg-[#f87559] border-gray-200 text-white">
         <h2 className="text-xl font-semibold">Admin Chats</h2>
       </div>
 

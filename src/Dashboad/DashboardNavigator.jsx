@@ -35,6 +35,7 @@ const DashboardNavigator = ({ activeTab, handleTabClick, handleLogout }) => {
     { tab: "Export-Sales", label: "Export Sales Data", icon: BarChart2Icon },
     { tab: "Notification", label: "Notification Controller", icon: BarChart2Icon },
     { tab: "Banner", label: "Banner Management", icon: BarChart2Icon },
+    { tab: "Chat-Controller", label: "Chat Controller", icon: BarChart2Icon },
     { tab: "VandersSection", label: "Vanders Section", icon: UserCheckIcon },
     { tab: "sales", label: "Sales", icon: DollarSignIcon },
     { tab: "Coupon-Manager", label: "Coupon Manager", icon: TagIcon },

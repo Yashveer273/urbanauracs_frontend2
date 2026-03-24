@@ -90,7 +90,7 @@ const BannerManagement = () => {
       <div style={{ maxWidth: "1600px", margin: "0 auto", display: "flex", flexWrap: "wrap", gap: "30px" }}>
         
         {/* SIDEBAR FORM */}
-        <div style={{ flex: "1 1 350px", maxWidth: "400px" }}>
+        <div style={{ flex: "1 1 350px" }}>
           <div style={{ position: "sticky", top: "20px", backgroundColor: "white", padding: "30px", borderRadius: "24px", boxShadow: "0 10px 25px rgba(0,0,0,0.05)" }}>
             <h2 style={{ margin: "0 0 5px 0", fontSize: "22px", fontWeight: "800" }}>Update Storefront</h2>
             <p style={{ color: "#64748b", fontSize: "13px", marginBottom: "25px" }}>Choose a slot and upload your visual.</p>

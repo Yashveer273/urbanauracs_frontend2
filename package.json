@@ -18,7 +18,7 @@
     "dom-to-image": "^2.6.0",
     "file-saver": "^2.0.5",
     "firebase": "^12.1.0",
-    "framer-motion": "^12.23.12",
+    "framer-motion": "^12.38.0",
     "html2canvas": "^1.4.1",
     "jspdf": "^3.0.3",
     "jspdf-autotable": "^5.0.2",

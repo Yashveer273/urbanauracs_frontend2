@@ -8,9 +8,9 @@ import {
   getDocs,
   writeBatch,
 } from "firebase/firestore";
-// export const API_BASE_URL = "https://urbanaurabzcs.xyz";
+export const API_BASE_URL = "https://urbanaurabzcs.xyz";
 // export const API_BASE_URL = "http://localhost:8000";
-export const API_BASE_URL = "http://192.168.1.8:8000";
+// export const API_BASE_URL = "http://192.168.29.147:8000";
 
 export const registorUser = async (
   username,
