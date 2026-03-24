@@ -10,6 +10,9 @@ import {
   TicketIcon,
   SettingsIcon,
   LogOutIcon,
+  MessageCircle,
+  Bell,
+  GalleryHorizontal
 } from "lucide-react";
 
 import { Menu, X } from "lucide-react";
@@ -33,9 +36,9 @@ const DashboardNavigator = ({ activeTab, handleTabClick, handleLogout }) => {
     { tab: "auth", label: "Users", icon: LayoutDashboardIcon },
     { tab: "services", label: "Services", icon: Package2Icon },
     { tab: "Export-Sales", label: "Export Sales Data", icon: BarChart2Icon },
-    { tab: "Notification", label: "Notification Controller", icon: BarChart2Icon },
-    { tab: "Banner", label: "Banner Management", icon: BarChart2Icon },
-    { tab: "Chat-Controller", label: "Chat Controller", icon: BarChart2Icon },
+    { tab: "Notification", label: "Notification Controller", icon: Bell },
+    { tab: "Banner", label: "Banner Management", icon: GalleryHorizontal },
+    { tab: "Chat-Controller", label: "Chat Box", icon: MessageCircle },
     { tab: "VandersSection", label: "Vanders Section", icon: UserCheckIcon },
     { tab: "sales", label: "Sales", icon: DollarSignIcon },
     { tab: "Coupon-Manager", label: "Coupon Manager", icon: TagIcon },
@@ -96,13 +99,17 @@ return (
     {/* Sidebar */}
     <aside
       className={`
-      fixed md:relative top-0 left-0 h-full md:h-auto
+      fixed md:relative top-0 left-0  md:h-auto
       w-64 bg-white shadow-xl p-6
       transform transition-transform duration-300
       ${open ? "translate-x-0" : "-translate-x-full"}
       md:translate-x-0
       z-50
+  
     `}
+    style={{
+      height:"100vh",overflow:"scroll"
+    }}
     >
       {/* Close Button (mobile only) */}
       <div className="flex items-center justify-between mb-6 md:hidden">

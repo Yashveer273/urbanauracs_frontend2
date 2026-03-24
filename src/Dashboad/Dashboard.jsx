@@ -25,11 +25,12 @@ import BannerManagement from "./BannerManagement";
 import { GetVenderData } from "./GetVenderData";
 import ServiceManager from "./ServiceManager";
 import { cities } from "./utility";
-import AdminDashboard from "../chat/AdminDashboard";
+
 import ExportSalesData from "./exportSalesData";
 import DashboardNavigator from "./DashboardNavigator";
 import BlockedDatesTable from "./blockDate";
 import AddAppBanner from "./AddAppBanner";
+import AdminChat from "../chat/AdminChat";
 
 const PlusIcon = () => (
   <svg
@@ -918,7 +919,7 @@ const Dashboard = () => {
             tagAccess.includes("Admin") ? (
               <div className="flex">
                 {/* This is the component we just coded */}
-                <AdminDashboard />
+                <AdminChat />
               </div>
             ) : (
               <LockedBox
@@ -1071,7 +1072,7 @@ const Dashboard = () => {
       {/* --------------------------------------------------------------------------------------------------- */}
       <>
         {/* Main Content Area */}
-        <main className="flex-1 w-full p-2 md:p-8  h-[100vh] overflow-auto">{renderContent()}</main>    {/* Shivani */}
+        <main className="flex-1 w-full p-2 h-[100vh] overflow-auto">{renderContent()}</main>    {/* Shivani */}
 
      
 

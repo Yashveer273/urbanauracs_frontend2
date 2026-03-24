@@ -20,16 +20,16 @@ import CheckoutSummaryCard from "./pages/CartProductSummery";
 import Termsandconditions from "./pages/Termsandconditions";
 import Shippingpolicy from "./pages/Shippingpolicy";
 import ExportSalesData from "./Dashboad/exportSalesData";
-import AdminDashboard from "./chat/AdminDashboard";
+
 import NotificationDashboard from "./Dashboad/Notificationcontroller";
 import BannerManagement from "./Dashboad/BannerManagement";
+
 
 function App() {
   return (
     <Router>
       <Routes>
         <Route path="/" element={<HomePage />} />
-        <Route path="/AdminChatDashboard" element={<AdminDashboard />} />
         
         <Route path="/InvoiceApp" element={<InvoiceApp />} />
         <Route path="/PrivacyPolicy" element={<PrivacyPolicy />} />
