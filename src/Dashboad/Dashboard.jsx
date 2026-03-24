@@ -769,13 +769,13 @@ const Dashboard = () => {
     }
   };
 
-  // Handles showing the detailed view of a service.
+
   const handleShowServiceDetails = (service) => {
     setSelectedVendorService(service);
     setShowServiceDetailsPanel(true);
   };
 
-  // Handles closing the detailed service view.
+
   const handleCloseServiceDetailsPanel = () => {
     setSelectedVendorService(null);
     setShowServiceDetailsPanel(false);
@@ -798,7 +798,6 @@ const Dashboard = () => {
       location: vendorFormData.location,
     });
   };
-  // --------------------------------------------------------------------------------------
   const handleTabClick = (tabName) => {
     setActiveTab(tabName);
     setSelectedService(null);
@@ -812,7 +811,7 @@ const Dashboard = () => {
       case "auth":
         return (
           <div className="flex flex-col items-center h-full p-8">
-            {/* <AuthDashboard /> */}
+           
             {tagAccess.includes("Users") || tagAccess.includes("Admin") ? (
               <AuthDashboard />
             ) : (
