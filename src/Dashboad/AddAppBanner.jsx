@@ -6,6 +6,7 @@ import {
   updateDoc,
   setDoc
 } from "firebase/firestore";
+// eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
 
 export default function AddAppBanner() {
@@ -134,12 +135,18 @@ export default function AddAppBanner() {
 
         </div>
 
-        <input
-          placeholder="Image URL"
-          className="border rounded-lg px-3 py-2 mt-4 w-full"
-          value={image}
-          onChange={(e) => setImage(e.target.value)}
-        />
+        <div className="mt-4">
+  <input
+    placeholder="Image URL"
+    className="border rounded-lg px-3 py-2 w-full"
+    value={image}
+    onChange={(e) => setImage(e.target.value)}
+  />
+
+  <p className="text-xs text-gray-500 mt-1">
+    Recommended size: <b>1200 × 500 px</b> (Ratio 12:5)
+  </p>
+</div>
 
         {image && (
           <img
