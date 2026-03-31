@@ -228,22 +228,24 @@ export default function SalesSection() {
       }
 
       if (filters.status) {
-        const saleStatus = sale.status?.toLowerCase() || "";
+  const saleStatus = (sale.status || "").toLowerCase();
+  const filterStatus = filters.status.toLowerCase();
 
-        const filterStatus = filters.status?.toLowerCase();
 
-        if (filterStatus === "pending") {
-          // allow empty or pending
-          if (saleStatus !== "" && !saleStatus.includes("pending")) {
-            return false;
-          }
-        } else if (filterStatus) {
-          // normal status filter
-          if (!saleStatus.includes(filterStatus)) {
-            return false;
-          }
-        }
-      }
+
+  if (filterStatus === "pending") {
+   
+    if (saleStatus !== "" && saleStatus !== "pending") {
+      return false;
+    }
+  } else {
+
+    if (saleStatus != filterStatus) {
+      return false;
+    }
+    else return true;
+  }
+}
 
       if (filters.orderId && !sale.orderId?.includes(filters.orderId))
         return false;
@@ -1109,21 +1111,26 @@ export default function SalesSection() {
                                 .convenienceFee,
                             0,
                           )}`,
-                          balanceAmount: `₹${
-                            sale.product_info.cart.reduce(
-                              (sum, i) => sum + i.item_price * i.quantity,
-                              0,
-                            ) -
-                            sale.discount +
-                            sale.product_info.cart.reduce(
-                              (sum, i) =>
-                                sum +
+                          balanceAmount: `₹${Math.round(
+                        sale?.product_info?.cart?.reduce(
+                          (sum, item) =>
+                            sum +
+                            Number(
+                              item.item_price * item.quantity +
                                 CalculateConvenienceFee(
-                                  i.item_price * i.quantity,
+                                  item.item_price * item.quantity,
                                 ).convenienceFee,
-                              0,
-                            )
-                          }`,
+                            ),
+                          0,
+                        ) -
+                          Number(sale?.discount || 0) -
+                          Number(sale?.payedAmount || 0),
+                      )}`,  
+
+
+
+                          
+                          
                         }}
                       />
                     </td>
