@@ -1111,6 +1111,40 @@ export default function SalesSection() {
                                 .convenienceFee,
                             0,
                           )}`,
+                          
+vendorbalanceAmount: `₹${Math.round(
+  0.25 *
+    Math.round(
+                            sale.product_info.cart.reduce(
+                              (sum, i) => sum + i.item_price * i.quantity,
+                              0,
+                            ) - sale.discount)
+                           +
+  sale.product_info.cart.reduce(
+    (sum, i) =>
+      sum +
+      CalculateConvenienceFee(i.item_price * i.quantity).convenienceFee,
+    0
+  )
+                )}`,
+              Pendingpayment: `₹${Math.round(
+  Math.round(
+  0.25 *
+    Math.round(
+                            sale.product_info.cart.reduce(
+                              (sum, i) => sum + i.item_price * i.quantity,
+                              0,
+                            ) - sale.discount)
+                           +
+  sale.product_info.cart.reduce(
+    (sum, i) =>
+      sum +
+      CalculateConvenienceFee(i.item_price * i.quantity).convenienceFee,
+    0
+  )
+                ) -sale.payedAmount
+
+)}`,
                           balanceAmount: `₹${Math.round(
                         sale?.product_info?.cart?.reduce(
                           (sum, item) =>

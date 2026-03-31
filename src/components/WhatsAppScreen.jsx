@@ -18,7 +18,7 @@ const WhatsappChatCard = ({ phone: customerPhone, buttonText = "Send WhatsApp Me
 
     customerReceived: (d) => `Dear ${d.customerName},\n\nYour booking has been successfully received with Urban Aura Services.\n\nOrder Id: ${d.serviceId}\nDetails: ${d.serviceDetails}\nDate/Time: ${d.dateTime}\nAddress: ${d.address}\nOrder Amount: ${d.orderAmount}\nConvenience Fee: ${d.convenienceFee}\n\nOur team will contact you shortly for confirmation.`.trim(),
 
-    vendorAssignment: (d) => `Dear ${d.vendorName},\n\nA new service has been assigned to you:\n\nOrder Id: ${d.serviceId}\nCustomer Name: ${d.customerName}\nDetails: ${d.serviceDetails}\nDate/Time: ${d.dateTime}\nAddress: ${d.address}\nOrder Amount: ${d.orderAmount}\nConvenience Fee: ${d.convenienceFee}\nBalance Amount: ${d.balanceAmount}\nResponsible: ${d.Responsible}\nOTP: ${d.otp}\n\n(Please confirm this OTP with the customer before the service begins.)`.trim(),
+    vendorAssignment: (d) => `Dear ${d.vendorName},\n\nA new service has been assigned to you:\n\nOrder Id: ${d.serviceId}\nCustomer Name: ${d.customerName}\nDetails: ${d.serviceDetails}\nDate/Time: ${d.dateTime}\nAddress: ${d.address}\nOrder Amount: ${d.orderAmount}\nConvenience Fee: ${d.convenienceFee}\nBalance Amount: ${d.vendorbalanceAmount}\nPending payment:${d.Pendingpayment}\nResponsible: ${d.Responsible}\nOTP: ${d.otp}\n\n(Please confirm this OTP with the customer before the service begins.)`.trim(),
   };
 
 
