@@ -1125,7 +1125,7 @@ vendorbalanceAmount: `₹${Math.round(
       CalculateConvenienceFee(i.item_price * i.quantity).convenienceFee,
     0
   )
-                )}`,
+                )-sale.payedAmount}`,
               Pendingpayment: `₹${Math.round(
   Math.round(
   0.25 *
