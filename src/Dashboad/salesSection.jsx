@@ -1113,12 +1113,11 @@ export default function SalesSection() {
                           )}`,
                           
 vendorbalanceAmount: `₹${Math.round(
-  0.25 *
-    Math.round(
+
                             sale.product_info.cart.reduce(
                               (sum, i) => sum + i.item_price * i.quantity,
                               0,
-                            ) - sale.discount)
+                            ) - sale.discount
                            +
   sale.product_info.cart.reduce(
     (sum, i) =>
