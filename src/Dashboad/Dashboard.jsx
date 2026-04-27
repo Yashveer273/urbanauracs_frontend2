@@ -918,7 +918,6 @@ const Dashboard = () => {
             {tagAccess.includes("Chat Controller") ||
             tagAccess.includes("Admin") ? (
               <div className="flex">
-                {/* This is the component we just coded */}
                 <AdminChat />
               </div>
             ) : (

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   Package2Icon,
   LayoutDashboardIcon,
@@ -22,14 +22,18 @@ import {
   onSnapshot,
   updateDoc,
   setDoc,
+  query,
+  where,
 } from "firebase/firestore";
 import { firestore } from "../firebaseCon";
 
 const DashboardNavigator = ({ activeTab, handleTabClick, handleLogout }) => {
   const [counts, setCounts] = useState({});
   const [open, setOpen] = useState(false);
+  const [chatUnread, setChatUnread] = useState(0);
+  const unsubscribersRef = useRef([]);
 
-  // Only these tabs will have counts
+  // Only these tabs will have counts from Firebase
   const countTabs = ["auth", "sales", "Ticket"];
 
   const tabs = [
@@ -47,7 +51,7 @@ const DashboardNavigator = ({ activeTab, handleTabClick, handleLogout }) => {
     { tab: "dashboard-controller", label: "Dashboard Controller", icon: SettingsIcon },
   ];
 
- 
+  // Listen to notificationCounters for other tabs
   useEffect(() => {
     const ref = collection(firestore, "notificationCounters");
 
@@ -63,19 +67,86 @@ const DashboardNavigator = ({ activeTab, handleTabClick, handleLogout }) => {
         if (newCounts[tab] === undefined) newCounts[tab] = 0;
       });
 
-      setCounts(newCounts);
+      setCounts(prev => ({ ...prev, ...newCounts }));
     });
 
     return () => unsubscribe();
   }, []);
 
+  // Update chat count separately
+  useEffect(() => {
+    setCounts(prev => ({ ...prev, "Chat-Controller": chatUnread }));
+  }, [chatUnread]);
+
+  // Listen to users and calculate chat unread
+  const [unreadPerUser, setUnreadPerUser] = useState({});
+
+  useEffect(() => {
+    const usersUnsub = onSnapshot(collection(firestore, "User"), (usersSnapshot) => {
+      const users = usersSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      // Set initial unreadPerUser
+      setUnreadPerUser(prev => {
+        const newUnread = {};
+        users.forEach(u => newUnread[u.id] = prev[u.id] || 0);
+        return newUnread;
+      });
+    });
+    return () => usersUnsub();
+  }, []);
+
+  useEffect(() => {
+    // Clean previous listeners
+    unsubscribersRef.current.forEach((unsub) => unsub());
+    unsubscribersRef.current = [];
+
+    Object.keys(unreadPerUser).forEach((userId) => {
+      const chatId = `${userId}_admin_1`;
+      const messagesRef = collection(firestore, "chats", chatId, "messages");
+      const q = query(
+        messagesRef,
+        where("senderRole", "==", "user"),
+        where("seen", "==", false)
+      );
+
+      const unsub = onSnapshot(q, (snapshot) => {
+        setUnreadPerUser(prev => ({ ...prev, [userId]: snapshot.size }));
+      });
+
+      unsubscribersRef.current.push(unsub);
+    });
+
+    return () => {
+      unsubscribersRef.current.forEach((unsub) => unsub());
+      unsubscribersRef.current = [];
+    };
+  }, [unreadPerUser]);
+
+  useEffect(() => {
+    const total = Object.values(unreadPerUser).reduce((sum, count) => sum + count, 0);
+    setChatUnread(total);
+  }, [unreadPerUser]);
+
   const handleTabClickWithReset = async (tab) => {
     handleTabClick(tab);
-setOpen(false);
+    setOpen(false);
 
     if (countTabs.includes(tab) && counts[tab] > 0) {
       const docRef = doc(firestore, "notificationCounters", tab);
 
+      try {
+        await updateDoc(docRef, { unreadCount: 0 });
+      } catch (err) {
+        console.log(err);
+        await setDoc(docRef, { unreadCount: 0 });
+      }
+      // Update local state immediately for instant UI feedback
+      setCounts(prev => ({ ...prev, [tab]: 0 }));
+    }
+
+    if (tab === "Chat-Controller" && chatUnread > 0) {
+      // Reset chat unread
+      setChatUnread(0);
+      const docRef = doc(firestore, "notificationCounters", "Chat-Controller");
       try {
         await updateDoc(docRef, { unreadCount: 0 });
       } catch (err) {
@@ -147,7 +218,7 @@ return (
                       {tabItem.label}
                     </div>
 
-                    {countTabs.includes(tabItem.tab) && count > 0 && (
+                    {(countTabs.includes(tabItem.tab) || tabItem.tab === "Chat-Controller") && count > 0 && (
                       <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
                         {count}
                       </span>
