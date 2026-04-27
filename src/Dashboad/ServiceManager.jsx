@@ -209,13 +209,13 @@ const ServiceManager = ({
           </div>
 
           {/* Services Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">           {/* Shivani */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">           
             {services.map((service) => (
               <div
                 key={service.id}
                 onClick={() => handleSelectService(service)}
                 className="bg-white p-4 md:p-6 rounded-xl shadow-md cursor-pointer hover:scale-105 transition"     
-              >    {/* Shivani */}
+              >    
                 {editingServiceId === service.id ? (
                   <input
                     autoFocus
@@ -316,7 +316,7 @@ const ServiceManager = ({
           </h2>
 
           {selectedService.data.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">     /* Shivani */
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">     
               {selectedService.data.map((vendor) => (
                 <div
                   key={vendor.vendorId}

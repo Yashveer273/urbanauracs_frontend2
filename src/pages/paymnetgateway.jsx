@@ -131,7 +131,7 @@ const handleConfirmBooking = (selectedDate, selectedTime, address) => {
     }
 
     try {
-      const res = await fetch(`${API_BASE_URL}/api/coupons/${code}`);
+      const res = await fetch(`${API_BASE_URL}/api/coupons/${encodeURIComponent(code)}`);
       const data = await res.json();
 
       if (data.success) {

@@ -899,12 +899,12 @@ export default function SalesSection() {
           ref={tableContainerRef}
         >
           {" "}
-          {/* Shivani */}
+     
           <table className="w-full table-auto border-collapse">
             <thead>
               <tr className="bg-gray-100 text-gray-600 uppercase text-xs md:text-sm">
                 {" "}
-                {/* Shivani */}
+               
                 {tableHeaders.map((h) => (
                   <th key={h} className="py-3 px-6">
                     {h}
@@ -1196,7 +1196,7 @@ vendorbalanceAmount: `₹${Math.round(
         {totalPages > 1 && (
           <div className="flex flex-wrap justify-center items-center gap-2 mt-6">
             {" "}
-            {/* Shivani */}
+            
             <button
               onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
               disabled={currentPage === 1}

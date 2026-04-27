@@ -967,7 +967,7 @@ const Dashboard = () => {
           <div className="">
             {tagAccess.includes("Website Content") ||
             tagAccess.includes("Admin") ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">          {/* Shivani */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">          
   {/* First block */}
   <div
     style={{
@@ -1060,7 +1060,7 @@ const Dashboard = () => {
   return isAuthenticated != true ? (
     <DashboardLogin />
   ) : (
-    <div className="flex flex-col md:flex-row bg-gray-100 min-h-screen font-sans"> {/* Shivani */}
+    <div className="flex flex-col md:flex-row bg-gray-100 min-h-screen font-sans"> 
     
       <DashboardNavigator
         activeTab={activeTab}
@@ -1072,7 +1072,7 @@ const Dashboard = () => {
       {/* --------------------------------------------------------------------------------------------------- */}
       <>
         {/* Main Content Area */}
-        <main className="flex-1 w-full p-2 h-[100vh] overflow-auto">{renderContent()}</main>    {/* Shivani */}
+        <main className="flex-1 w-full p-2 h-[100vh] overflow-auto">{renderContent()}</main>    
 
      
 
@@ -1092,7 +1092,7 @@ const Dashboard = () => {
                 });
               }}
               className="fixed bottom-6 right-6 md:bottom-8 md:right-8 w-14 h-14 bg-green-500 text-white text-3xl font-bold rounded-full shadow-lg flex items-center justify-center hover:bg-green-600 transition-colors duration-200 z-50"
-            > {/* Shivani */}
+            > 
               <PlusIcon className="w-6 h-6" />
             </button>
           )}
@@ -1103,7 +1103,7 @@ const Dashboard = () => {
             <form
               onSubmit={editingVendorId ? handleUpdateVendor : handleAddVendor}
               className="bg-white p-4 md:p-6 rounded-xl shadow-lg w-full max-w-lg" 
-            > {/* Shivani */}
+            > 
               <h3 className="text-xl font-semibold mb-4">
                 {editingVendorId ? "Edit Vendor" : "Add New Vendor"}
               </h3>
@@ -1557,7 +1557,7 @@ const Dashboard = () => {
                   src={selectedVendorService.serviceImage}
                   alt={selectedVendorService.title}
                   className="w-full h-56 md:h-80 object-cover"
-                /> {/*Shivani */}
+                />
                 <div className="p-8">
                   <h1 className="text-4xl font-extrabold text-gray-900 mb-2">
                     {selectedVendorService.title}

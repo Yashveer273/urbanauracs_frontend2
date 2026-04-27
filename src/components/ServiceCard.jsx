@@ -12,6 +12,8 @@ import BookingPopup from "./BookingPopup";
 
 import { selectUser } from "../store/userSlice";
 import { ServiceDetailPopup } from "./serviceDetail.Popup";
+import { LazyLoadImage } from 'react-lazy-load-image-component';
+import 'react-lazy-load-image-component/src/effects/blur.css';
 
 
 // --- Frosted Button Component ---
@@ -29,7 +31,7 @@ const PriceTag = ({ price, originalPrice }) => (
   </div>
 );
 
-const ServiceCard = ({ service, vendor, userLocation }) => {
+const ServiceCard = React.memo(({ service, vendor, userLocation }) => {
   const dispatch = useDispatch();
   const isAuthenticated = useSelector(selectIsAuthenticated);
 
@@ -98,12 +100,13 @@ const [imageLoaded, setImageLoaded] = useState(false);
          <div className="half-image">
           {!imageLoaded && <div className="image-skeleton" />}
 
-          <img
+          <LazyLoadImage
             src={service.serviceImage}
             alt={service.title}
             className={`service-image ${imageLoaded ? "loaded" : ""}`}
             onLoad={() => setImageLoaded(true)}
-            loading="lazy"
+            effect="blur"
+            placeholder={<div className="image-skeleton" />}
           />
         </div>
 
@@ -169,6 +172,6 @@ const [imageLoaded, setImageLoaded] = useState(false);
       )} */}
     </>
   );
-};
+});
 
 export default ServiceCard;

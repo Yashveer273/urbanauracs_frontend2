@@ -5,7 +5,7 @@ import ServiceCard from './ServiceCard';
 
 import './VendorSection.css';
 
-const VendorSection = ({ vendor,userLocation }) => {
+const VendorSection = ({ vendor, userLocation }) => {
 
 
 

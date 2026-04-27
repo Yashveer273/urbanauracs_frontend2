@@ -420,12 +420,12 @@ const VandersSection = () => {
             </header>
 
             {/* Action Bar */}
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">   {/* Shivani */}
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">   
                 <h2 className="text-2xl font-bold text-gray-700">Vendor List</h2>
                 <button
                     onClick={handleOpenCreate}
                     className="flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-xl shadow-lg transition duration-200 transform hover:scale-[1.02] w-full sm:w-auto"
-                >     {/* Shivani */}
+                >     
                     <PlusCircle className="w-5 h-5 mr-2" />
                     Add New Vendor
                 </button>
@@ -434,7 +434,7 @@ const VandersSection = () => {
             {/* Vendors Table */}
             <div className="bg-white shadow-xl rounded-xl overflow-hidden">
                 <div className="table-container overflow-x-auto">
-                    <table className="min-w-[900px] w-full divide-y divide-gray-200">   {/* Shivani */}
+                    <table className="min-w-[900px] w-full divide-y divide-gray-200">   
                         <thead className="bg-gray-50">
                             <tr>
                                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
