@@ -2,6 +2,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import React, { useEffect, useState } from "react";
 import { Pagination, Autoplay, Navigation } from "swiper/modules";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { fetchImages } from "../API";
 
 import "swiper/css";
 import "swiper/css/pagination";
@@ -33,13 +34,42 @@ const SwiperNavButtons = () => {
 
 export default function HeroBannerSlider() {
   let HeroBannerSliderImage = [];
- const [heroBannerImages, setHeroBannerImages] = useState([]);
- useEffect(() => {
-    const stored = localStorage.getItem("urbanAuraServicesSliderImage");
+  const [heroBannerImages, setHeroBannerImages] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-    const data = stored ? JSON.parse(stored) : [];
+  useEffect(() => {
+    const loadBannerImages = async () => {
+      try {
+        // First, check localStorage
+        const stored = localStorage.getItem("urbanAuraServicesSliderImage");
+        
+        if (stored) {
+          // If found in localStorage, use it
+          const data = JSON.parse(stored);
+          setHeroBannerImages(data);
+        } else {
+          // If not in localStorage, fetch from API
+          const apiData = await fetchImages();
+          if (apiData && apiData.length > 0) {
+            setHeroBannerImages(apiData);
+            // Cache it in localStorage for future use
+            localStorage.setItem(
+              "urbanAuraServicesSliderImage",
+              JSON.stringify(apiData)
+            );
+          } else {
+            setHeroBannerImages([]);
+          }
+        }
+      } catch (error) {
+        console.error("Error loading banner images:", error);
+        setHeroBannerImages([]);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    setHeroBannerImages(data); // ✅ update state
+    loadBannerImages();
   }, []);
   return (
     <div className="relative">
@@ -65,7 +95,7 @@ export default function HeroBannerSlider() {
             <SwiperSlide key={index}>
               <img
                 src={img.src}
-                alt={"No images available"}
+                alt={"Banner image"}
                 className="w-full h-[300px] md:h-[400px] object-cover rounded-2xl"
                 onError={(e) => {
                   e.target.onerror = null;
@@ -75,6 +105,12 @@ export default function HeroBannerSlider() {
               />
             </SwiperSlide>
           ))
+        ) : loading ? (
+          <SwiperSlide>
+            <div className="w-full h-[300px] md:h-[400px] flex items-center justify-center bg-gray-200 rounded-2xl">
+              <p className="text-gray-500">Loading images...</p>
+            </div>
+          </SwiperSlide>
         ) : (
           <SwiperSlide>
             <div className="w-full h-[300px] md:h-[400px] flex items-center justify-center bg-gray-200 rounded-2xl">
