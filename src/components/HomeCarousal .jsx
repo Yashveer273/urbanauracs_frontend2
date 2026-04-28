@@ -43,11 +43,11 @@ export default function HeroBannerSlider() {
         const stored = localStorage.getItem("urbanAuraServicesSliderImage");
         
         if (stored) {
-          // If found in localStorage, use it
+          
           const data = JSON.parse(stored);
           setHeroBannerImages(data);
         } else {
-          // If not in localStorage, fetch from API
+          
           const apiData = await fetchImages();
           if (apiData && apiData.length > 0) {
             setHeroBannerImages(apiData);
