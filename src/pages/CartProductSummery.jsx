@@ -110,7 +110,9 @@ const CheckoutSummaryCard = ({ items, orderId }) => {
     totalConvenienceFees += feeDetails.convenienceFee;
   });
 
-  const finalPayableAmount = totalAmount + totalConvenienceFees;
+  const roundedTotalAmount = Math.round(totalAmount);
+  const roundedTotalConvenienceFees = Math.round(totalConvenienceFees);
+  const finalPayableAmount = roundedTotalAmount + roundedTotalConvenienceFees;
 
   return (
     // Outer container for centering the card on the page (Tailwind)
@@ -510,7 +512,7 @@ const CheckoutSummaryCard = ({ items, orderId }) => {
       }}
     >
       <IndianRupee size={14} style={{ marginRight: 4 }} />
-      {totalAmount}
+      {roundedTotalAmount}
     </span>
   </div>
 
@@ -542,7 +544,7 @@ const CheckoutSummaryCard = ({ items, orderId }) => {
       }}
     >
       <IndianRupee size={14} style={{ marginRight: 4 }} />
-      {totalConvenienceFees}
+      {roundedTotalConvenienceFees}
     </span>
   </div>
 

@@ -1352,13 +1352,13 @@ vendorbalanceAmount: `₹${Math.round(
                           <td className="py-4 px-6">{quantities}</td>
 
                           <td className="py-4 px-6">
-                            ₹{totalItemAmount - selectedProductInfo.discount}
+                            ₹{Math.round(totalItemAmount - selectedProductInfo.discount)}
                           </td>
 
                           <td className="py-4 px-6">₹{totalConvenienceFee}</td>
 
                           <td className="py-4 px-6 font-semibold">
-                            ₹{grandTotal}
+                            ₹{Math.round(grandTotal)}
                           </td>
                           <td className="py-4 px-6">
                             <button
@@ -1430,7 +1430,7 @@ vendorbalanceAmount: `₹${Math.round(
 
                       {/* Price Info */}
                       <div className="mt-4 text-sm text-gray-700 space-y-1">
-                        <div>Unit Price: ₹{item.item_price}</div>
+                        <div>Unit Price: ₹{Math.round(item.item_price)}</div>
                         <div className="font-medium">
                           Convenience Fee: ₹
                           {
@@ -1442,7 +1442,7 @@ vendorbalanceAmount: `₹${Math.round(
                       </div>
 
                       <div className="font-medium">
-                        Total: ₹{item.item_price * item.quantity}
+                        Total: ₹{Math.round(item.item_price * item.quantity)}
                       </div>
                     </div>
 
