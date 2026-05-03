@@ -266,10 +266,12 @@ export default function SalesSection() {
     setFilteredData(result);
   };
 
-  const currentData = filteredData.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage,
-  );
+  const currentData = [...filteredData]
+    .sort((a, b) => (b.S_orderId || 0) - (a.S_orderId || 0))
+    .slice(
+      (currentPage - 1) * itemsPerPage,
+      currentPage * itemsPerPage,
+    );
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
 
   const showProductInfo = (sale) => {
