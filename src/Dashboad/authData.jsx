@@ -17,11 +17,19 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
+import * as XLSX from "xlsx";
 import { firestore } from "../firebaseCon";
 import { updateUser } from "../API";
 
 export default function AuthDashboard() {
-  // State for search inputs
+  // Input tracking states (Uncommitted values before clicking "Apply")
+  const [inputName, setInputName] = useState("");
+  const [inputPincode, setInputPincode] = useState("");
+  const [inputMobile, setInputMobile] = useState("");
+  const [inputStartDate, setInputStartDate] = useState("");
+  const [inputEndDate, setInputEndDate] = useState("");
+
+  // Filter application reference keys (Triggers recalculations on commit)
   const [searchName, setSearchName] = useState("");
   const [searchPincode, setSearchPincode] = useState("");
   const [searchMobile, setSearchMobile] = useState("");
@@ -127,6 +135,32 @@ export default function AuthDashboard() {
     setMonthlyRegistrationsData(monthlyGraphData);
   }, [allUsers]);
 
+  // Handle active operational execution for matching query criteria
+  const handleApplyFilters = () => {
+    setSearchName(inputName);
+    setSearchPincode(inputPincode);
+    setSearchMobile(inputMobile);
+    setStartDate(inputStartDate);
+    setEndDate(inputEndDate);
+    setCurrentPage(1);
+  };
+
+  // Completely resets tracking matrices back to master defaults
+  const handleClearFilters = () => {
+    setInputName("");
+    setInputPincode("");
+    setInputMobile("");
+    setInputStartDate("");
+    setInputEndDate("");
+
+    setSearchName("");
+    setSearchPincode("");
+    setSearchMobile("");
+    setStartDate("");
+    setEndDate("");
+    setCurrentPage(1);
+  };
+
   // Run filtering logic across your entire dataset local cache
   const filteredData = allUsers.filter((user) => {
     const nameMatch = user.username?.toLowerCase().includes(searchName.toLowerCase());
@@ -153,23 +187,18 @@ export default function AuthDashboard() {
     return nameMatch && pincodeMatch && mobileMatch && dateMatch;
   });
 
-  // Reset active page back to 1 if filter fields change
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchName, searchPincode, searchMobile, startDate, endDate]);
-
   // Slice data to isolate exactly 10 slots per visible matrix page
   const totalPages = Math.ceil(filteredData.length / itemsPerPage) || 1;
   const startIndex = (currentPage - 1) * itemsPerPage;
   const visibleTableData = filteredData.slice(startIndex, startIndex + itemsPerPage);
 
   // Directional Navigation Page Handlers
-  const handleNextPage = () => {
-    if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
-  };
-
   const handlePrevPage = () => {
     if (currentPage > 1) setCurrentPage((prev) => prev - 1);
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
   };
 
   // User Action Form Event Managers
@@ -204,7 +233,7 @@ export default function AuthDashboard() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Helper helper to clean display format string outputs
+  // Helper to clean display format string outputs
   const formatTableDate = (timestamp) => {
     if (!timestamp) return "N/A";
     const dateObj = timestamp.toDate 
@@ -213,7 +242,6 @@ export default function AuthDashboard() {
 
     if (isNaN(dateObj.getTime())) return "N/A";
 
-    // Returns custom clean formatting: DD/MM/YYYY, HH:MM AM/PM
     return dateObj.toLocaleDateString("en-GB", {
       day: "2-digit",
       month: "2-digit",
@@ -225,6 +253,50 @@ export default function AuthDashboard() {
     });
   };
 
+  // Robust Excel Export Logic
+  const exportToExcel = () => {
+    if (filteredData.length === 0) {
+      alert("No data available to export.");
+      return;
+    }
+
+    // Map fields explicitly matching specified property sequences
+    const excelRows = filteredData.map((user) => ({
+      "Username": user.username || "N/A",
+      "Mobile Number": user.mobileNumber || "N/A",
+      "WhatsApp Mobile Number": user.ConfurmWhatsAppMobileNumber || "N/A",
+      "Is WhatsApp": user.phoneType || "N/A",
+      "Location": user.location || "N/A",
+      "Pincode": user.pincode || "N/A",
+      "Registered On": formatTableDate(user.created), // Positioned cleanly directly following Pincode
+    }));
+
+    // Setup ordered matching array keys
+    const columnHeaders = [
+      "Username",
+      "Mobile Number",
+      "WhatsApp Mobile Number",
+      "Is WhatsApp",
+      "Location",
+      "Pincode",
+      "Registered On"
+    ];
+
+    // Create workbook with structured layout configs
+    const worksheet = XLSX.utils.json_to_sheet(excelRows, { header: columnHeaders });
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Users Report");
+
+    // Dynamic auto-sizing calculation loops
+    const maxPropsWidth = columnHeaders.map(key => ({
+      wch: Math.max(key.length, ...excelRows.map(row => (row[key] || "").toString().length)) + 3
+    }));
+    worksheet["!cols"] = maxPropsWidth;
+
+    // Trigger download build execution
+    XLSX.writeFile(workbook, `User_Report_${new Date().toISOString().slice(0, 10)}.xlsx`);
+  };
+
   const overlayStyle = { position: "fixed", top: 0, left: 0, width: "100%", height: "100%", background: "rgba(0,0,0,0.5)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1000 };
   const modalStyle = { background: "#fff", padding: "20px", borderRadius: "8px", maxWidth: "400px", width: "90%" };
 
@@ -233,9 +305,23 @@ export default function AuthDashboard() {
       <main className="flex-1 p-2 sm:p-4 md:p-6 overflow-auto">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 gap-4">
           <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800">User Authentication Dashboard</h2>
-          <div className="bg-blue-50 border border-blue-200 p-4 rounded-xl shadow-sm text-center sm:text-right min-w-[200px]">
-            <p className="text-xs text-blue-600 font-semibold uppercase tracking-wider">Total Users in DB</p>
-            <p className="text-2xl font-black text-blue-900">{allUsers.length}</p>
+          
+          {/* Dashboard utility container */}
+          <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+            <button 
+              onClick={exportToExcel}
+              className="w-full sm:w-auto bg-emerald-600 text-white font-semibold px-5 py-3 rounded-xl shadow-md hover:bg-emerald-700 transition-colors flex items-center justify-center gap-2"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              Download Excel
+            </button>
+
+            <div className="bg-blue-50 border border-blue-200 p-4 rounded-xl shadow-sm text-center sm:text-right min-w-[180px] w-full sm:w-auto">
+              <p className="text-xs text-blue-600 font-semibold uppercase tracking-wider">Total Users in DB</p>
+              <p className="text-2xl font-black text-blue-900">{allUsers.length}</p>
+            </div>
           </div>
         </div>
 
@@ -271,29 +357,47 @@ export default function AuthDashboard() {
         </div>
 
         <hr className="my-6 border-gray-300" />
-        <h2 className="text-2xl font-bold text-gray-800 mb-6">User Records</h2>
+        
+        {/* Header containing text title description setup */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+          <h2 className="text-2xl font-bold text-gray-800">User Records</h2>
+          <div className="flex w-full sm:w-auto gap-2">
+            <button
+              onClick={handleApplyFilters}
+              className="flex-1 sm:flex-none bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-xl shadow-sm transition-colors text-sm"
+            >
+              Apply Filters
+            </button>
+            <button
+              onClick={handleClearFilters}
+              className="flex-1 sm:flex-none bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold px-4 py-2 rounded-xl shadow-sm transition-colors text-sm"
+            >
+              Clear Filters
+            </button>
+          </div>
+        </div>
 
         {/* Dynamic Filters Matrix */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6 p-4 bg-white rounded-xl shadow-md">
           <div className="flex flex-col">
             <label className="text-xs text-gray-500 font-bold mb-1 pl-1">Username</label>
-            <input type="text" placeholder="Search by Username" className="p-3 border border-gray-300 rounded-xl focus:outline-none" value={searchName} onChange={(e) => setSearchName(e.target.value)} />
+            <input type="text" placeholder="Search by Username" className="p-3 border border-gray-300 rounded-xl focus:outline-none focus:border-blue-500" value={inputName} onChange={(e) => setInputName(e.target.value)} />
           </div>
           <div className="flex flex-col">
             <label className="text-xs text-gray-500 font-bold mb-1 pl-1">Pincode</label>
-            <input type="text" placeholder="Search by Pincode" className="p-3 border border-gray-300 rounded-xl focus:outline-none" value={searchPincode} onChange={(e) => setSearchPincode(e.target.value)} />
+            <input type="text" placeholder="Search by Pincode" className="p-3 border border-gray-300 rounded-xl focus:outline-none focus:border-blue-500" value={inputPincode} onChange={(e) => setInputPincode(e.target.value)} />
           </div>
           <div className="flex flex-col">
             <label className="text-xs text-gray-500 font-bold mb-1 pl-1">Mobile</label>
-            <input type="text" placeholder="Search by Mobile" className="p-3 border border-gray-300 rounded-xl focus:outline-none" value={searchMobile} onChange={(e) => setSearchMobile(e.target.value)} />
+            <input type="text" placeholder="Search by Mobile" className="p-3 border border-gray-300 rounded-xl focus:outline-none focus:border-blue-500" value={inputMobile} onChange={(e) => setInputMobile(e.target.value)} />
           </div>
           <div className="flex flex-col">
             <label className="text-xs text-gray-500 font-bold mb-1 pl-1">From Date</label>
-            <input type="date" className="p-3 border border-gray-300 rounded-xl focus:outline-none" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+            <input type="date" className="p-3 border border-gray-300 rounded-xl focus:outline-none focus:border-blue-500" value={inputStartDate} onChange={(e) => setInputStartDate(e.target.value)} />
           </div>
           <div className="flex flex-col">
             <label className="text-xs text-gray-500 font-bold mb-1 pl-1">To Date</label>
-            <input type="date" className="p-3 border border-gray-300 rounded-xl focus:outline-none" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+            <input type="date" className="p-3 border border-gray-300 rounded-xl focus:outline-none focus:border-blue-500" value={inputEndDate} onChange={(e) => setInputEndDate(e.target.value)} />
           </div>
         </div>
 
