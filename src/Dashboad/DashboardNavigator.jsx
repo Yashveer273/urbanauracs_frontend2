@@ -27,14 +27,15 @@ import {
 } from "firebase/firestore";
 import { firestore } from "../firebaseCon";
 
+const countTabs = ["auth", "sales"];
+
 const DashboardNavigator = ({ activeTab, handleTabClick, handleLogout }) => {
   const [counts, setCounts] = useState({});
   const [open, setOpen] = useState(false);
   const [chatUnread, setChatUnread] = useState(0);
+  const [ticketNewCount, setTicketNewCount] = useState(0);
+  const unreadPrevRef = useRef({ auth: 0, sales: 0, chat: 0, ticket: 0 });
   const unsubscribersRef = useRef([]);
-
-  // Only these tabs will have counts from Firebase
-  const countTabs = ["auth", "sales", "Ticket"];
 
   const tabs = [
     { tab: "auth", label: "Users", icon: LayoutDashboardIcon },
@@ -77,6 +78,46 @@ const DashboardNavigator = ({ activeTab, handleTabClick, handleLogout }) => {
   useEffect(() => {
     setCounts(prev => ({ ...prev, "Chat-Controller": chatUnread }));
   }, [chatUnread]);
+
+  // Play a short alert when unread counts increase
+  useEffect(() => {
+    const currentUnread = {
+      auth: counts.auth || 0,
+      sales: counts.sales || 0,
+      chat: counts["Chat-Controller"] || 0,
+      ticket: ticketNewCount,
+    };
+
+    const hasNewUnread = Object.keys(currentUnread).some(
+      (key) => currentUnread[key] > unreadPrevRef.current[key]
+    );
+
+    if (hasNewUnread) {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (AudioCtx) {
+          const audioCtx = new AudioCtx();
+          const oscillator = audioCtx.createOscillator();
+          const gainNode = audioCtx.createGain();
+
+          oscillator.type = "sine";
+          oscillator.frequency.setValueAtTime(880, audioCtx.currentTime);
+          oscillator.connect(gainNode);
+          gainNode.connect(audioCtx.destination);
+          gainNode.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+          gainNode.gain.exponentialRampToValueAtTime(0.2, audioCtx.currentTime + 0.01);
+
+          oscillator.start();
+          oscillator.stop(audioCtx.currentTime + 0.12);
+          oscillator.onended = () => audioCtx.close();
+        }
+      } catch (err) {
+        console.warn("Unable to play alert sound", err);
+      }
+    }
+
+    unreadPrevRef.current = currentUnread;
+  }, [counts, ticketNewCount]);
 
   // Listen to users and calculate chat unread
   const [unreadPerUser, setUnreadPerUser] = useState({});
@@ -125,6 +166,17 @@ const DashboardNavigator = ({ activeTab, handleTabClick, handleLogout }) => {
     const total = Object.values(unreadPerUser).reduce((sum, count) => sum + count, 0);
     setChatUnread(total);
   }, [unreadPerUser]);
+
+  useEffect(() => {
+    const ticketsRef = collection(firestore, "homeCleaningTicket");
+    const ticketsQuery = query(ticketsRef, where("data.status", "==", "New"));
+
+    const unsubscribe = onSnapshot(ticketsQuery, (snapshot) => {
+      setTicketNewCount(snapshot.size);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   const handleTabClickWithReset = async (tab) => {
     handleTabClick(tab);
@@ -200,7 +252,7 @@ return (
           <ul>
             {tabs.map((tabItem) => {
               const Icon = tabItem.icon;
-              const count = counts[tabItem.tab];
+              const count = tabItem.tab === "Ticket" ? ticketNewCount : counts[tabItem.tab];
 
               return (
                 <li className="mb-1 md:mb-2" key={tabItem.tab}>
@@ -218,7 +270,7 @@ return (
                       {tabItem.label}
                     </div>
 
-                    {(countTabs.includes(tabItem.tab) || tabItem.tab === "Chat-Controller") && count > 0 && (
+                    {((tabItem.tab === "Ticket" && ticketNewCount > 0) || ((countTabs.includes(tabItem.tab) || tabItem.tab === "Chat-Controller") && count > 0)) && (
                       <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
                         {count}
                       </span>
