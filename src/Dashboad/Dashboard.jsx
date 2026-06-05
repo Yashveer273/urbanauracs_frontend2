@@ -106,7 +106,7 @@ const ChevronLeftIcon = () => (
 
 
 const Dashboard = () => {
-  const [activeTab, setActiveTab] = useState("Users");
+  const [activeTab, setActiveTab] = useState("auth");
   const [services, setServices] = useState([]);
   const [FDBservices, setFDBServices] = useState([]);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
