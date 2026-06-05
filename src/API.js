@@ -499,9 +499,9 @@ export const Notificationsend = async (payload) => {
     };
   }
 };
-export const FetchAllUsers = async () => {
+export const FetchAllFCMUsers = async () => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/api/all-users`);
+    const response = await axios.get(`${API_BASE_URL}/firebase/firebase-users`);
     console.log(response);
     
     return response.data; // This returns the { success, total, users } object

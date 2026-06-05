@@ -1,11 +1,21 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { Notificationsend, FetchAllUsers } from "../API";
+import { Notificationsend, FetchAllFCMUsers } from "../API";
 
 const NotificationDashboard = () => {
   const [users, setUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(false);
   const [dataLoading, setDataLoading] = useState(true);
+
+  // Pagination States mapping directly to backend response schema
+  const [pagination, setPagination] = useState({
+    totalCount: 0,
+    totalPages: 1,
+    currentPage: 1,
+    limit: 10,
+    hasNextPage: false,
+    hasPrevPage: false,
+  });
 
   // Modal States
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -18,24 +28,43 @@ const NotificationDashboard = () => {
     selectedUser: null,
   });
 
-  const loadUsers = async () => {
+  // Updated to pass target page to API endpoint
+  const loadUsers = async (pageTarget = 1) => {
     setDataLoading(true);
-    const result = await FetchAllUsers();
-    if (result.success) setUsers(result.users);
+    const result = await FetchAllFCMUsers(pageTarget); // Assumes FetchAllFCMUsers routes to /firebase-users?page=X
+    
+    if (result.success) {
+      setUsers(result.data || []);
+      if (result.pagination) {
+        setPagination(result.pagination);
+      } else {
+        // Fallback metadata configuration if pagination schema isn't fully ready
+        setPagination({
+          totalCount: result.count || result.data.length,
+          totalPages: 1,
+          currentPage: 1,
+          limit: 10,
+          hasNextPage: false,
+          hasPrevPage: false,
+        });
+      }
+    }
     setDataLoading(false);
   };
 
   useEffect(() => {
-    loadUsers();
+    loadUsers(1);
   }, []);
 
+  // Standard client search filter
   const filteredUsers = useMemo(() => {
     if (!searchTerm) return users;
 
     return users.filter(
       (user) =>
         (user.phone && user.phone.includes(searchTerm)) ||
-        (user.userId && user.userId.includes(searchTerm)),
+        (user.userId && user.userId.includes(searchTerm)) ||
+        (user.androidId && user.androidId.toLowerCase().includes(searchTerm.toLowerCase()))
     );
   }, [searchTerm, users]);
 
@@ -63,7 +92,8 @@ const NotificationDashboard = () => {
       message: formData.message,
       imageUrl: formData.imageUrl,
       bannerUrl: formData.bannerUrl,
-      ...(formData.selectedUser && { userId: formData.selectedUser.userId }),
+      ...(formData.selectedUser && { userId: formData.selectedUser.userId,firebaseUID: formData.selectedUser.firebaseUID, 
+        androidId: formData.selectedUser.androidId }),
     };
     const result = await Notificationsend(payload);
     setLoading(false);
@@ -89,7 +119,7 @@ const NotificationDashboard = () => {
                 Notification Center
               </h1>
               <p className="text-[10px] md:text-xs font-medium text-slate-400 mt-1 uppercase tracking-wider">
-                {users.length} Registered Users
+                {pagination.totalCount} Total System Profiles
               </p>
             </div>
           </div>
@@ -101,7 +131,7 @@ const NotificationDashboard = () => {
               </span>
               <input
                 type="text"
-                placeholder="Search..."
+                placeholder="Search phone, userId, or androidId..."
                 className="w-full pl-10 pr-4 py-2.5 bg-slate-100 border-none rounded-xl focus:ring-2 focus:ring-indigo-500 transition-all text-sm"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -128,79 +158,142 @@ const NotificationDashboard = () => {
       </div>
 
       {/* TABLE SECTION */}
-      <div className="max-w-7xl mx-auto w-full p-4 lg:p-10">
-        <div className="bg-white rounded-2xl md:rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+      <div className="max-w-7xl mx-auto w-full p-4 lg:p-10 flex-grow">
+        <div className="bg-white rounded-2xl md:rounded-3xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
           {dataLoading ? (
             <div className="flex flex-col items-center justify-center h-80 space-y-4">
               <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-              <p className="text-slate-400 font-medium">
-                Fetching Directory...
-              </p>
+              <p className="text-slate-400 font-medium">Fetching Directory...</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left min-w-[600px]">
-                <thead>
-                  <tr className="bg-slate-50/50 border-b border-slate-100">
-                    <th className="px-6 md:px-8 py-5 text-[10px] md:text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em]">
-                      Contact Details
-                    </th>
-                    <th className="px-6 md:px-8 py-5 text-[10px] md:text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em]">
-                      System Identifier
-                    </th>
-                    <th className="px-6 md:px-8 py-5 text-[10px] md:text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em] text-right">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-50">
-                  {filteredUsers.map((user) => (
-                    <tr
-                      key={user._id}
-                      className="hover:bg-slate-50/80 transition-colors group"
-                    >
-                      <td className="px-6 md:px-8 py-5">
-                        <div className="flex flex-col">
-                          <span
-                            className={`text-sm md:text-base font-bold ${!user.phone ? "text-rose-500" : "text-slate-700"}`}
-                          >
-                            {user.phone || "No Phone"}
-                          </span>
-                          <span className="text-[9px] md:text-[10px] text-slate-400 font-bold uppercase mt-0.5">
-                            Verified Account
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-6 md:px-8 py-5">
-                        <span className="bg-slate-100 text-slate-500 px-2 py-1 rounded-lg text-[10px] md:text-xs font-mono font-medium border border-slate-200 truncate inline-block max-w-[120px] md:max-w-full">
-                          {user.userId || "No UserID"}
-                        </span>
-                      </td>
-                      <td className="px-6 md:px-8 py-5">
-                        <div className="flex justify-end gap-2">
-                          <button
-                            onClick={() => openModal("individual", user)}
-                            className="bg-indigo-50 text-indigo-600 px-3 md:px-4 py-2 rounded-lg text-[10px] md:text-xs font-bold hover:bg-indigo-600 hover:text-white transition-all whitespace-nowrap"
-                          >
-                            Send Direct
-                          </button>
-                          {!user.phone && (
-                            <button
-                              onClick={() =>
-                                openModal("incomplete_single", user)
-                              }
-                              className="bg-rose-50 text-rose-600 px-3 md:px-4 py-2 rounded-lg text-[10px] md:text-xs font-bold hover:bg-rose-600 hover:text-white transition-all whitespace-nowrap"
-                            >
-                              Alert
-                            </button>
-                          )}
-                        </div>
-                      </td>
+            <>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left min-w-[750px]">
+                  <thead>
+                    <tr className="bg-slate-50/50 border-b border-slate-100">
+                      <th className="px-6 md:px-8 py-5 text-[10px] md:text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em]">
+                        Contact Details
+                      </th>
+                      <th className="px-6 md:px-8 py-5 text-[10px] md:text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em]">
+                        Device & Token Info
+                      </th>
+                      <th className="px-6 md:px-8 py-5 text-[10px] md:text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em]">
+                        User ID
+                      </th>
+                      <th className="px-6 md:px-8 py-5 text-[10px] md:text-[11px] font-bold text-slate-400 uppercase tracking-[0.2em] text-right">
+                        Actions
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+                  <tbody className="divide-y divide-slate-50">
+                    {filteredUsers.length === 0 ? (
+                      <tr>
+                        <td colSpan="4" className="text-center py-12 text-slate-400 font-medium text-sm">
+                          No profiles matching criteria found on this page.
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredUsers.map((user) => (
+                        <tr
+                          key={user._id}
+                          className="hover:bg-slate-50/80 transition-colors group"
+                        >
+                          <td className="px-6 md:px-8 py-5">
+                            <div className="flex flex-col">
+                              <span
+                                className={`text-sm md:text-base font-bold ${
+                                  !user.phone ? "text-rose-500" : "text-slate-700"
+                                }`}
+                              >
+                                {user.phone || "No Phone Number"}
+                              </span>
+                              <span className="text-[9px] md:text-[10px] text-slate-400 font-bold uppercase mt-0.5">
+                                {!user.phone ? "Action Required" : "Verified Account"}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="px-6 md:px-8 py-5">
+                            <div className="flex flex-col max-w-[280px]">
+                              <span className="text-xs font-bold text-slate-600 truncate">
+                                📱 ID: {user.androidId || "Unknown"}
+                              </span>
+                              <span className="text-[10px] text-slate-400 font-mono truncate mt-0.5" title={user.firebaseUID}>
+                                FCM: {user.firebaseUID || "No Token Saved"}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="px-6 md:px-8 py-5">
+                            <span className="bg-slate-100 text-slate-500 px-2 py-1 rounded-lg text-[10px] md:text-xs font-mono font-medium border border-slate-200 truncate inline-block max-w-[140px]">
+                              {user.userId || "No Custom UID"}
+                            </span>
+                          </td>
+                          <td className="px-6 md:px-8 py-5">
+                            <div className="flex justify-end gap-2">
+                              <button
+                                onClick={() => openModal("individual", user)}
+                                className="bg-indigo-55 text-indigo-600 bg-indigo-50 px-3 md:px-4 py-2 rounded-lg text-[10px] md:text-xs font-bold hover:bg-indigo-600 hover:text-white transition-all whitespace-nowrap"
+                              >
+                                Send Direct
+                              </button>
+                              {!user.phone && (
+                                <button
+                                  onClick={() => openModal("incomplete_single", user)}
+                                  className="bg-rose-50 text-rose-600 px-3 md:px-4 py-2 rounded-lg text-[10px] md:text-xs font-bold hover:bg-rose-600 hover:text-white transition-all whitespace-nowrap"
+                                >
+                                  Alert
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* DYNAMIC PAGINATION CONTROLS */}
+              <div className="bg-slate-50/50 border-t border-slate-100 px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <span className="text-xs text-slate-400 font-medium">
+                  Showing page <strong className="text-slate-700">{pagination.currentPage}</strong> of{" "}
+                  <strong className="text-slate-700">{pagination.totalPages}</strong> ({pagination.totalCount} results)
+                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => loadUsers(pagination.currentPage - 1)}
+                    disabled={!pagination.hasPrevPage || dataLoading}
+                    className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    ⏮️ Previous
+                  </button>
+                  <div className="flex items-center gap-1">
+                    {[...Array(pagination.totalPages)].map((_, index) => {
+                      const pageNum = index + 1;
+                      return (
+                        <button
+                          key={pageNum}
+                          onClick={() => loadUsers(pageNum)}
+                          className={`w-7 h-7 flex items-center justify-center rounded-lg text-xs font-bold transition-all ${
+                            pagination.currentPage === pageNum
+                              ? "bg-indigo-600 text-white shadow-sm"
+                              : "bg-white border border-slate-200 text-slate-600 hover:bg-slate-50"
+                          }`}
+                        >
+                          {pageNum}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <button
+                    onClick={() => loadUsers(pagination.currentPage + 1)}
+                    disabled={!pagination.hasNextPage || dataLoading}
+                    className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    Next ⏭️
+                  </button>
+                </div>
+              </div>
+            </>
           )}
         </div>
       </div>
@@ -325,7 +418,7 @@ const NotificationDashboard = () => {
                 Live Preview
               </p>
 
-              {/* Phone Mockup - Hidden on tiny heights, scaled on mobile */}
+              {/* Phone Mockup */}
               <div className="w-full max-w-[240px] md:max-w-[280px] bg-white rounded-[24px] md:rounded-[32px] shadow-xl border-[4px] md:border-[6px] border-slate-800 p-2 md:p-3 relative mb-6 md:mb-0">
                 <div className="w-8 md:w-12 h-0.5 md:h-1 bg-slate-800 rounded-full mx-auto mb-2 md:mb-4 opacity-20"></div>
 
