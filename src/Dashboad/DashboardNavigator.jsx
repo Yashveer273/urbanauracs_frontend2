@@ -12,7 +12,7 @@ import {
   LogOutIcon,
   MessageCircle,
   Bell,
-  GalleryHorizontal
+  GalleryHorizontal,
 } from "lucide-react";
 
 import { Menu, X } from "lucide-react";
@@ -39,17 +39,22 @@ const DashboardNavigator = ({ activeTab, handleTabClick, handleLogout }) => {
 
   const tabs = [
     { tab: "auth", label: "Users", icon: LayoutDashboardIcon },
-    { tab: "services", label: "Services", icon: Package2Icon },
-    { tab: "Export-Sales", label: "Export Sales Data", icon: BarChart2Icon },
-    { tab: "Notification", label: "Notification Controller", icon: Bell },
-    { tab: "Banner", label: "Banner Management", icon: GalleryHorizontal },
-    { tab: "Chat-Controller", label: "Chat Box", icon: MessageCircle },
-    { tab: "VandersSection", label: "Vanders Section", icon: UserCheckIcon },
+    { tab: "Ticket", label: "Ticket", icon: TicketIcon },
     { tab: "sales", label: "Sales", icon: DollarSignIcon },
+    { tab: "VandersSection", label: "Vanders", icon: UserCheckIcon },
+    { tab: "services", label: "Services", icon: Package2Icon },
+    { tab: "Chat-Controller", label: "Chat Box", icon: MessageCircle },
+    { tab: "Banner", label: "Banner", icon: GalleryHorizontal },
+
     { tab: "Coupon-Manager", label: "Coupon Manager", icon: TagIcon },
     { tab: "Website-Content", label: "Website Content", icon: GlobeIcon },
-    { tab: "Ticket", label: "Ticket", icon: TicketIcon },
-    { tab: "dashboard-controller", label: "Dashboard Controller", icon: SettingsIcon },
+    { tab: "Export-Sales", label: "Export Sales Data", icon: BarChart2Icon },
+    { tab: "Notification", label: "Notification Controller", icon: Bell },
+    {
+      tab: "dashboard-controller",
+      label: "Dashboard Controller",
+      icon: SettingsIcon,
+    },
   ];
 
   // Listen to notificationCounters for other tabs
@@ -63,12 +68,12 @@ const DashboardNavigator = ({ activeTab, handleTabClick, handleLogout }) => {
           newCounts[doc.id] = doc.data().unreadCount || 0;
         }
       });
-     
+
       countTabs.forEach((tab) => {
         if (newCounts[tab] === undefined) newCounts[tab] = 0;
       });
 
-      setCounts(prev => ({ ...prev, ...newCounts }));
+      setCounts((prev) => ({ ...prev, ...newCounts }));
     });
 
     return () => unsubscribe();
@@ -76,7 +81,7 @@ const DashboardNavigator = ({ activeTab, handleTabClick, handleLogout }) => {
 
   // Update chat count separately
   useEffect(() => {
-    setCounts(prev => ({ ...prev, "Chat-Controller": chatUnread }));
+    setCounts((prev) => ({ ...prev, "Chat-Controller": chatUnread }));
   }, [chatUnread]);
 
   // Play a short alert when unread counts increase
@@ -89,7 +94,7 @@ const DashboardNavigator = ({ activeTab, handleTabClick, handleLogout }) => {
     };
 
     const hasNewUnread = Object.keys(currentUnread).some(
-      (key) => currentUnread[key] > unreadPrevRef.current[key]
+      (key) => currentUnread[key] > unreadPrevRef.current[key],
     );
 
     if (hasNewUnread) {
@@ -105,7 +110,10 @@ const DashboardNavigator = ({ activeTab, handleTabClick, handleLogout }) => {
           oscillator.connect(gainNode);
           gainNode.connect(audioCtx.destination);
           gainNode.gain.setValueAtTime(0.0001, audioCtx.currentTime);
-          gainNode.gain.exponentialRampToValueAtTime(0.2, audioCtx.currentTime + 0.01);
+          gainNode.gain.exponentialRampToValueAtTime(
+            0.2,
+            audioCtx.currentTime + 0.01,
+          );
 
           oscillator.start();
           oscillator.stop(audioCtx.currentTime + 0.12);
@@ -123,15 +131,21 @@ const DashboardNavigator = ({ activeTab, handleTabClick, handleLogout }) => {
   const [unreadPerUser, setUnreadPerUser] = useState({});
 
   useEffect(() => {
-    const usersUnsub = onSnapshot(collection(firestore, "User"), (usersSnapshot) => {
-      const users = usersSnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      // Set initial unreadPerUser
-      setUnreadPerUser(prev => {
-        const newUnread = {};
-        users.forEach(u => newUnread[u.id] = prev[u.id] || 0);
-        return newUnread;
-      });
-    });
+    const usersUnsub = onSnapshot(
+      collection(firestore, "User"),
+      (usersSnapshot) => {
+        const users = usersSnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        // Set initial unreadPerUser
+        setUnreadPerUser((prev) => {
+          const newUnread = {};
+          users.forEach((u) => (newUnread[u.id] = prev[u.id] || 0));
+          return newUnread;
+        });
+      },
+    );
     return () => usersUnsub();
   }, []);
 
@@ -146,11 +160,11 @@ const DashboardNavigator = ({ activeTab, handleTabClick, handleLogout }) => {
       const q = query(
         messagesRef,
         where("senderRole", "==", "user"),
-        where("seen", "==", false)
+        where("seen", "==", false),
       );
 
       const unsub = onSnapshot(q, (snapshot) => {
-        setUnreadPerUser(prev => ({ ...prev, [userId]: snapshot.size }));
+        setUnreadPerUser((prev) => ({ ...prev, [userId]: snapshot.size }));
       });
 
       unsubscribersRef.current.push(unsub);
@@ -163,7 +177,10 @@ const DashboardNavigator = ({ activeTab, handleTabClick, handleLogout }) => {
   }, [unreadPerUser]);
 
   useEffect(() => {
-    const total = Object.values(unreadPerUser).reduce((sum, count) => sum + count, 0);
+    const total = Object.values(unreadPerUser).reduce(
+      (sum, count) => sum + count,
+      0,
+    );
     setChatUnread(total);
   }, [unreadPerUser]);
 
@@ -192,7 +209,7 @@ const DashboardNavigator = ({ activeTab, handleTabClick, handleLogout }) => {
         await setDoc(docRef, { unreadCount: 0 });
       }
       // Update local state immediately for instant UI feedback
-      setCounts(prev => ({ ...prev, [tab]: 0 }));
+      setCounts((prev) => ({ ...prev, [tab]: 0 }));
     }
 
     if (tab === "Chat-Controller" && chatUnread > 0) {
@@ -208,20 +225,20 @@ const DashboardNavigator = ({ activeTab, handleTabClick, handleLogout }) => {
     }
   };
 
-return (
-  <>
-    {/* Mobile Top Bar */}
-    <div className="md:hidden flex items-center justify-between p-4 bg-white shadow sticky top-0 z-40">
-      <button onClick={() => setOpen(true)}>
-        <Menu className="w-6 h-6 text-gray-800" />
-      </button>
+  return (
+    <>
+      {/* Mobile Top Bar */}
+      <div className="md:hidden flex items-center justify-between p-4 bg-white shadow sticky top-0 z-40">
+        <button onClick={() => setOpen(true)}>
+          <Menu className="w-6 h-6 text-gray-800" />
+        </button>
 
-      <h1 className="font-bold text-lg">Dashboard</h1>
-    </div>
+        <h1 className="font-bold text-lg">Dashboard</h1>
+      </div>
 
-    {/* Sidebar */}
-    <aside
-      className={`
+      {/* Sidebar */}
+      <aside
+        className={`
       fixed md:relative top-0 left-0  md:h-auto
       w-64 bg-white shadow-xl p-6
       transform transition-transform duration-300
@@ -230,73 +247,80 @@ return (
       z-50
   
     `}
-    style={{
-      height:"100vh",overflow:"scroll"
-    }}
-    >
-      {/* Close Button (mobile only) */}
-      <div className="flex items-center justify-between mb-6 md:hidden">
-        <h2 className="font-bold text-lg">Menu</h2>
-        <button onClick={() => setOpen(false)}>
-          <X className="w-6 h-6" />
-        </button>
-      </div>
+        style={{
+          height: "100vh",
+          overflow: "scroll",
+        }}
+      >
+        {/* Close Button (mobile only) */}
+        <div className="flex items-center justify-between mb-6 md:hidden">
+          <h2 className="font-bold text-lg">Menu</h2>
+          <button onClick={() => setOpen(false)}>
+            <X className="w-6 h-6" />
+          </button>
+        </div>
 
-      <div>
-        <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-6 md:mb-8 flex items-center">
-          <Package2Icon className="w-8 h-8 mr-2 text-indigo-600" />
-          Dashboard
-        </h1>
+        <div>
+          <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-6 md:mb-8 flex items-center">
+            <Package2Icon className="w-8 h-8 mr-2 text-indigo-600" />
+            Dashboard
+          </h1>
 
-        <nav>
-          <ul>
-            {tabs.map((tabItem) => {
-              const Icon = tabItem.icon;
-              const count = tabItem.tab === "Ticket" ? ticketNewCount : counts[tabItem.tab];
+          <nav>
+            <ul>
+              {tabs.map((tabItem) => {
+                const Icon = tabItem.icon;
+                const count =
+                  tabItem.tab === "Ticket"
+                    ? ticketNewCount
+                    : counts[tabItem.tab];
 
-              return (
-                <li className="mb-1 md:mb-2" key={tabItem.tab}>
-                  <a
-                    href="#"
-                    onClick={() => handleTabClickWithReset(tabItem.tab)}
-                    className={`flex items-center justify-between p-2 md:p-3 text-sm md:text-base rounded-lg transition-colors duration-200 ${
-                      activeTab === tabItem.tab
-                        ? "bg-indigo-100 text-indigo-700"
-                        : "text-gray-600 hover:bg-gray-200"
-                    }`}
-                  >
-                    <div className="flex items-center">
-                      <Icon className="w-5 h-5 mr-3" />
-                      {tabItem.label}
-                    </div>
+                return (
+                  <li className="mb-1 md:mb-2" key={tabItem.tab}>
+                    <a
+                      href="#"
+                      onClick={() => handleTabClickWithReset(tabItem.tab)}
+                      className={`flex items-center justify-between p-2 md:p-3 text-sm md:text-base rounded-lg transition-colors duration-200 ${
+                        activeTab === tabItem.tab
+                          ? "bg-indigo-100 text-indigo-700"
+                          : "text-gray-600 hover:bg-gray-200"
+                      }`}
+                    >
+                      <div className="flex items-center">
+                        <Icon className="w-5 h-5 mr-3" />
+                        {tabItem.label}
+                      </div>
 
-                    {((tabItem.tab === "Ticket" && ticketNewCount > 0) || ((countTabs.includes(tabItem.tab) || tabItem.tab === "Chat-Controller") && count > 0)) && (
-                      <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-                        {count}
-                      </span>
-                    )}
-                  </a>
-                </li>
-              );
-            })}
-          </ul>
+                      {((tabItem.tab === "Ticket" && ticketNewCount > 0) ||
+                        ((countTabs.includes(tabItem.tab) ||
+                          tabItem.tab === "Chat-Controller") &&
+                          count > 0)) && (
+                        <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                          {count}
+                        </span>
+                      )}
+                    </a>
+                  </li>
+                );
+              })}
+            </ul>
 
-          <button
-            onClick={handleLogout}
-            className="
+            <button
+              onClick={handleLogout}
+              className="
             flex items-center px-4 md:px-5 py-2 text-sm md:text-base bg-red-500 text-white font-semibold rounded-lg
             shadow-md hover:bg-red-600 hover:shadow-lg transition-all duration-200
             focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-1 mt-4
           "
-          >
-            <LogOutIcon className="w-5 h-5 mr-2" />
-            Logout
-          </button>
-        </nav>
-      </div>
-    </aside>
-  </>
-);
+            >
+              <LogOutIcon className="w-5 h-5 mr-2" />
+              Logout
+            </button>
+          </nav>
+        </div>
+      </aside>
+    </>
+  );
 };
 
 export default DashboardNavigator;
