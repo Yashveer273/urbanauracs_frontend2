@@ -228,24 +228,19 @@ export default function SalesSection() {
       }
 
       if (filters.status) {
-  const saleStatus = (sale.status || "").toLowerCase();
-  const filterStatus = filters.status.toLowerCase();
+        const saleStatus = (sale.status || "").toLowerCase();
+        const filterStatus = filters.status.toLowerCase();
 
-
-
-  if (filterStatus === "pending") {
-   
-    if (saleStatus !== "" && saleStatus !== "pending") {
-      return false;
-    }
-  } else {
-
-    if (saleStatus != filterStatus) {
-      return false;
-    }
-    else return true;
-  }
-}
+        if (filterStatus === "pending") {
+          if (saleStatus !== "" && saleStatus !== "pending") {
+            return false;
+          }
+        } else {
+          if (saleStatus != filterStatus) {
+            return false;
+          } else return true;
+        }
+      }
 
       if (filters.orderId && !sale.orderId?.includes(filters.orderId))
         return false;
@@ -268,10 +263,7 @@ export default function SalesSection() {
 
   const currentData = [...filteredData]
     .sort((a, b) => (b.S_orderId || 0) - (a.S_orderId || 0))
-    .slice(
-      (currentPage - 1) * itemsPerPage,
-      currentPage * itemsPerPage,
-    );
+    .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
   const totalPages = Math.ceil(filteredData.length / itemsPerPage);
 
   const showProductInfo = (sale) => {
@@ -367,7 +359,7 @@ export default function SalesSection() {
       // pincode: sale.pincode || "",
       discount: sale.discount || "0",
 
-      payedAmount: sale.payedAmount || "0",
+      payedAmount: sale.payedAmount??"0",
       booking_Date: sale.product_info.cart[0]?.location_booking_time,
       booking_Time: sale.product_info.cart[0]?.SelectedServiceTime,
 
@@ -901,12 +893,10 @@ export default function SalesSection() {
           ref={tableContainerRef}
         >
           {" "}
-     
           <table className="w-full table-auto border-collapse">
             <thead>
               <tr className="bg-gray-100 text-gray-600 uppercase text-xs md:text-sm">
                 {" "}
-               
                 {tableHeaders.map((h) => (
                   <th key={h} className="py-3 px-6">
                     {h}
@@ -995,7 +985,7 @@ export default function SalesSection() {
                     </td>
 
                     <td className="py-3 px-2 text-xs md:text-sm">
-                      ₹{sale.payedAmount}
+                      ₹{sale.payedAmount??0}
                     </td>
 
                     <td className="py-3 px-2 text-xs md:text-sm">
@@ -1026,7 +1016,8 @@ export default function SalesSection() {
                               updateResponsiblePerson(sale.id, e.target.value)
                             }
                             className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white
-          focus:outline-none focus:ring-2 focus:ring-blue-500">
+          focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          >
                             {responsiblePersons.map((person) => (
                               <option
                                 key={person._id}
@@ -1113,59 +1104,60 @@ export default function SalesSection() {
                                 .convenienceFee,
                             0,
                           )}`,
-                          
-vendorbalanceAmount: `₹${Math.round(
 
-                            sale.product_info.cart.reduce(
-                              (sum, i) => sum + i.item_price * i.quantity,
-                              0,
-                            ) - sale.discount
-                           +
-  sale.product_info.cart.reduce(
-    (sum, i) =>
-      sum +
-      CalculateConvenienceFee(i.item_price * i.quantity).convenienceFee,
-    0
-  )
-                )-sale.payedAmount}`,
-              Pendingpayment: `₹${Math.round(
-  Math.round(
-  0.25 *
-    Math.round(
-                            sale.product_info.cart.reduce(
-                              (sum, i) => sum + i.item_price * i.quantity,
-                              0,
-                            ) - sale.discount)
-                           +
-  sale.product_info.cart.reduce(
-    (sum, i) =>
-      sum +
-      CalculateConvenienceFee(i.item_price * i.quantity).convenienceFee,
-    0
-  )
-                ) -sale.payedAmount
-
-)}`,
+                          vendorbalanceAmount: `₹${
+                            Math.round(
+                              sale.product_info.cart.reduce(
+                                (sum, i) => sum + i.item_price * i.quantity,
+                                0,
+                              ) 
+                              -
+                                sale.discount +
+                                sale.product_info.cart.reduce(
+                                  (sum, i) =>
+                                    sum +
+                                    CalculateConvenienceFee(
+                                      i.item_price * i.quantity,
+                                    ).convenienceFee,
+                                  0,
+                                ),
+                            )
+                             -( sale.payedAmount??0 )
+                          }`,
+                          Pendingpayment: `₹${Math.round(
+                            Math.round(
+                              0.25 *
+                                Math.round(
+                                  sale.product_info.cart.reduce(
+                                    (sum, i) => sum + i.item_price * i.quantity,
+                                    0,
+                                  ) - sale.discount,
+                                ) +
+                                sale.product_info.cart.reduce(
+                                  (sum, i) =>
+                                    sum +
+                                    CalculateConvenienceFee(
+                                      i.item_price * i.quantity,
+                                    ).convenienceFee,
+                                  0,
+                                ),
+                            ) -( sale.payedAmount??0 ),
+                          )}`,
                           balanceAmount: `₹${Math.round(
-                        sale?.product_info?.cart?.reduce(
-                          (sum, item) =>
-                            sum +
-                            Number(
-                              item.item_price * item.quantity +
-                                CalculateConvenienceFee(
-                                  item.item_price * item.quantity,
-                                ).convenienceFee,
-                            ),
-                          0,
-                        ) -
-                          Number(sale?.discount || 0) -
-                          Number(sale?.payedAmount || 0),
-                      )}`,  
-
-
-
-                          
-                          
+                            sale?.product_info?.cart?.reduce(
+                              (sum, item) =>
+                                sum +
+                                Number(
+                                  item.item_price * item.quantity +
+                                    CalculateConvenienceFee(
+                                      item.item_price * item.quantity,
+                                    ).convenienceFee,
+                                ),
+                              0,
+                            ) -
+                              Number(sale?.discount || 0) -
+                              Number(sale?.payedAmount || 0),
+                          )}`,
                         }}
                       />
                     </td>
@@ -1198,7 +1190,6 @@ vendorbalanceAmount: `₹${Math.round(
         {totalPages > 1 && (
           <div className="flex flex-wrap justify-center items-center gap-2 mt-6">
             {" "}
-            
             <button
               onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
               disabled={currentPage === 1}
@@ -1354,7 +1345,10 @@ vendorbalanceAmount: `₹${Math.round(
                           <td className="py-4 px-6">{quantities}</td>
 
                           <td className="py-4 px-6">
-                            ₹{Math.round(totalItemAmount - selectedProductInfo.discount)}
+                            ₹
+                            {Math.round(
+                              totalItemAmount - selectedProductInfo.discount,
+                            )}
                           </td>
 
                           <td className="py-4 px-6">₹{totalConvenienceFee}</td>
@@ -1805,22 +1799,29 @@ vendorbalanceAmount: `₹${Math.round(
               className="w-full border px-3 py-2 mb-3 rounded"
             />
 
-            {/* Booking Date */}
             <label className="block text-sm font-medium mb-1">
               Booking Date
+              {editingCartProduct.productData.location_booking_time}
             </label>
             <input
               type="date"
               value={
                 editingCartProduct?.productData?.location_booking_time
-                  ? new Date(
-                      editingCartProduct.productData.location_booking_time,
-                    )
-                      .toISOString()
-                      .split("T")[0]
+                  ? (() => {
+                      let dateValue =
+                        editingCartProduct.productData.location_booking_time;
+
+                      // Convert 26-05-27 -> 2026-05-27
+                      if (/^\d{2}-\d{2}-\d{2}$/.test(dateValue)) {
+                        const [yy, mm, dd] = dateValue.split("-");
+                        dateValue = `20${yy}-${mm}-${dd}`;
+                      }
+
+                      return new Date(dateValue).toISOString().split("T")[0];
+                    })()
                   : ""
               }
-              min={new Date().toISOString().split("T")[0]} // disables past dates
+              min={new Date().toISOString().split("T")[0]}
               onChange={(e) =>
                 setEditingCartProduct((prev) => ({
                   ...prev,

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 import {
   collection,
@@ -264,10 +264,14 @@ const Dashboard = () => {
       setServices(data[0].data || []); // Use [0] only if you have one doc
     }
   };
+const initialized = useRef(false);
 
-  useEffect(() => {
-    checkAuth();
-  }, []);
+useEffect(() => {
+  if (initialized.current) return;
+
+  initialized.current = true;
+  checkAuth();
+}, []);
 
   const [editingServiceId, setEditingServiceId] = useState(null);
   const [newServiceName, setNewServiceName] = useState("");
@@ -648,39 +652,67 @@ const Dashboard = () => {
   };
 
   // Handles updating a service for a vendor.
+  const [isEdtSubmitting, setIsEdtSubmitting] = useState(false);
   const handleUpdateVendorService = async (e) => {
     e.preventDefault();
+ setIsEdtSubmitting(true);
 
-    const updatedServices = services.map((service) => {
-      if (service.id === selectedService.id) {
-        const updatedData = service.data.map((vendor) => {
-          if (vendor.vendorId === selectedVendor.vendorId) {
-            const updatedVendorServices = vendor.services.map((vService) => {
-              if (vService.id === editingServiceIdInVendor) {
-                return {
-                  ...vService,
-                  ...serviceFormData,
-                  inclusions: serviceFormData.inclusions
-                    .split(",")
-                    .map((item) => item.trim())
-                    .filter((item) => item),
-                  exclusions: serviceFormData.exclusions
-                    .split(",")
-                    .map((item) => item.trim())
-                    .filter((item) => item),
-                };
-              }
-              return vService;
-            });
-            return { ...vendor, services: updatedVendorServices };
+const updatedServices = services.map((service) => {
+
+
+  if (service.id === selectedService.id) {
+
+
+    const updatedData = service.data.map((vendor) => {
+      
+      if (vendor.vendorId === selectedVendor.vendorId) {
+      
+        const updatedVendorServices = vendor.services.map((vService) => {
+         
+          if (vService.id === editingServiceIdInVendor) {
+           
+            const updated = {
+              ...vService,
+              ...serviceFormData,
+              inclusions: serviceFormData.inclusions
+                .split(",")
+                .map((item) => item.trim())
+                .filter(Boolean),
+              exclusions: serviceFormData.exclusions
+                .split(",")
+                .map((item) => item.trim())
+                .filter(Boolean),
+            };
+
+           
+            return updated;
           }
-          return vendor;
+
+          return vService;
         });
-        return { ...service, data: updatedData };
+
+        console.log("Updated vendor services:", updatedVendorServices);
+
+        return {
+          ...vendor,
+          services: updatedVendorServices,
+        };
       }
-      return service;
+
+      return vendor;
     });
 
+    return {
+      ...service,
+      data: updatedData,
+    };
+  }
+
+  return service;
+});
+
+console.log("Final updatedServices:", updatedServices);
+console.dir(updatedServices, { depth: null });
     setServices(updatedServices);
     await EditServiceDB(updatedServices);
     const updatedSelectedService = updatedServices.find(
@@ -707,6 +739,7 @@ const Dashboard = () => {
       inclusions: "",
       exclusions: "",
     });
+    setIsEdtSubmitting(false);
   };
 
   // Handles deleting a service from a vendor.
@@ -1508,24 +1541,46 @@ const Dashboard = () => {
               </div>
 
               {/* Buttons */}
-              <div className="flex space-x-2 mt-4">
-                <button
-                  type="submit"
-                  className="flex-1 px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 transition-colors duration-200"
-                >
-                  {editingServiceIdInVendor ? "Save Service" : "Create Service"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowServiceForm(false);
-                    setEditingServiceIdInVendor(null);
-                  }}
-                  className="flex-1 px-6 py-3 bg-gray-400 text-white font-semibold rounded-lg shadow-md hover:bg-gray-500 transition-colors duration-200"
-                >
-                  Cancel
-                </button>
-              </div>
+            <div className="flex space-x-2 mt-4">
+  <button
+    type="submit"
+    disabled={editingServiceIdInVendor && isEdtSubmitting}
+    className={`flex-1 px-6 py-3 text-white font-semibold rounded-lg shadow-md transition-colors duration-200 ${
+      editingServiceIdInVendor && isEdtSubmitting
+        ? "bg-gray-400 cursor-not-allowed"
+        : "bg-indigo-600 hover:bg-indigo-700"
+    }`}
+  >
+    {editingServiceIdInVendor ? (
+      isEdtSubmitting ? (
+        <div className="flex items-center justify-center gap-2">
+          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+          Saving...
+        </div>
+      ) : (
+        "Save Service"
+      )
+    ) : (
+      "Create Service"
+    )}
+  </button>
+
+  <button
+    type="button"
+    disabled={editingServiceIdInVendor && isEdtSubmitting}
+    onClick={() => {
+      setShowServiceForm(false);
+      setEditingServiceIdInVendor(null);
+    }}
+    className={`flex-1 px-6 py-3 text-white font-semibold rounded-lg shadow-md transition-colors duration-200 ${
+      editingServiceIdInVendor && isEdtSubmitting
+        ? "bg-gray-300 cursor-not-allowed"
+        : "bg-gray-400 hover:bg-gray-500"
+    }`}
+  >
+    Cancel
+  </button>
+</div>
             </form>
           </div>
         )}

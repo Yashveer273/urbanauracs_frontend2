@@ -128,6 +128,7 @@ const DashboardNavigator = ({ activeTab, handleTabClick, handleLogout }) => {
   }, [counts, ticketNewCount]);
 
   // Listen to users and calculate chat unread
+  const [chatUserIds, setChatUserIds] = useState([]);
   const [unreadPerUser, setUnreadPerUser] = useState({});
 
   useEffect(() => {
@@ -138,11 +139,32 @@ const DashboardNavigator = ({ activeTab, handleTabClick, handleLogout }) => {
           id: doc.id,
           ...doc.data(),
         }));
-        // Set initial unreadPerUser
+        const nextUserIds = users.map((u) => u.id).sort();
+
+        setChatUserIds((prev) => {
+          if (
+            prev.length === nextUserIds.length &&
+            prev.every((id, index) => id === nextUserIds[index])
+          ) {
+            return prev;
+          }
+          return nextUserIds;
+        });
+
         setUnreadPerUser((prev) => {
-          const newUnread = {};
-          users.forEach((u) => (newUnread[u.id] = prev[u.id] || 0));
-          return newUnread;
+          const nextUnread = {};
+          nextUserIds.forEach((id) => {
+            nextUnread[id] = prev[id] || 0;
+          });
+
+          if (
+            Object.keys(prev).length === Object.keys(nextUnread).length &&
+            Object.keys(nextUnread).every((id) => prev[id] === nextUnread[id])
+          ) {
+            return prev;
+          }
+
+          return nextUnread;
         });
       },
     );
@@ -154,7 +176,7 @@ const DashboardNavigator = ({ activeTab, handleTabClick, handleLogout }) => {
     unsubscribersRef.current.forEach((unsub) => unsub());
     unsubscribersRef.current = [];
 
-    Object.keys(unreadPerUser).forEach((userId) => {
+    chatUserIds.forEach((userId) => {
       const chatId = `${userId}_admin_1`;
       const messagesRef = collection(firestore, "chats", chatId, "messages");
       const q = query(
@@ -164,7 +186,10 @@ const DashboardNavigator = ({ activeTab, handleTabClick, handleLogout }) => {
       );
 
       const unsub = onSnapshot(q, (snapshot) => {
-        setUnreadPerUser((prev) => ({ ...prev, [userId]: snapshot.size }));
+        setUnreadPerUser((prev) => {
+          if (prev[userId] === snapshot.size) return prev;
+          return { ...prev, [userId]: snapshot.size };
+        });
       });
 
       unsubscribersRef.current.push(unsub);
@@ -174,14 +199,14 @@ const DashboardNavigator = ({ activeTab, handleTabClick, handleLogout }) => {
       unsubscribersRef.current.forEach((unsub) => unsub());
       unsubscribersRef.current = [];
     };
-  }, [unreadPerUser]);
+  }, [chatUserIds]);
 
   useEffect(() => {
     const total = Object.values(unreadPerUser).reduce(
       (sum, count) => sum + count,
       0,
     );
-    setChatUnread(total);
+    setChatUnread((prev) => (prev === total ? prev : total));
   }, [unreadPerUser]);
 
   useEffect(() => {

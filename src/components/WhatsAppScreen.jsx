@@ -29,6 +29,7 @@ const WhatsappChatCard = ({ phone: customerPhone, buttonText = "Send WhatsApp Me
       setSendButtonText("Send Message to Vendor");
       
       const mergedData = { ...data, vendorName: selectedVendor.vendorName };
+      console.log("Merged Data for Template:", mergedData);
       setMessage(templates.vendorAssignment(mergedData));
     } else {
       resetToCustomer();
