@@ -83,9 +83,15 @@ const DashboardNavigator = ({ activeTab, handleTabClick, handleLogout }) => {
   useEffect(() => {
     setCounts((prev) => ({ ...prev, "Chat-Controller": chatUnread }));
   }, [chatUnread]);
-
+const ringtoneRef = useRef(
+  typeof Audio !== "undefined" ? new Audio("/ringtone.mp4") : null
+);
   // Play a short alert when unread counts increase
   useEffect(() => {
+      if (ringtoneRef.current) {
+    ringtoneRef.current.preload = "auto";
+  }
+
     const currentUnread = {
       auth: counts.auth || 0,
       sales: counts.sales || 0,
@@ -98,30 +104,17 @@ const DashboardNavigator = ({ activeTab, handleTabClick, handleLogout }) => {
     );
 
     if (hasNewUnread) {
-      try {
-        const AudioCtx = window.AudioContext || window.webkitAudioContext;
-        if (AudioCtx) {
-          const audioCtx = new AudioCtx();
-          const oscillator = audioCtx.createOscillator();
-          const gainNode = audioCtx.createGain();
-
-          oscillator.type = "sine";
-          oscillator.frequency.setValueAtTime(880, audioCtx.currentTime);
-          oscillator.connect(gainNode);
-          gainNode.connect(audioCtx.destination);
-          gainNode.gain.setValueAtTime(0.0001, audioCtx.currentTime);
-          gainNode.gain.exponentialRampToValueAtTime(
-            0.2,
-            audioCtx.currentTime + 0.01,
-          );
-
-          oscillator.start();
-          oscillator.stop(audioCtx.currentTime + 0.12);
-          oscillator.onended = () => audioCtx.close();
-        }
-      } catch (err) {
-        console.warn("Unable to play alert sound", err);
-      }
+  try {
+  if (ringtoneRef.current) {
+    ringtoneRef.current.pause();
+    ringtoneRef.current.currentTime = 0;
+    ringtoneRef.current.play().catch((err) => {
+      console.warn("Unable to play ringtone:", err);
+    });
+  }
+} catch (err) {
+  console.warn("Unable to play ringtone:", err);
+}
     }
 
     unreadPrevRef.current = currentUnread;
