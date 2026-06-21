@@ -123,7 +123,30 @@ export default function TicketDashboard() {
     setCurrentPage(pageNumber);
 
   };
+const getPaginationNumbers = () => {
+  const pages = [];
 
+  if (totalPages <= 5) {
+    for (let i = 1; i <= totalPages; i++) pages.push(i);
+  } else {
+    pages.push(1);
+
+    if (currentPage > 3) pages.push("...");
+
+    const start = Math.max(2, currentPage - 1);
+    const end = Math.min(totalPages - 1, currentPage + 1);
+
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+
+    if (currentPage < totalPages - 2) pages.push("...");
+
+    pages.push(totalPages);
+  }
+
+  return pages;
+};
   // 🔹 Update ticket status
   const updateTicketStatus = async (id, newStatus) => {
     await updateDoc(doc(firestore, "homeCleaningTicket", id), {
@@ -226,34 +249,44 @@ export default function TicketDashboard() {
       </div>
 
       {/* 🔢 Pagination UI */}
-      <div className="flex justify-center items-center gap-2 mt-6">
-        <button
-          onClick={() => currentPage > 1 && fetchPage(currentPage - 1)}
-          disabled={currentPage === 1}
-          className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
-        >
-          ⬅
-        </button>
+      {/* 🔢 Pagination UI */}
+<div className="flex justify-center items-center gap-2 mt-6 flex-wrap">
+  <button
+    onClick={() => currentPage > 1 && fetchPage(currentPage - 1)}
+    disabled={currentPage === 1}
+    className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
+  >
+    Previous
+  </button>
 
-        {Array.from({ length: totalPages }, (_, i) => (
-          <button
-            key={i}
-            onClick={() => fetchPage(i + 1)}
-            className={`px-3 py-1 rounded ${currentPage === i + 1 ? "bg-indigo-600 text-white" : "bg-gray-200"
-              }`}
-          >
-            {i + 1}
-          </button>
-        ))}
+  {getPaginationNumbers().map((page, index) =>
+    page === "..." ? (
+      <span key={index} className="px-2 text-gray-500">
+        ...
+      </span>
+    ) : (
+      <button
+        key={index}
+        onClick={() => fetchPage(page)}
+        className={`px-3 py-1 rounded ${
+          currentPage === page
+            ? "bg-indigo-600 text-white"
+            : "bg-gray-200"
+        }`}
+      >
+        {page}
+      </button>
+    )
+  )}
 
-        <button
-          onClick={() => currentPage < totalPages && fetchPage(currentPage + 1)}
-          disabled={currentPage === totalPages}
-          className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
-        >
-          ➡
-        </button>
-      </div>
+  <button
+    onClick={() => currentPage < totalPages && fetchPage(currentPage + 1)}
+    disabled={currentPage === totalPages}
+    className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
+  >
+    Next
+  </button>
+</div>
 
       <TicketDetailsModal
         ticket={selectedTicket}
