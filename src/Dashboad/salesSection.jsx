@@ -242,9 +242,14 @@ export default function SalesSection() {
         }
       }
 
-      if (filters.orderId && !sale.orderId?.includes(filters.orderId))
-        return false;
-
+ if (
+        filters.orderId &&
+      
+         sale.orderId?.toString()==filters.orderId.toString()
+      ){
+        return true;
+      }
+        
       // SINGLE DATE (onDate)
       if (filters.dateMode === "single" && filters.onDate) {
         return saleDate === filters.onDate;
