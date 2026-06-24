@@ -31,6 +31,7 @@ import DashboardNavigator from "./DashboardNavigator";
 import BlockedDatesTable from "./blockDate";
 import AddAppBanner from "./AddAppBanner";
 import AdminChat from "../chat/AdminChat";
+import ImageUploadPopup from "./ImageUploadPopup";
 
 const PlusIcon = () => (
   <svg
@@ -1093,13 +1094,13 @@ console.dir(updatedServices, { depth: null });
     <DashboardLogin />
   ) : (
     <div className="flex flex-col md:flex-row bg-gray-100 min-h-screen font-sans"> 
-    
+     <ImageUploadPopup />
       <DashboardNavigator
         activeTab={activeTab}
         handleTabClick={handleTabClick}
         handleLogout={handleLogout}
       />
-   
+  
   
       {/* --------------------------------------------------------------------------------------------------- */}
       <>
