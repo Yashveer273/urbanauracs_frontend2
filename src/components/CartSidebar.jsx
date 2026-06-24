@@ -49,7 +49,24 @@ const CartSidebar = () => {
     // newHistoryItems.forEach((historyItem) => {
     //   dispatch(addToHistory(historyItem));
     // });
-    let date = Date.now();
+    const generateFrontendOrderId = () => {
+  const PREFIX = "UA";
+
+  const now = new Date();
+
+  const year = String(now.getFullYear()).slice(-2);
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+
+  // 4-character alphanumeric from timestamp
+  const uniquePart = (Date.now() % 1679616) // 36^4
+    .toString(36)
+    .toUpperCase()
+    .padStart(4, "0");
+
+  return `${PREFIX}${year}${month}${day}-${uniquePart}`;
+};
+    let date = generateFrontendOrderId();
     let total_price = cartTotal.toFixed(2);
     dispatch(clearCartBookingInfo());
 
