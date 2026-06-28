@@ -1094,7 +1094,7 @@ console.dir(updatedServices, { depth: null });
     <DashboardLogin />
   ) : (
     <div className="flex flex-col md:flex-row bg-gray-100 min-h-screen font-sans"> 
-     <ImageUploadPopup />
+     {/* <ImageUploadPopup /> */}
       <DashboardNavigator
         activeTab={activeTab}
         handleTabClick={handleTabClick}

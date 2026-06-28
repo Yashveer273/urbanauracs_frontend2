@@ -2,20 +2,13 @@ import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import {
   collection,
-
   doc,
   updateDoc,
-  query,
   orderBy,
-  getCountFromServer,
-  limit,
-  startAfter,
   getDocs,
+  query,
 } from "firebase/firestore";
 import { firestore } from "../firebaseCon"; // adjust path
-
-
-
 
 // ✅ Modal for ticket details & update
 const TicketDetailsModal = ({ ticket, onClose, onUpdateStatus }) => {
@@ -57,106 +50,54 @@ const TicketDetailsModal = ({ ticket, onClose, onUpdateStatus }) => {
 };
 
 export default function TicketDashboard() {
-  const pageSize = 6;
+  const pageSize = 5; // Changed layout configuration to 5 rows as requested
 
-  const [tickets, setTickets] = useState([]);
-
-
+  const [allTickets, setAllTickets] = useState([]); // Keeps full list for unified lookup
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [pageCursors, setPageCursors] = useState([]);
-
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterDate, setFilterDate] = useState("");
 
-  // 🔹 Get total pages + first page
+  // 🔹 Fetch all tickets sequentially on mount to allow accurate searching across pages
   useEffect(() => {
-    const init = async () => {
-      const coll = collection(firestore, "homeCleaningTicket");
-      const countSnap = await getCountFromServer(coll);
-      const totalDocs = countSnap.data().count;
-      setTotalPages(Math.ceil(totalDocs / pageSize));
-      fetchPage(1);
+    const fetchAllData = async () => {
+      try {
+        const q = query(
+          collection(firestore, "homeCleaningTicket"),
+          orderBy("data.createdAt", "desc")
+        );
+        const snapshot = await getDocs(q);
+        const docs = snapshot.docs.map((docSnap) => {
+          const docData = docSnap.data().data || {};
+          const createdAt = docData.createdAt?.toDate
+            ? docData.createdAt.toDate()
+            : docData.createdAt 
+              ? new Date(docData.createdAt) 
+              : null;
+          return { id: docSnap.id, ...docData, createdAt };
+        });
+        setAllTickets(docs);
+      } catch (err) {
+        console.error("Error fetching tickets:", err);
+      }
     };
-    init();
+    fetchAllData();
   }, []);
 
-  // 🔹 Fetch specific page
-  const fetchPage = async (pageNumber) => {
-
-
-    let q;
-
-    if (pageNumber === 1) {
-      q = query(
-        collection(firestore, "homeCleaningTicket"),
-        orderBy("data.createdAt", "desc"),
-        limit(pageSize)
-      );
-    } else {
-      q = query(
-        collection(firestore, "homeCleaningTicket"),
-        orderBy("data.createdAt", "desc"),
-        startAfter(pageCursors[pageNumber - 2]),
-        limit(pageSize)
-      );
-    }
-
-    const snapshot = await getDocs(q);
-
-    const docs = snapshot.docs.map((docSnap) => {
-      const docData = docSnap.data().data || {};
-      const createdAt = docData.createdAt?.toDate
-        ? docData.createdAt.toDate()
-        : new Date(docData.createdAt);
-      return { id: docSnap.id, ...docData, createdAt };
-    });
-
-    setTickets(docs);
-
-    // Save cursor
-    const newCursors = [...pageCursors];
-    newCursors[pageNumber - 1] = snapshot.docs[snapshot.docs.length - 1];
-    setPageCursors(newCursors);
-
-    setCurrentPage(pageNumber);
-
-  };
-const getPaginationNumbers = () => {
-  const pages = [];
-
-  if (totalPages <= 5) {
-    for (let i = 1; i <= totalPages; i++) pages.push(i);
-  } else {
-    pages.push(1);
-
-    if (currentPage > 3) pages.push("...");
-
-    const start = Math.max(2, currentPage - 1);
-    const end = Math.min(totalPages - 1, currentPage + 1);
-
-    for (let i = start; i <= end; i++) {
-      pages.push(i);
-    }
-
-    if (currentPage < totalPages - 2) pages.push("...");
-
-    pages.push(totalPages);
-  }
-
-  return pages;
-};
-  // 🔹 Update ticket status
+  // 🔹 Update ticket status directly
   const updateTicketStatus = async (id, newStatus) => {
-    await updateDoc(doc(firestore, "homeCleaningTicket", id), {
-      "data.status": newStatus,
-    });
+    try {
+      await updateDoc(doc(firestore, "homeCleaningTicket", id), {
+        "data.status": newStatus,
+      });
 
-    setTickets((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, status: newStatus } : t))
-    );
-    setSelectedTicket(null);
+      setAllTickets((prev) =>
+        prev.map((t) => (t.id === id ? { ...t, status: newStatus } : t))
+      );
+      setSelectedTicket(null);
+    } catch (err) {
+      console.error("Error updating status:", err);
+    }
   };
 
   const getStatusClasses = (status) => {
@@ -172,11 +113,12 @@ const getPaginationNumbers = () => {
     }
   };
 
-  // 🔎 Filters (only current page)
-  const filteredTickets = tickets.filter((ticket) => {
+  // 🔎 1. Step 1: Filter full tracking dataset across global parameters completely first
+  const masterFilteredTickets = allTickets.filter((ticket) => {
     const matchSearch =
       ticket.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      ticket.phone?.toLowerCase().includes(searchTerm.toLowerCase());
+      ticket.phone?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      ticket.message?.toLowerCase().includes(searchTerm.toLowerCase());
 
     const ticketDate = ticket.createdAt
       ? ticket.createdAt.toISOString().slice(0, 10)
@@ -184,6 +126,36 @@ const getPaginationNumbers = () => {
 
     return (!filterDate || ticketDate === filterDate) && matchSearch;
   });
+
+  // Reset safely back to page 1 if current selections shrink beyond range
+  const totalPages = Math.ceil(masterFilteredTickets.length / pageSize) || 1;
+  const activePage = currentPage > totalPages ? totalPages : currentPage;
+
+  // 📋 2. Step 2: Extract current active page segment out of matching subset
+  const startIndex = (activePage - 1) * pageSize;
+  const paginatedTickets = masterFilteredTickets.slice(startIndex, startIndex + pageSize);
+
+  // 🔢 Generate matching localized pagination layout sequences
+  const getPaginationNumbers = () => {
+    const pages = [];
+    if (totalPages <= 5) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      pages.push(1);
+      if (activePage > 3) pages.push("...");
+
+      const start = Math.max(2, activePage - 1);
+      const end = Math.min(totalPages - 1, activePage + 1);
+
+      for (let i = start; i <= end; i++) {
+        pages.push(i);
+      }
+
+      if (activePage < totalPages - 2) pages.push("...");
+      pages.push(totalPages);
+    }
+    return pages;
+  };
 
   return (
     <div className="bg-gray-100 min-h-screen p-4 md:p-6 w-full">
@@ -193,100 +165,114 @@ const getPaginationNumbers = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4 w-full">
         <input
           type="text"
-          placeholder="Search name or phone..."
+          placeholder="Search name, phone, or description..."
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="border px-4 py-2 rounded-lg w-full"
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+            setCurrentPage(1); // Force reset index back to start
+          }}
+          className="border px-4 py-2 rounded-lg w-full outline-none focus:ring-2 focus:ring-indigo-500"
         />
         <input
           type="date"
           value={filterDate}
-          onChange={(e) => setFilterDate(e.target.value)}
-          className="border px-4 py-2 rounded-lg"
+          onChange={(e) => {
+            setFilterDate(e.target.value);
+            setCurrentPage(1); // Force reset index back to start
+          }}
+          className="border px-4 py-2 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500"
         />
       </div>
 
       {/* 📋 Table */}
       <div className="bg-white shadow rounded-lg overflow-auto max-h-[70vh] w-full">
         <table className="w-full min-w-[600px]">
-          <thead className="bg-gray-50 sticky top-0">
+          <thead className="bg-gray-50 sticky top-0 z-10">
             <tr>
-              <th className="px-4 py-2 text-left">Name</th>
-              <th className="px-4 py-2 text-left">Phone</th>
-              <th className="px-4 py-2 text-left">Message</th>
-              <th className="px-4 py-2 text-left">Status</th>
-              <th className="px-4 py-2 text-left">Created</th>
+              <th className="px-4 py-3 text-left font-semibold text-gray-700">Name</th>
+              <th className="px-4 py-3 text-left font-semibold text-gray-700">Phone</th>
+              <th className="px-4 py-3 text-left font-semibold text-gray-700">Message</th>
+              <th className="px-4 py-3 text-left font-semibold text-gray-700">Status</th>
+              <th className="px-4 py-3 text-left font-semibold text-gray-700">Created</th>
             </tr>
           </thead>
-          <tbody>
-            {filteredTickets.map((ticket) => (
+          <tbody className="divide-y divide-gray-100">
+            {paginatedTickets.map((ticket) => (
               <tr
                 key={ticket.id}
                 onClick={() => setSelectedTicket(ticket)}
-                className="cursor-pointer hover:bg-indigo-50"
+                className="cursor-pointer hover:bg-indigo-50/50 transition-colors"
               >
-                <td className="px-4 py-2">{ticket.name}</td>
-                <td className="px-4 py-2">{ticket.phone}</td>
-                <td className="px-4 py-2 max-w-[200px] break-words">
+                <td className="px-4 py-3 text-sm text-gray-900">{ticket.name}</td>
+                <td className="px-4 py-3 text-sm text-gray-600">{ticket.phone}</td>
+                <td className="px-4 py-3 text-sm text-gray-600 max-w-[240px] truncate">
                   {ticket.message}
                 </td>
-                <td className="px-4 py-2">
+                <td className="px-4 py-3 text-sm">
                   <span
-                    className={`px-2 py-1 text-xs rounded-full ${getStatusClasses(
+                    className={`px-2.5 py-1 text-xs font-medium rounded-full ${getStatusClasses(
                       ticket.status
                     )}`}
                   >
                     {ticket.status || "New"}
                   </span>
                 </td>
-                <td className="px-4 py-2">
+                <td className="px-4 py-3 text-sm text-gray-500">
                   {ticket.createdAt?.toLocaleString() || "—"}
                 </td>
               </tr>
             ))}
+            {paginatedTickets.length === 0 && (
+              <tr>
+                <td colSpan="5" className="text-center py-10 text-gray-400 text-sm">
+                  No matching tickets discovered.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
 
       {/* 🔢 Pagination UI */}
-      {/* 🔢 Pagination UI */}
-<div className="flex justify-center items-center gap-2 mt-6 flex-wrap">
-  <button
-    onClick={() => currentPage > 1 && fetchPage(currentPage - 1)}
-    disabled={currentPage === 1}
-    className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
-  >
-    Previous
-  </button>
+      {totalPages > 1 && (
+        <div className="flex justify-center items-center gap-2 mt-6 flex-wrap">
+          <button
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            disabled={activePage === 1}
+            className="px-3 py-1.5 bg-gray-200 text-gray-700 text-sm font-medium rounded hover:bg-gray-300 disabled:opacity-40 disabled:hover:bg-gray-200 transition-all"
+          >
+            Previous
+          </button>
 
-  {getPaginationNumbers().map((page, index) =>
-    page === "..." ? (
-      <span key={index} className="px-2 text-gray-500">
-        ...
-      </span>
-    ) : (
-      <button
-        key={index}
-        onClick={() => fetchPage(page)}
-        className={`px-3 py-1 rounded ${
-          currentPage === page
-            ? "bg-indigo-600 text-white"
-            : "bg-gray-200"
-        }`}
-      >
-        {page}
-      </button>
-    )
-  )}
+          {getPaginationNumbers().map((page, index) =>
+            page === "..." ? (
+              <span key={index} className="px-2 text-gray-400 select-none">
+                ...
+              </span>
+            ) : (
+              <button
+                key={index}
+                onClick={() => setCurrentPage(page)}
+                className={`px-3 py-1.5 text-sm font-medium rounded transition-all ${
+                  activePage === page
+                    ? "bg-indigo-600 text-white shadow-md"
+                    : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                }`}
+              >
+                {page}
+              </button>
+            )
+          )}
 
-  <button
-    onClick={() => currentPage < totalPages && fetchPage(currentPage + 1)}
-    disabled={currentPage === totalPages}
-    className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
-  >
-    Next
-  </button>
-</div>
+          <button
+            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+            disabled={activePage === totalPages}
+            className="px-3 py-1.5 bg-gray-200 text-gray-700 text-sm font-medium rounded hover:bg-gray-300 disabled:opacity-40 disabled:hover:bg-gray-200 transition-all"
+          >
+            Next
+          </button>
+        </div>
+      )}
 
       <TicketDetailsModal
         ticket={selectedTicket}
