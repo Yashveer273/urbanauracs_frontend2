@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { FiSend } from "react-icons/fi";
-import { sendAdminMessage, setAdminTyping,  setAdminActive } from "./adminChatController";
-
+import { sendAdminMessage, setAdminTyping, setAdminActive } from "./adminChatController";
 
 const MessageInput = ({ chatId, currentUser, isAdmin }) => {
   const [message, setMessage] = useState("");
@@ -10,15 +9,21 @@ const MessageInput = ({ chatId, currentUser, isAdmin }) => {
     if (!message.trim()) return;
 
     try {
-      
-        if (!chatId) return;
-        await sendAdminMessage(chatId, message);
-        await setAdminTyping(chatId, false);
-       
+      if (!chatId) return;
+      await sendAdminMessage(chatId, message);
+      await setAdminTyping(chatId, false);
     } catch (err) {
       console.error("Send message error:", err);
     } finally {
       setMessage("");
+    }
+  };
+
+  // Handle Enter key submission
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault(); // Prevents line breaks or accidental form submissions
+      handleSend();
     }
   };
 
@@ -28,15 +33,18 @@ const MessageInput = ({ chatId, currentUser, isAdmin }) => {
         type="text"
         value={message}
         placeholder="Type a message..."
-        onChange={async (e) => {
+        onKeyDown={handleKeyDown} // Listens for the Enter key press
+        onChange={(e) => {
           const val = e.target.value;
-          setMessage(val);
+          setMessage(val); // Updates UI instantly without lag
          
-            if (chatId) {
-              await setAdminTyping(chatId, val.length > 0);
-              if (val.length > 0) await setAdminActive(chatId);
+          if (chatId) {
+            // Fires typing status updates in the background asynchronously
+            setAdminTyping(chatId, val.length > 0).catch(console.error);
+            if (val.length > 0) {
+              setAdminActive(chatId).catch(console.error);
             }
-          
+          }
         }}
         className="flex-1 rounded-full bg-gray-100 px-5 py-2 outline-none focus:ring-2 focus:ring-indigo-500 transition"
       />

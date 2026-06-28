@@ -88,10 +88,38 @@ const UserList = ({ onSelectUser, selectedUser }) => {
     };
   }, [users]);
 
-  // Search
-  const filteredUsers = users.filter((user) =>
-    user.username?.toLowerCase().includes(search.toLowerCase())
-  );
+  // Search by Username OR Phone Number
+  // Search by Username OR Phone Number (Robust match)
+  const filteredUsers = users.filter((user) => {
+    const searchTerm = search.trim().toLowerCase();
+    if (!searchTerm) return true; // Show all if search is empty
+
+    // 1. Check Username
+    const matchesUsername = user.username?.toLowerCase().includes(searchTerm);
+    
+    // 2. Check Phone Number fields safely (converts numbers to strings)
+    const userPhone = user.phone ? String(user.phone) : "";
+    const userPhoneNumber = user.phoneNumber ? String(user.phoneNumber) : "";
+    const userMobileNumber = user.mobileNumber ? String(user.mobileNumber) : ""; // Added based on your Sidebar structure
+
+    // Strip out non-numeric characters (like spaces, dashes, +) to match clean numbers
+    const cleanSearchTerm = searchTerm.replace(/\D/g, ""); 
+    
+    let matchesPhone = 
+      userPhone.toLowerCase().includes(searchTerm) || 
+      userPhoneNumber.toLowerCase().includes(searchTerm) ||
+      userMobileNumber.toLowerCase().includes(searchTerm);
+
+    // If the admin typed numbers, try matching against digits only
+    if (cleanSearchTerm && !matchesPhone) {
+      matchesPhone = 
+        userPhone.replace(/\D/g, "").includes(cleanSearchTerm) ||
+        userPhoneNumber.replace(/\D/g, "").includes(cleanSearchTerm) ||
+        userMobileNumber.replace(/\D/g, "").includes(cleanSearchTerm);
+    }
+
+    return matchesUsername || matchesPhone;
+  });
 
   // WhatsApp-style sorting
   const sortedUsers = [...filteredUsers].sort((a, b) => {
@@ -125,7 +153,7 @@ const UserList = ({ onSelectUser, selectedUser }) => {
 
           <input
             type="text"
-            placeholder="Search conversations..."
+            placeholder="Search name or phone number..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full bg-gray-50 border border-transparent focus:border-indigo-500 focus:bg-white rounded-xl pl-10 pr-4 py-2.5 text-sm outline-none transition-all"
