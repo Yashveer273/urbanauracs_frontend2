@@ -449,31 +449,93 @@ export default function AuthDashboard() {
 
           {/* Edit Modal Component */}
           {editingUser && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center" style={{ zIndex: 1100 }}>
-              <div className="bg-white p-6 rounded-xl shadow-xl w-full max-w-md">
-                <h3 className="text-lg font-semibold mb-4 text-gray-700">Edit User: {editingUser.username}</h3>
-                
-                <label className="block text-gray-600 text-sm mb-2">WhatsApp Mobile Number</label>
-                <input type="tel" name="mobileNumber" value={formData.mobileNumber} onChange={handleChange} className="w-full border p-2 rounded mb-3" />
-                
-                <label className="block text-gray-600 text-sm mb-2">Normal Mobile Number</label>
-                <input type="tel" name="normalMobileNumber" value={formData.normalMobileNumber} onChange={handleChange} className="w-full border p-2 rounded mb-3" />
-                
-                <label className="block text-gray-600 text-sm mb-2">Phone Type</label>
-                <select name="phoneType" value={formData.phoneType} onChange={handleChange} className="w-full border p-2 rounded mb-4">
-                  <option value="">Select Type</option>
-                  <option value="whatsapp">WhatsApp Number</option>
-                  <option value="non-whatsapp">Not WhatsApp Number</option>
-                </select>
+            <div
+  className="fixed inset-0 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm px-4"
+  style={{ zIndex: 1100 }}
+>
+  <div className="w-full max-w-lg rounded-2xl bg-white shadow-2xl border border-slate-200 overflow-hidden">
+    
+    {/* Header */}
+    <div className="px-6 py-5 border-b border-slate-100">
+      <h3 className="text-lg font-semibold text-slate-900">
+        Edit User
+      </h3>
+      <p className="mt-1 text-sm text-slate-500">
+        Update contact details for{" "}
+        <span className="font-medium text-slate-700">
+          {editingUser.username}
+        </span>
+      </p>
+    </div>
 
-                <div className="flex justify-between">
-                  <button onClick={() => setEditingUser(null)} className="bg-gray-400 text-white px-4 py-2 rounded-lg hover:bg-gray-500">Cancel</button>
-                  <button onClick={handleUpdate} disabled={loading} className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
-                    {loading ? "Updating..." : "Update"}
-                  </button>
-                </div>
-              </div>
-            </div>
+    {/* Body */}
+    <div className="px-6 py-5 space-y-4">
+      <div>
+        <label className="mb-1.5 block text-sm font-medium text-slate-700">
+          WhatsApp Mobile Number
+        </label>
+        <input
+          type="tel"
+          name="mobileNumber"
+          value={formData.mobileNumber}
+          onChange={handleChange}
+          placeholder="Enter WhatsApp number"
+          className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-100"
+        />
+      </div>
+
+      <div>
+        <label className="mb-1.5 block text-sm font-medium text-slate-700">
+          Normal Mobile Number
+        </label>
+        <input
+          type="tel"
+          name="normalMobileNumber"
+          value={formData.normalMobileNumber}
+          onChange={handleChange}
+          placeholder="Enter normal mobile number"
+          className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-100"
+        />
+      </div>
+
+      <div>
+        <label className="mb-1.5 block text-sm font-medium text-slate-700">
+          Phone Type
+        </label>
+        <select
+          name="phoneType"
+          value={formData.phoneType}
+          onChange={handleChange}
+          className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-100"
+        >
+          <option value="">Select Type</option>
+          <option value="whatsapp">WhatsApp Number</option>
+          <option value="non-whatsapp">Not WhatsApp Number</option>
+        </select>
+      </div>
+    </div>
+
+    {/* Footer */}
+    <div className="flex items-center justify-end gap-3 bg-slate-50 px-6 py-4 border-t border-slate-100">
+      <button
+        type="button"
+        onClick={() => setEditingUser(null)}
+        className="rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
+      >
+        Cancel
+      </button>
+
+      <button
+        type="button"
+        onClick={handleUpdate}
+        disabled={loading}
+        className="rounded-xl bg-gradient-to-r from-orange-500 to-rose-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-orange-200 transition hover:from-orange-600 hover:to-rose-600 disabled:cursor-not-allowed disabled:opacity-60"
+      >
+        {loading ? "Updating..." : "Update User"}
+      </button>
+    </div>
+  </div>
+</div>
           )}
 
           {/* Location Modal */}

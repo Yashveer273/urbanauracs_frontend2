@@ -65,102 +65,163 @@ const VendorFormModal = ({ isOpen, onClose, onSubmit, initialData, isEdit }) => 
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-gray-900 bg-opacity-75 z-50 flex items-center justify-center p-4 transition-opacity duration-300">
-            <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg p-4 md:p-6 transform transition-all duration-300 scale-100" onClick={e => e.stopPropagation()}> {/* Shivani */}
-                <h3 className="text-2xl font-bold mb-4 text-gray-800">
-                    {isEdit ? "Edit Vendor" : "Create New Vendor"}
-                </h3>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <div>
-                        <label htmlFor="vendorPhoneNo" className="block text-sm font-medium text-gray-700">Vendor Phone No.</label>
-                        <input
-                            type="tel"
-                            id="vendorPhoneNo"
-                            name="vendorPhoneNo"
-                            value={formData.vendorPhoneNo || ''}
-                            onChange={handleChange}
-                            required
-                           
-                            className={`mt-1 block w-full border border-gray-300 rounded-lg shadow-sm p-3 focus:ring-blue-500 focus:border-blue-500 transition duration-150`}
-                        />
-                    </div>
-                    <div>
-                        <label htmlFor="vendorLocation" className="block text-sm font-medium text-gray-700">vendor Location</label>
-                        <input
-                            type="text"
-                            id="vendorLocation"
-                            name="vendorLocation"
-                            value={formData.vendorLocation || ''}
-                            onChange={handleChange}
-                            required
-                          
-                            className={`mt-1 block w-full border border-gray-300 rounded-lg shadow-sm p-3 focus:ring-blue-500 focus:border-blue-500 transition duration-150 }`}
-                        />
-                    </div>
-                    <div>
-                        <label htmlFor="vendorName" className="block text-sm font-medium text-gray-700">Vendor Name</label>
-                        <input
-                            type="text"
-                            id="vendorName"
-                            name="vendorName"
-                            value={formData.vendorName || ''}
-                            onChange={handleChange}
-                            required
-                            className="mt-1 block w-full border border-gray-300 rounded-lg shadow-sm p-3 focus:ring-blue-500 focus:border-blue-500 transition duration-150"
-                        />
-                    </div>
-                    <div>
-                        <label htmlFor="vendorImage" className="block text-sm font-medium text-gray-700">Vendor Image URL (Optional)</label>
-                        <input
-                            type="url"
-                            id="vendorImage"
-                            name="vendorImage"
-                            value={formData.vendorImage || ''}
-                            onChange={handleChange}
-                            className="mt-1 block w-full border border-gray-300 rounded-lg shadow-sm p-3 focus:ring-blue-500 focus:border-blue-500 transition duration-150"
-                        />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div>
-                            <label htmlFor="rating" className="block text-sm font-medium text-gray-700">Rating (0-5)</label>
-                            <input
-                                type="number"
-                                id="rating"
-                                name="rating"
-                                min="0" max="5" step="0.1"
-                                value={formData.rating === null || formData.rating === undefined ? '' : formData.rating}
-                                onChange={handleChange}
-                                className="mt-1 block w-full border border-gray-300 rounded-lg shadow-sm p-3 focus:ring-blue-500 focus:border-blue-500 transition duration-150"
-                            />
-                        </div>
-                        <div>
-                            <label htmlFor="reviews" className="block text-sm font-medium text-gray-700">Number of Reviews</label>
-                            <input
-                                type="number"
-                                id="reviews"
-                                name="reviews"
-                                min="0"
-                                value={formData.reviews === null || formData.reviews === undefined ? '' : formData.reviews}
-                                onChange={handleChange}
-                                className="mt-1 block w-full border border-gray-300 rounded-lg shadow-sm p-3 focus:ring-blue-500 focus:border-blue-500 transition duration-150"
-                            />
-                        </div>
-                    </div>
+       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4">
+  <div
+    onClick={(e) => e.stopPropagation()}
+    className="w-full max-w-xl rounded-2xl bg-white shadow-2xl"
+  >
+    <div className="flex items-start justify-between border-b border-zinc-200 px-6 py-5">
+      <div>
+        <h3 className="text-xl font-semibold text-zinc-900">
+          {isEdit ? "Edit Vendor" : "Create New Vendor"}
+        </h3>
+        <p className="mt-1 text-sm text-zinc-500">
+          Add vendor contact, location and public profile details.
+        </p>
+      </div>
+    </div>
 
-                    <div className="flex justify-end pt-4 space-x-3">
-                        <button type="button" onClick={onClose}
-                            className="px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition duration-150">
-                            Cancel
-                        </button>
-                        <button type="submit"
-                            className="flex items-center px-4 py-2 text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition duration-150">
-                            <Save className="w-4 h-4 mr-2" />
-                            {isEdit ? "Update Vendor" : "Save Vendor"}
-                        </button>
-                    </div>
-                </form>
-            </div>
+    <form onSubmit={handleSubmit} className="space-y-5 p-6">
+      <div className="grid gap-4 md:grid-cols-2">
+        <div>
+          <label
+            htmlFor="vendorPhoneNo"
+            className="mb-1 block text-sm font-medium text-zinc-700"
+          >
+            Vendor Phone No.
+          </label>
+          <input
+            type="tel"
+            id="vendorPhoneNo"
+            name="vendorPhoneNo"
+            value={formData.vendorPhoneNo || ""}
+            onChange={handleChange}
+            required
+            className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-zinc-900 focus:ring-2 focus:ring-zinc-100"
+          />
         </div>
+
+        <div>
+          <label
+            htmlFor="vendorLocation"
+            className="mb-1 block text-sm font-medium text-zinc-700"
+          >
+            Vendor Location
+          </label>
+          <input
+            type="text"
+            id="vendorLocation"
+            name="vendorLocation"
+            value={formData.vendorLocation || ""}
+            onChange={handleChange}
+            required
+            className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-zinc-900 focus:ring-2 focus:ring-zinc-100"
+          />
+        </div>
+
+        <div>
+          <label
+            htmlFor="vendorName"
+            className="mb-1 block text-sm font-medium text-zinc-700"
+          >
+            Vendor Name
+          </label>
+          <input
+            type="text"
+            id="vendorName"
+            name="vendorName"
+            value={formData.vendorName || ""}
+            onChange={handleChange}
+            required
+            className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-zinc-900 focus:ring-2 focus:ring-zinc-100"
+          />
+        </div>
+
+        <div>
+          <label
+            htmlFor="vendorImage"
+            className="mb-1 block text-sm font-medium text-zinc-700"
+          >
+            Vendor Image URL
+          </label>
+          <input
+            type="url"
+            id="vendorImage"
+            name="vendorImage"
+            value={formData.vendorImage || ""}
+            onChange={handleChange}
+            placeholder="Optional"
+            className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-zinc-900 focus:ring-2 focus:ring-zinc-100"
+          />
+        </div>
+
+        <div>
+          <label
+            htmlFor="rating"
+            className="mb-1 block text-sm font-medium text-zinc-700"
+          >
+            Rating
+          </label>
+          <input
+            type="number"
+            id="rating"
+            name="rating"
+            min="0"
+            max="5"
+            step="0.1"
+            value={
+              formData.rating === null || formData.rating === undefined
+                ? ""
+                : formData.rating
+            }
+            onChange={handleChange}
+            className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-zinc-900 focus:ring-2 focus:ring-zinc-100"
+          />
+        </div>
+
+        <div>
+          <label
+            htmlFor="reviews"
+            className="mb-1 block text-sm font-medium text-zinc-700"
+          >
+            Number of Reviews
+          </label>
+          <input
+            type="number"
+            id="reviews"
+            name="reviews"
+            min="0"
+            value={
+              formData.reviews === null || formData.reviews === undefined
+                ? ""
+                : formData.reviews
+            }
+            onChange={handleChange}
+            className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-zinc-900 focus:ring-2 focus:ring-zinc-100"
+          />
+        </div>
+      </div>
+
+      <div className="flex justify-end gap-3 border-t border-zinc-200 pt-5">
+        <button
+          type="button"
+          onClick={onClose}
+          className="rounded-xl border border-zinc-300 px-5 py-2.5 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50"
+        >
+          Cancel
+        </button>
+
+        <button
+          type="submit"
+          className="inline-flex items-center rounded-xl bg-black px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-zinc-800 active:scale-95"
+        >
+          <Save className="mr-2 h-4 w-4" />
+          {isEdit ? "Update Vendor" : "Save Vendor"}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
     );
 };
 

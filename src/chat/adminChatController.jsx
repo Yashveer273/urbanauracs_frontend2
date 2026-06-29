@@ -37,14 +37,15 @@ export const sendAdminMessage = async (chatId, text) => {
 
   const messageRef = collection(firestore, "chats", chatId, "messages");
 
-  await addDoc(messageRef, {
-    senderId: ADMIN_ID,
-    senderRole: "admin",
-    text,
-    seen: false,
-    deleted: false,
-    createdAt: serverTimestamp(),
-  });
+await addDoc(messageRef, {
+  senderId: ADMIN_ID,
+  senderRole: "admin",
+  text,
+  seenByUser: false,
+  userSeenAt: null,
+  deleted: false,
+  createdAt: serverTimestamp(),
+});
 };
 
 /* MARK USER MESSAGES AS SEEN (ADMIN SIDE) */
@@ -55,9 +56,16 @@ export const markSeenByAdmin = async (chatId) => {
 
   const snapshot = await getDocs(q);
 
-  snapshot.forEach(async (docSnap) => {
-    await updateDoc(docSnap.ref, { seen: true });
+snapshot.forEach(async (docSnap) => {
+  const data = docSnap.data();
+
+  if (data.seenByAdmin === true) return;
+
+  await updateDoc(docSnap.ref, {
+    seenByAdmin: true,
+    adminSeenAt: serverTimestamp(),
   });
+});
 };
 
 /* ADMIN DELETE MESSAGE */

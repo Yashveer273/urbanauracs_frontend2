@@ -1238,32 +1238,48 @@ export default function SalesSection() {
           </div>
         )}
         {openChangeResposibleVendor.status && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-            <div className="bg-white rounded-xl p-6 shadow-xl w-96 relative">
-              {/* Close Button */}
-              <button
-                className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
-                onClick={() =>
-                  setOpenChangeResposibleVendor({ status: false, saleId: "" })
-                }
-              >
-                ✕
-              </button>
+       <div className="fixed inset-0 z-[1100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm px-4">
+  <div className="w-full max-w-xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
 
-              <h3 className="text-lg font-semibold mb-4">Select Vendor</h3>
+    {/* Header */}
+    
 
-              {/* Your Component */}
-              <GetVenderData
-                passVender={(data) => {
-                  console.log(data);
-                  updateResponsibleVendor(
-                    openChangeResposibleVendor.saleId,
-                    data,
-                  );
-                }}
-              />
-            </div>
-          </div>
+    {/* Body */}
+    <div className="h-[40vh] overflow-y-auto px-6 py-5">
+      <GetVenderData
+        passVender={(data) => {
+          updateResponsibleVendor(
+            openChangeResposibleVendor.saleId,
+            data
+          );
+        }}
+      />
+    </div>
+<div className="flex items-center justify-between border-b border-slate-100 px-6 py-5">
+      <div>
+        <h3 className="text-lg font-semibold text-slate-900">
+          Change Responsible Vendor
+        </h3>
+        
+      </div>
+
+       <button
+        onClick={() =>
+          setOpenChangeResposibleVendor({
+            status: false,
+            saleId: "",
+          })
+        }
+        className="rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
+      >
+        Cancel
+      </button>
+    </div>
+    {/* Footer */}
+    
+
+  </div>
+</div>
         )}
 
         {modalOpen && selectedProductInfo && (
@@ -1513,47 +1529,77 @@ export default function SalesSection() {
       </main>
       {/* Modal */}
       {editingStatus.saleId && (
-        <div className="fixed inset-0 z-100 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white p-6 rounded-xl w-80 shadow-lg">
-            <h3 className="text-xl font-bold mb-4">Update Status</h3>
-            <select
-              className="border p-2 w-full mb-4"
-              value={tempStatus}
-              onChange={(e) => setTempStatus(e.target.value)}
-            >
-              {(editingStatus.isProduct
-                ? productStatusOptions
-                : orderStatusOptions
-              ).map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </select>
-            <textarea
-              placeholder="Add comment (required)"
-              className="border p-2 w-full mb-4"
-              value={tempComment}
-              onChange={(e) => setTempComment(e.target.value)}
-            />
-            <div className="flex justify-end space-x-2">
-              <button
-                className="px-4 py-2 rounded-xl bg-gray-300"
-                onClick={() =>
-                  setEditingStatus({ saleId: null, productIndex: null })
-                }
-              >
-                Cancel
-              </button>
-              <button
-                className="px-4 py-2 rounded-xl bg-blue-600 text-white"
-                onClick={saveStatusCard}
-              >
-                Save
-              </button>
-            </div>
-          </div>
-        </div>
+        <div className="fixed inset-0 z-[1100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm px-4">
+  <div className="w-full max-w-md overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
+    
+    {/* Header */}
+    <div className="border-b border-slate-100 px-6 py-5">
+      <h3 className="text-lg font-semibold text-slate-900">
+        Update Status
+      </h3>
+      <p className="mt-1 text-sm text-slate-500">
+        Select a new status and add a short comment.
+      </p>
+    </div>
+
+    {/* Body */}
+    <div className="space-y-4 px-6 py-5">
+      <div>
+        <label className="mb-1.5 block text-sm font-medium text-slate-700">
+          Status
+        </label>
+        <select
+          className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-100"
+          value={tempStatus}
+          onChange={(e) => setTempStatus(e.target.value)}
+        >
+          {(editingStatus.isProduct
+            ? productStatusOptions
+            : orderStatusOptions
+          ).map((s) => (
+            <option key={s} value={s}>
+              {s}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div>
+        <label className="mb-1.5 block text-sm font-medium text-slate-700">
+          Comment
+        </label>
+        <textarea
+          placeholder="Add comment (required)"
+          value={tempComment}
+          onChange={(e) => setTempComment(e.target.value)}
+          rows={4}
+          className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-100"
+        />
+      </div>
+    </div>
+
+    {/* Footer */}
+    <div className="flex items-center justify-end gap-3 border-t border-slate-100 bg-slate-50 px-6 py-4">
+      <button
+        type="button"
+        onClick={() =>
+          setEditingStatus({ saleId: null, productIndex: null })
+        }
+        className="rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
+      >
+        Cancel
+      </button>
+
+      <button
+        type="button"
+        onClick={saveStatusCard}
+        className="rounded-xl bg-gradient-to-r from-orange-500 to-rose-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-orange-200 transition hover:from-orange-600 hover:to-rose-600"
+      >
+        Save Status
+      </button>
+    </div>
+  </div>
+</div>
       )}
       {editingStatus.serviceId && (
         <div className="fixed inset-0 z-100 flex items-center justify-center bg-black bg-opacity-50">
@@ -1599,406 +1645,478 @@ export default function SalesSection() {
         </div>
       )}
       {viewComment.saleId && (
-        <div
-          className="fixed inset-0 z-100 flex items-center justify-center bg-black bg-opacity-50"
-          onClick={() => setViewComment({ saleId: null, productIndex: null })}
-        >
-          <div
-            className="bg-white p-6 rounded-xl w-80 shadow-lg"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 className="text-xl font-bold mb-4">Comment</h3>
-            <p className="border p-4 rounded-md">
-              {viewComment.productIndex === null
-                ? salesData.find((s) => s.id === viewComment.saleId)?.comment
-                : selectedProductInfo.cart[viewComment.productIndex]?.comment}
-            </p>
-            <div className="flex justify-end mt-4">
-              <button
-                className="px-4 py-2 rounded-xl bg-blue-600 text-white"
-                onClick={() =>
-                  setViewComment({ saleId: null, productIndex: null })
-                }
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
+       <div className="fixed inset-0 z-[1100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm px-4">
+  <div className="w-full max-w-lg overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
+
+    {/* Header */}
+    <div className="border-b border-slate-100 px-6 py-5">
+      <h3 className="text-lg font-semibold text-slate-900">
+        Customer Comment
+      </h3>
+      <p className="mt-1 text-sm text-slate-500">
+        View the latest comment for this booking.
+      </p>
+    </div>
+
+    {/* Body */}
+    <div className="px-6 py-5">
+      <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 min-h-[120px]">
+        <p className="text-sm leading-7 text-slate-700 whitespace-pre-wrap break-words">
+          {viewComment.productIndex === null
+            ? salesData.find((s) => s.id === viewComment.saleId)?.comment ||
+              "No comment available."
+            : selectedProductInfo.cart[viewComment.productIndex]?.comment ||
+              "No comment available."}
+        </p>
+      </div>
+    </div>
+
+    {/* Footer */}
+    <div className="flex justify-end border-t border-slate-100 bg-slate-50 px-6 py-4">
+      <button
+        type="button"
+        onClick={() =>
+          setViewComment({
+            saleId: null,
+            productIndex: null,
+          })
+        }
+        className="rounded-xl bg-gradient-to-r from-orange-500 to-rose-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-orange-200 transition hover:from-orange-600 hover:to-rose-600"
+      >
+        Close
+      </button>
+    </div>
+
+  </div>
+</div>
       )}
       {editingRow && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 "
-          onClick={() => setEditingRow(null)}
-        >
-          <div
-            className="bg-white p-6 rounded-xl w-[95%] md:max-w-md shadow-lg mb-8 max-h-[80vh] overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 className="text-xl font-bold mb-4">Edit Sale</h3>
-            {[
-              "name",
-              "phone",
-              "WhatsApp_Mobile_Number",
-              "discount",
-              "BalanceAmount",
-              "payedAmount",
-              "booking_Date",
-              "booking_Time",
-            ].map((field) => (
-              <div className="mb-3 relative" key={field}>
-                <label className="block font-medium mb-1">
-                  {field.charAt(0).toUpperCase() + field.slice(1)}
-                </label>
+      <div
+  className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm px-4"
+>
+  <div className="w-full max-w-2xl max-h-[88vh] overflow-hidden rounded-2xl bg-white shadow-2xl border border-slate-200">
+    
+    {/* Header */}
+    <div className="px-6 py-5 border-b border-slate-100">
+      <h3 className="text-lg font-semibold text-slate-900">
+        Edit Sale
+      </h3>
+      <p className="mt-1 text-sm text-slate-500">
+        Update customer, payment and booking details.
+      </p>
+    </div>
 
-                {/* 📅 DATE FIELD */}
-                {field === "booking_Date" && (
-                  <input
-                    type="date"
-                    className="border p-2 w-full rounded-md"
-                    value={rowForm[field]}
-                    min={new Date().toISOString().split("T")[0]}
-                    onChange={(e) =>
-                      setRowForm((prev) => ({
-                        ...prev,
-                        [field]: e.target.value,
-                      }))
-                    }
-                  />
-                )}
+    {/* Body */}
+    <div className="px-6 py-5 max-h-[62vh] overflow-y-auto">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {[
+          "name",
+          "phone",
+          "WhatsApp_Mobile_Number",
+          "discount",
+          "BalanceAmount",
+          "payedAmount",
+          "booking_Date",
+          "booking_Time",
+        ].map((field) => (
+          <div className="relative" key={field}>
+            <label className="mb-1.5 block text-sm font-medium text-slate-700">
+              {field.replaceAll("_", " ")}
+            </label>
 
-                {/* ⏰ TIME SLOT FIELD */}
-                {field === "booking_Time" && (
-                  <>
-                    <input
-                      type="text"
-                      readOnly
-                      value={rowForm.booking_Time || ""}
-                      placeholder="Select Time Slot"
-                      onClick={() => setOpen((prev) => !prev)}
-                      className="border p-2 w-full rounded-md bg-zinc-100 cursor-pointer"
-                    />
+            {field === "booking_Date" && (
+              <input
+                type="date"
+                value={rowForm[field]}
+                min={new Date().toISOString().split("T")[0]}
+                onChange={(e) =>
+                  setRowForm((prev) => ({
+                    ...prev,
+                    [field]: e.target.value,
+                  }))
+                }
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-100"
+              />
+            )}
 
-                    {open && (
-                      <div className="absolute z-50 mt-2 w-full bg-gray-900 rounded-xl shadow-xl p-4 max-h-60 overflow-y-auto">
-                        <div className="grid grid-cols-3 gap-3">
-                          {timeSlots.map((slot, index) => {
-                            const [start, end] = slot.split(" - ");
-                            return (
-                              <button
-                                type="button"
-                                key={index}
-                                onClick={() => {
-                                  setRowForm((prev) => ({
-                                    ...prev,
-                                    booking_Time: slot,
-                                  }));
-                                  setOpen(false);
-                                }}
-                                className={`px-3 py-2 rounded-lg transition flex flex-col items-center text-center
-                      ${
-                        rowForm.booking_Time === slot
-                          ? "bg-blue-600 text-white shadow-md"
-                          : "bg-gray-800 text-gray-300 hover:bg-gray-700"
-                      }`}
-                              >
-                                <span className="text-sm font-semibold">
-                                  {start}
-                                </span>
-                                <span className="text-[10px] opacity-70">
-                                  to
-                                </span>
-                                <span className="text-sm font-semibold">
-                                  {end}
-                                </span>
-                              </button>
-                            );
-                          })}
-                        </div>
+            {field === "booking_Time" && (
+              <>
+                <input
+                  type="text"
+                  readOnly
+                  value={rowForm.booking_Time || ""}
+                  placeholder="Select Time Slot"
+                  onClick={() => setOpen((prev) => !prev)}
+                  className="w-full cursor-pointer rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-100"
+                />
+
+                {open && (
+                  <div className="absolute left-0 right-0 z-[1200] mt-2 rounded-2xl border border-slate-200 bg-white p-3 shadow-2xl">
+                    <div className="max-h-56 overflow-y-auto">
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                        {timeSlots.map((slot, index) => {
+                          const [start, end] = slot.split(" - ");
+
+                          return (
+                            <button
+                              type="button"
+                              key={index}
+                              onClick={() => {
+                                setRowForm((prev) => ({
+                                  ...prev,
+                                  booking_Time: slot,
+                                }));
+                                setOpen(false);
+                              }}
+                              className={`rounded-xl border px-3 py-2 text-center transition
+                                ${
+                                  rowForm.booking_Time === slot
+                                    ? "border-orange-400 bg-orange-50 text-orange-700 shadow-sm"
+                                    : "border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100"
+                                }`}
+                            >
+                              <span className="block text-sm font-semibold">
+                                {start}
+                              </span>
+                              <span className="block text-[10px] text-slate-400">
+                                to
+                              </span>
+                              <span className="block text-sm font-semibold">
+                                {end}
+                              </span>
+                            </button>
+                          );
+                        })}
                       </div>
-                    )}
-                  </>
+                    </div>
+                  </div>
                 )}
+              </>
+            )}
 
-                {/* 🧾 OTHER FIELDS */}
-                {!["booking_Date", "booking_Time"].includes(field) && (
-                  <input
-                    type={
+            {!["booking_Date", "booking_Time"].includes(field) && (
+              <input
+                type={
+                  field === "discount" || field === "payedAmount"
+                    ? "number"
+                    : "text"
+                }
+                value={rowForm[field]}
+                onChange={(e) =>
+                  setRowForm((prev) => ({
+                    ...prev,
+                    [field]:
                       field === "discount" || field === "payedAmount"
-                        ? "number"
-                        : "text"
-                    }
-                    className="border p-2 w-full rounded-md"
-                    value={rowForm[field]}
-                    onChange={(e) =>
-                      setRowForm((prev) => ({
-                        ...prev,
-                        [field]:
-                          field === "discount" || field === "payedAmount"
-                            ? Number(e.target.value)
-                            : e.target.value,
-                      }))
-                    }
-                  />
-                )}
-              </div>
-            ))}
-
-            <div className="flex justify-end space-x-2 mt-4">
-              <button
-                className="px-4 py-2 rounded-xl bg-gray-300"
-                onClick={() => setEditingRow(null)}
-              >
-                Cancel
-              </button>
-              <button
-                className="px-4 py-2 rounded-xl bg-blue-600 text-white"
-                onClick={saveEditedRow}
-              >
-                Save
-              </button>
-            </div>
+                        ? Number(e.target.value)
+                        : e.target.value,
+                  }))
+                }
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-100"
+              />
+            )}
           </div>
-        </div>
+        ))}
+      </div>
+    </div>
+
+    {/* Footer */}
+    <div className="flex items-center justify-end gap-3 bg-slate-50 px-6 py-4 border-t border-slate-100">
+      <button
+        type="button"
+        onClick={() => setEditingRow(null)}
+        className="rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
+      >
+        Cancel
+      </button>
+
+      <button
+        type="button"
+        onClick={saveEditedRow}
+        className="rounded-xl bg-gradient-to-r from-orange-500 to-rose-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-orange-200 transition hover:from-orange-600 hover:to-rose-600"
+      >
+        Save Changes
+      </button>
+    </div>
+  </div>
+</div>
       )}
       {isEditCartModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[101]">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-96 max-h-[90vh] overflow-y-auto">
-            <h2 className="text-lg font-semibold mb-4">Edit Cart Product</h2>
+       <div className="fixed inset-0 z-[1100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm px-4">
+  <div className="w-full max-w-3xl max-h-[90vh] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
 
-            {/* Product Name */}
-            <label className="block text-sm font-medium mb-1">
-              Product Name
-            </label>
-            <input
-              type="text"
-              value={editingCartProduct?.productData?.product_name || ""}
-              onChange={(e) =>
-                setEditingCartProduct((prev) => ({
-                  ...prev,
-                  productData: {
-                    ...prev.productData,
-                    product_name: e.target.value,
-                  },
-                }))
-              }
-              className="w-full border px-3 py-2 mb-3 rounded"
-            />
+    {/* Header */}
+    <div className="flex items-start justify-between border-b border-slate-100 px-6 py-5">
+      <div>
+        <h2 className="text-lg font-semibold text-slate-900">
+          Edit Cart Product
+        </h2>
+        <p className="mt-1 text-sm text-slate-500">
+          Update booking, product and pricing details.
+        </p>
+      </div>
+    </div>
 
-            {/* Booking Address */}
-            <label className="block text-sm font-medium mb-1">
-              Booking Address
-            </label>
-            <input
-              type="text"
-              value={editingCartProduct?.productData?.bookingAddress || ""}
-              onChange={(e) =>
-                setEditingCartProduct((prev) => ({
-                  ...prev,
-                  productData: {
-                    ...prev.productData,
-                    bookingAddress: e.target.value,
-                  },
-                }))
-              }
-              className="w-full border px-3 py-2 mb-3 rounded"
-            />
+    {/* Body */}
+    <div className="max-h-[65vh] overflow-y-auto px-6 py-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-            <label className="block text-sm font-medium mb-1">
-              Booking Date
-              {editingCartProduct.productData.location_booking_time}
-            </label>
-            <input
-              type="date"
-              value={
-                editingCartProduct?.productData?.location_booking_time
-                  ? (() => {
-                      let dateValue =
-                        editingCartProduct.productData.location_booking_time;
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-slate-700">
+            Product Name
+          </label>
+          <input
+            type="text"
+            value={editingCartProduct?.productData?.product_name || ""}
+            onChange={(e) =>
+              setEditingCartProduct((prev) => ({
+                ...prev,
+                productData: {
+                  ...prev.productData,
+                  product_name: e.target.value,
+                },
+              }))
+            }
+            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-100"
+          />
+        </div>
 
-                      // Convert 26-05-27 -> 2026-05-27
-                      if (/^\d{2}-\d{2}-\d{2}$/.test(dateValue)) {
-                        const [yy, mm, dd] = dateValue.split("-");
-                        dateValue = `20${yy}-${mm}-${dd}`;
-                      }
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-slate-700">
+            Booking Address
+          </label>
+          <input
+            type="text"
+            value={editingCartProduct?.productData?.bookingAddress || ""}
+            onChange={(e) =>
+              setEditingCartProduct((prev) => ({
+                ...prev,
+                productData: {
+                  ...prev.productData,
+                  bookingAddress: e.target.value,
+                },
+              }))
+            }
+            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-100"
+          />
+        </div>
 
-                      return new Date(dateValue).toISOString().split("T")[0];
-                    })()
-                  : ""
-              }
-              min={new Date().toISOString().split("T")[0]}
-              onChange={(e) =>
-                setEditingCartProduct((prev) => ({
-                  ...prev,
-                  productData: {
-                    ...prev.productData,
-                    location_booking_time: e.target.value,
-                  },
-                }))
-              }
-              className="w-full border px-3 py-2 mb-3 rounded"
-            />
-            {/* Booking Time */}
-            <label className="block text-sm font-medium mb-1">
-              Booking Time
-            </label>
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-slate-700">
+            Booking Date
+          </label>
+          <input
+            type="date"
+            value={
+              editingCartProduct?.productData?.location_booking_time
+                ? (() => {
+                    let dateValue =
+                      editingCartProduct.productData.location_booking_time;
 
-            <div className="relative">
-              <input
-                type="text"
-                readOnly
-                name="SelectedServiceTime"
-                required
-                value={
-                  editingCartProduct?.productData?.SelectedServiceTime || ""
-                }
-                placeholder="Select Time"
-                onClick={() => setOpen((prev) => !prev)}
-                className="mt-1 block w-full px-4 py-2 bg-zinc-100 border border-zinc-300 rounded-xl shadow-sm cursor-pointer focus:ring-zinc-500 focus:border-zinc-500"
-              />
+                    if (/^\d{2}-\d{2}-\d{2}$/.test(dateValue)) {
+                      const [yy, mm, dd] = dateValue.split("-");
+                      dateValue = `20${yy}-${mm}-${dd}`;
+                    }
 
-              {open && (
-                <div className="absolute z-50 mt-2 w-full bg-gray-900 rounded-xl shadow-xl p-4 max-h-60 overflow-y-auto">
-                  <div className="grid grid-cols-3 gap-3">
-                    {timeSlots.map((slot, index) => {
-                      const [start, end] = slot.split(" - ");
+                    return new Date(dateValue).toISOString().split("T")[0];
+                  })()
+                : ""
+            }
+            min={new Date().toISOString().split("T")[0]}
+            onChange={(e) =>
+              setEditingCartProduct((prev) => ({
+                ...prev,
+                productData: {
+                  ...prev.productData,
+                  location_booking_time: e.target.value,
+                },
+              }))
+            }
+            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-100"
+          />
+        </div>
 
-                      return (
-                        <button
-                          type="button"
-                          key={index}
-                          onClick={() => {
-                            setEditingCartProduct((prev) => ({
-                              ...prev,
-                              productData: {
-                                ...prev.productData,
-                                SelectedServiceTime: slot,
-                              },
-                            }));
-                            setOpen(false);
-                          }}
-                          className={`px-3 py-2 rounded-lg transition flex flex-col items-center text-center
-                ${
-                  editingCartProduct?.productData?.SelectedServiceTime === slot
-                    ? "bg-blue-600 text-white shadow-md"
-                    : "bg-gray-800 text-gray-300 hover:bg-gray-700"
-                }
-              `}
-                        >
-                          <span className="text-sm font-semibold">{start}</span>
-                          <span className="text-[10px] opacity-70 leading-tight">
-                            to
-                          </span>
-                          <span className="text-sm font-semibold">{end}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
+        <div className="relative">
+          <label className="mb-1.5 block text-sm font-medium text-slate-700">
+            Booking Time
+          </label>
+
+          <input
+            type="text"
+            readOnly
+            name="SelectedServiceTime"
+            value={editingCartProduct?.productData?.SelectedServiceTime || ""}
+            placeholder="Select Time"
+            onClick={() => setOpen((prev) => !prev)}
+            className="w-full cursor-pointer rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-100"
+          />
+
+          {open && (
+            <div className="absolute left-0 right-0 z-[1200] mt-2 rounded-2xl border border-slate-200 bg-white p-3 shadow-2xl">
+              <div className="max-h-56 overflow-y-auto">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {timeSlots.map((slot, index) => {
+                    const [start, end] = slot.split(" - ");
+
+                    return (
+                      <button
+                        type="button"
+                        key={index}
+                        onClick={() => {
+                          setEditingCartProduct((prev) => ({
+                            ...prev,
+                            productData: {
+                              ...prev.productData,
+                              SelectedServiceTime: slot,
+                            },
+                          }));
+                          setOpen(false);
+                        }}
+                        className={`rounded-xl border px-3 py-2 text-center transition ${
+                          editingCartProduct?.productData
+                            ?.SelectedServiceTime === slot
+                            ? "border-orange-400 bg-orange-50 text-orange-700 shadow-sm"
+                            : "border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100"
+                        }`}
+                      >
+                        <span className="block text-sm font-semibold">
+                          {start}
+                        </span>
+                        <span className="block text-[10px] text-slate-400">
+                          to
+                        </span>
+                        <span className="block text-sm font-semibold">
+                          {end}
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
-              )}
+              </div>
             </div>
+          )}
+        </div>
 
-            {/* Description */}
-            <label className="block text-sm font-medium mb-1">
-              Description
-            </label>
-            <input
-              type="text"
-              value={editingCartProduct?.productData?.description || ""}
-              onChange={(e) =>
-                setEditingCartProduct((prev) => ({
-                  ...prev,
-                  productData: {
-                    ...prev.productData,
-                    description: e.target.value,
-                  },
-                }))
-              }
-              className="w-full border px-3 py-2 mb-3 rounded"
-            />
-            {/* --------------------------------------------------------------------------------------------------------------------------------- */}
-            <label className="block text-sm font-medium mb-1">Item Price</label>
-            <input
-              type="number"
-              value={editingCartProduct?.productData?.item_price}
-              onChange={(e) =>
-                setEditingCartProduct((prev) => ({
-                  ...prev,
-                  productData: {
-                    ...prev.productData,
-                    item_price: Number(e.target.value),
-                  },
-                }))
-              }
-              className="w-full border px-3 py-2 mb-3 rounded"
-            />
-            <label className="block text-sm font-medium mb-1">Quantity</label>
-            <input
-              type="number"
-              value={editingCartProduct?.productData?.quantity}
-              onChange={(e) =>
-                setEditingCartProduct((prev) => ({
-                  ...prev,
-                  productData: {
-                    ...prev.productData,
-                    quantity: Number(e.target.value),
-                  },
-                }))
-              }
-              className="w-full border px-3 py-2 mb-3 rounded"
-            />
-            <label className="block text-sm font-medium mb-1">
-              Convenience Fee
-            </label>
-            <input
-              type="number"
-              value={
+        <div className="md:col-span-2">
+          <label className="mb-1.5 block text-sm font-medium text-slate-700">
+            Description
+          </label>
+          <input
+            type="text"
+            value={editingCartProduct?.productData?.description || ""}
+            onChange={(e) =>
+              setEditingCartProduct((prev) => ({
+                ...prev,
+                productData: {
+                  ...prev.productData,
+                  description: e.target.value,
+                },
+              }))
+            }
+            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-100"
+          />
+        </div>
+
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-slate-700">
+            Item Price
+          </label>
+          <input
+            type="number"
+            value={editingCartProduct?.productData?.item_price}
+            onChange={(e) =>
+              setEditingCartProduct((prev) => ({
+                ...prev,
+                productData: {
+                  ...prev.productData,
+                  item_price: Number(e.target.value),
+                },
+              }))
+            }
+            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-100"
+          />
+        </div>
+
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-slate-700">
+            Quantity
+          </label>
+          <input
+            type="number"
+            value={editingCartProduct?.productData?.quantity}
+            onChange={(e) =>
+              setEditingCartProduct((prev) => ({
+                ...prev,
+                productData: {
+                  ...prev.productData,
+                  quantity: Number(e.target.value),
+                },
+              }))
+            }
+            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-orange-400 focus:bg-white focus:ring-4 focus:ring-orange-100"
+          />
+        </div>
+
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-slate-700">
+            Convenience Fee
+          </label>
+          <input
+            type="number"
+            value={
+              CalculateConvenienceFee(
+                editingCartProduct?.productData?.item_price *
+                  editingCartProduct?.productData?.quantity
+              ).convenienceFee
+            }
+            disabled
+            className="w-full cursor-not-allowed rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-500"
+          />
+        </div>
+
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-slate-700">
+            Total Price
+          </label>
+          <input
+            type="number"
+            value={
+              (editingCartProduct?.productData?.item_price +
                 CalculateConvenienceFee(
                   editingCartProduct?.productData?.item_price *
-                    editingCartProduct?.productData?.quantity,
-                ).convenienceFee
-              }
-              disabled={true}
-              className="w-full border px-3 py-2 mb-3 rounded"
-            />
-
-            <label className="block text-sm font-medium mb-1">
-              Total Price
-            </label>
-            <input
-              type="number"
-              value={
-                (editingCartProduct?.productData?.item_price +
-                  CalculateConvenienceFee(
-                    editingCartProduct?.productData?.item_price *
-                      editingCartProduct?.productData?.quantity,
-                  ).convenienceFee) *
-                editingCartProduct?.productData?.quantity
-              }
-              disabled={true}
-              className="w-full border px-3 py-2 mb-3 rounded"
-            />
-
-            {/* Buttons */}
-            <div className="flex justify-end gap-3 mt-4">
-              <button
-                onClick={() => {
-                  setIsEditCartModalOpen(false);
-                  setModalOpen(true);
-                }}
-                className="px-4 py-2 bg-gray-300 rounded"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => saveCartEdit(editingCartProduct)}
-                className="px-4 py-2 bg-blue-600 text-white rounded"
-              >
-                Save
-              </button>
-            </div>
-          </div>
+                    editingCartProduct?.productData?.quantity
+                ).convenienceFee) *
+              editingCartProduct?.productData?.quantity
+            }
+            disabled
+            className="w-full cursor-not-allowed rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-500"
+          />
         </div>
+      </div>
+    </div>
+
+    {/* Footer */}
+    <div className="flex items-center justify-end gap-3 border-t border-slate-100 bg-slate-50 px-6 py-4">
+      <button
+        type="button"
+        onClick={() => {
+          setIsEditCartModalOpen(false);
+          setModalOpen(true);
+        }}
+        className="rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
+      >
+        Cancel
+      </button>
+
+      <button
+        type="button"
+        onClick={() => saveCartEdit(editingCartProduct)}
+        className="rounded-xl bg-gradient-to-r from-orange-500 to-rose-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-orange-200 transition hover:from-orange-600 hover:to-rose-600"
+      >
+        Save Changes
+      </button>
+    </div>
+  </div>
+</div>
       )}
     </div>
   );

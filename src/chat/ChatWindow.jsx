@@ -192,9 +192,13 @@ const ChatWindow = ({ selectedUser, currentUser, isAdmin }) => {
                   senderRole={msg.senderRole}
                 />
 
-                <div className="text-xs mt-1 opacity-70 text-right">
-                  {msg.seen ? "✓✓" : "✓"}
-                </div>
+              <div
+  className={`text-xs mt-1 text-right ${
+    isAdminMsg && msg.seenByUser ? "text-blue-500 opacity-100" : "opacity-70"
+  }`}
+>
+  {isAdminMsg ? (msg.seenByUser ? "✓✓" : "✓") : ""}
+</div>
 
                 {isAdminMsg && (
                   <button

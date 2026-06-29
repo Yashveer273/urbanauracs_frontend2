@@ -105,7 +105,6 @@ const ChevronLeftIcon = () => (
   </svg>
 );
 
-
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("auth");
   const [services, setServices] = useState([]);
@@ -116,7 +115,7 @@ const Dashboard = () => {
   const checkAuth = () => {
     const token = localStorage.getItem("urbanauraservicesdashauthToken");
     const dashtagAccess = localStorage.getItem(
-      "urbanauraservicesdashtagAccess"
+      "urbanauraservicesdashtagAccess",
     );
 
     if (token) {
@@ -162,7 +161,6 @@ const Dashboard = () => {
   };
 
   const SaveSubmit = async (FDBservices, newService) => {
-  
     try {
       if (FDBservices.length > 0) {
         // ✅ Document exists → update its 'data' array
@@ -172,15 +170,11 @@ const Dashboard = () => {
         await updateDoc(docRef, {
           data: newService,
         });
-
-     
       } else {
         // ❌ No document yet → create a new one
         await addDoc(collection(firestore, "homeCleaningServiceDB"), {
           data: newService, // Initialize array with first service
         });
-
-      
       }
     } catch (err) {
       console.error("Error saving service:", err);
@@ -203,8 +197,6 @@ const Dashboard = () => {
         await updateDoc(docRef, {
           data: newService,
         });
-
-        
       }
     } catch (err) {
       console.error(err);
@@ -231,7 +223,7 @@ const Dashboard = () => {
             const updatedVendors = service.data.map((vendor) =>
               vendor.vendorId === vendorId
                 ? { ...vendor, ...updatedVendor }
-                : vendor
+                : vendor,
             );
             return { ...service, data: updatedVendors };
           }
@@ -242,8 +234,6 @@ const Dashboard = () => {
         await updateDoc(docRef, {
           data: updatedDataArray,
         });
-
- 
       } else {
         console.error("❌ No document in Firestore to update");
       }
@@ -254,7 +244,7 @@ const Dashboard = () => {
 
   const fetchServices = async () => {
     const querySnapshot = await getDocs(
-      collection(firestore, "homeCleaningServiceDB")
+      collection(firestore, "homeCleaningServiceDB"),
     );
     const data = querySnapshot.docs.map((doc) => ({
       id: doc.id, // Firestore document ID
@@ -265,14 +255,14 @@ const Dashboard = () => {
       setServices(data[0].data || []); // Use [0] only if you have one doc
     }
   };
-const initialized = useRef(false);
+  const initialized = useRef(false);
 
-useEffect(() => {
-  if (initialized.current) return;
+  useEffect(() => {
+    if (initialized.current) return;
 
-  initialized.current = true;
-  checkAuth();
-}, []);
+    initialized.current = true;
+    checkAuth();
+  }, []);
 
   const [editingServiceId, setEditingServiceId] = useState(null);
   const [newServiceName, setNewServiceName] = useState("");
@@ -350,8 +340,6 @@ useEffect(() => {
 
       // ✅ Update React state
       setServices(services.filter((service) => service.id !== id));
-
-  
     } catch (error) {
       console.error("Error deleting service:", error);
     }
@@ -365,8 +353,8 @@ useEffect(() => {
     }
     setServices(
       services.map((service) =>
-        service.id === id ? { ...service, ServiceName: newName } : service
-      )
+        service.id === id ? { ...service, ServiceName: newName } : service,
+      ),
     );
     try {
       const docRef = doc(firestore, "homeCleaningServiceDB", docId);
@@ -385,7 +373,7 @@ useEffect(() => {
       const updatedArray = currentArray.map((service) =>
         service.id === editingServiceId
           ? { ...service, ServiceName: newName }
-          : service
+          : service,
       );
 
       // ✅ Update Firestore
@@ -432,7 +420,7 @@ useEffect(() => {
 
     setServices(updatedServices);
     const updatedSelectedService = updatedServices.find(
-      (s) => s.id === selectedService.id
+      (s) => s.id === selectedService.id,
     );
     setSelectedService(updatedSelectedService);
 
@@ -484,12 +472,12 @@ useEffect(() => {
                 return updatedVendor;
               }
               return vendor;
-            })
+            }),
           );
           return { ...service, data: updatedData };
         }
         return service;
-      })
+      }),
     );
 
     // ✅ Update local state with resolved data
@@ -497,7 +485,7 @@ useEffect(() => {
 
     // ✅ Update selected service too
     const updatedSelectedService = updatedServices.find(
-      (s) => s.id === selectedService.id
+      (s) => s.id === selectedService.id,
     );
     setSelectedService(updatedSelectedService);
 
@@ -511,8 +499,6 @@ useEffect(() => {
       reviews: "",
       location: "",
     });
-
-
   };
 
   // Handles deleting a vendor from the selected top-level service.
@@ -558,11 +544,9 @@ useEffect(() => {
       // ✅ Update local state
       setServices(updatedArray);
       const updatedSelectedService = updatedArray.find(
-        (s) => s.id === selectedService.id
+        (s) => s.id === selectedService.id,
       );
       setSelectedService(updatedSelectedService);
-
-   
     } catch (error) {
       console.error("Error deleting vendor:", error);
     }
@@ -617,11 +601,11 @@ useEffect(() => {
     setServices(updatedServices);
     await SaveSubmit(FDBservices, updatedServices);
     const updatedSelectedService = updatedServices.find(
-      (s) => s.id === selectedService.id
+      (s) => s.id === selectedService.id,
     );
     setSelectedService(updatedSelectedService);
     const updatedSelectedVendor = updatedSelectedService.data.find(
-      (v) => v.vendorId === selectedVendor.vendorId
+      (v) => v.vendorId === selectedVendor.vendorId,
     );
     setSelectedVendor(updatedSelectedVendor);
 
@@ -656,72 +640,63 @@ useEffect(() => {
   const [isEdtSubmitting, setIsEdtSubmitting] = useState(false);
   const handleUpdateVendorService = async (e) => {
     e.preventDefault();
- setIsEdtSubmitting(true);
+    setIsEdtSubmitting(true);
 
-const updatedServices = services.map((service) => {
+    const updatedServices = services.map((service) => {
+      if (service.id === selectedService.id) {
+        const updatedData = service.data.map((vendor) => {
+          if (vendor.vendorId === selectedVendor.vendorId) {
+            const updatedVendorServices = vendor.services.map((vService) => {
+              if (vService.id === editingServiceIdInVendor) {
+                const updated = {
+                  ...vService,
+                  ...serviceFormData,
+                  inclusions: serviceFormData.inclusions
+                    .split(",")
+                    .map((item) => item.trim())
+                    .filter(Boolean),
+                  exclusions: serviceFormData.exclusions
+                    .split(",")
+                    .map((item) => item.trim())
+                    .filter(Boolean),
+                };
 
+                return updated;
+              }
 
-  if (service.id === selectedService.id) {
+              return vService;
+            });
 
+            console.log("Updated vendor services:", updatedVendorServices);
 
-    const updatedData = service.data.map((vendor) => {
-      
-      if (vendor.vendorId === selectedVendor.vendorId) {
-      
-        const updatedVendorServices = vendor.services.map((vService) => {
-         
-          if (vService.id === editingServiceIdInVendor) {
-           
-            const updated = {
-              ...vService,
-              ...serviceFormData,
-              inclusions: serviceFormData.inclusions
-                .split(",")
-                .map((item) => item.trim())
-                .filter(Boolean),
-              exclusions: serviceFormData.exclusions
-                .split(",")
-                .map((item) => item.trim())
-                .filter(Boolean),
+            return {
+              ...vendor,
+              services: updatedVendorServices,
             };
-
-           
-            return updated;
           }
 
-          return vService;
+          return vendor;
         });
 
-        console.log("Updated vendor services:", updatedVendorServices);
-
         return {
-          ...vendor,
-          services: updatedVendorServices,
+          ...service,
+          data: updatedData,
         };
       }
 
-      return vendor;
+      return service;
     });
 
-    return {
-      ...service,
-      data: updatedData,
-    };
-  }
-
-  return service;
-});
-
-console.log("Final updatedServices:", updatedServices);
-console.dir(updatedServices, { depth: null });
+    console.log("Final updatedServices:", updatedServices);
+    console.dir(updatedServices, { depth: null });
     setServices(updatedServices);
     await EditServiceDB(updatedServices);
     const updatedSelectedService = updatedServices.find(
-      (s) => s.id === selectedService.id
+      (s) => s.id === selectedService.id,
     );
     setSelectedService(updatedSelectedService);
     const updatedSelectedVendor = updatedSelectedService.data.find(
-      (v) => v.vendorId === selectedVendor.vendorId
+      (v) => v.vendorId === selectedVendor.vendorId,
     );
     setSelectedVendor(updatedSelectedVendor);
 
@@ -789,27 +764,23 @@ console.dir(updatedServices, { depth: null });
       setServices(updatedArray);
 
       const updatedSelectedService = updatedArray.find(
-        (s) => s.id === selectedService.id
+        (s) => s.id === selectedService.id,
       );
       setSelectedService(updatedSelectedService);
 
       const updatedSelectedVendor = updatedSelectedService.data.find(
-        (v) => v.vendorId === selectedVendor.vendorId
+        (v) => v.vendorId === selectedVendor.vendorId,
       );
       setSelectedVendor(updatedSelectedVendor);
-
-     
     } catch (error) {
       console.error("Error deleting vendor service:", error);
     }
   };
 
-
   const handleShowServiceDetails = (service) => {
     setSelectedVendorService(service);
     setShowServiceDetailsPanel(true);
   };
-
 
   const handleCloseServiceDetailsPanel = () => {
     setSelectedVendorService(null);
@@ -817,12 +788,10 @@ console.dir(updatedServices, { depth: null });
   };
 
   services.filter((service) =>
-    service.ServiceName.toLowerCase().includes(searchTerm.toLowerCase())
+    service.ServiceName.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const passVender = (selectedVendor) => {
-   
-
     setVendorFormData({
       vendorName: selectedVendor.vendorName,
       vendorImage: selectedVendor.vendorImage,
@@ -846,7 +815,6 @@ console.dir(updatedServices, { depth: null });
       case "auth":
         return (
           <div className="flex flex-col items-center h-full p-8">
-           
             {tagAccess.includes("Users") || tagAccess.includes("Admin") ? (
               <AuthDashboard />
             ) : (
@@ -887,18 +855,18 @@ console.dir(updatedServices, { depth: null });
           </>
         );
       case "sales":
-  return (
-    <div className="w-full">
-      {tagAccess.includes("Sales") || tagAccess.includes("Admin") ? (
-        <SalesSection />
-      ) : (
-        <LockedBox
-          className="flex justify-center items-center h-screen"
-          label="Sales"
-        />
-      )}
-    </div>
-  );
+        return (
+          <div className="w-full">
+            {tagAccess.includes("Sales") || tagAccess.includes("Admin") ? (
+              <SalesSection />
+            ) : (
+              <LockedBox
+                className="flex justify-center items-center h-screen"
+                label="Sales"
+              />
+            )}
+          </div>
+        );
       case "Ticket":
         return (
           <div className="">
@@ -929,7 +897,7 @@ console.dir(updatedServices, { depth: null });
             )}
           </div>
         );
-        case "Notification":
+      case "Notification":
         return (
           <div className="">
             {tagAccess.includes("Notification") ||
@@ -945,8 +913,8 @@ console.dir(updatedServices, { depth: null });
               />
             )}
           </div>
-        ); 
-        case "Chat-Controller":
+        );
+      case "Chat-Controller":
         return (
           <div className="">
             {tagAccess.includes("Chat Controller") ||
@@ -961,12 +929,11 @@ console.dir(updatedServices, { depth: null });
               />
             )}
           </div>
-        ); 
-        case "Banner":
+        );
+      case "Banner":
         return (
           <div className="">
-            {tagAccess.includes("Banner") ||
-            tagAccess.includes("Admin") ? (
+            {tagAccess.includes("Banner") || tagAccess.includes("Admin") ? (
               <div className="flex">
                 {/* This is the component we just coded */}
                 <BannerManagement />
@@ -978,7 +945,7 @@ console.dir(updatedServices, { depth: null });
               />
             )}
           </div>
-        ); 
+        );
       case "Coupon-Manager":
         return (
           <div className="">
@@ -1000,57 +967,55 @@ console.dir(updatedServices, { depth: null });
           <div className="">
             {tagAccess.includes("Website Content") ||
             tagAccess.includes("Admin") ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">          
-  {/* First block */}
-  <div
-    style={{
-      background: "#fff",
-      borderRadius: "8px",
-      boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-      padding: "16px",
-    }}
-  >
-    <HomeCarousalAssetController />
-  </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
+                {/* First block */}
+                <div
+                  style={{
+                    background: "#fff",
+                    borderRadius: "8px",
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                    padding: "16px",
+                  }}
+                >
+                  <HomeCarousalAssetController />
+                </div>
 
-  {/* Second block */}
-  <div
-    style={{
-      background: "#fff",
-      borderRadius: "8px",
-      boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-      padding: "16px",
-    }}
-  >
-    <SocialLinksManager />
-  </div>
+                {/* Second block */}
+                <div
+                  style={{
+                    background: "#fff",
+                    borderRadius: "8px",
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                    padding: "16px",
+                  }}
+                >
+                  <SocialLinksManager />
+                </div>
 
-  {/* Third block spans 2 columns */}
-  <div
-    style={{
-      background: "#fff",
-      borderRadius: "8px",
-      boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-      padding: "16px",
-      gridColumn: "1 / -1", // span all columns
-    }}
-  >
-    <BlockedDatesTable />
-  </div>
-   <div
-    style={{
-      background: "#fff",
-      borderRadius: "8px",
-      boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-      padding: "16px",
-      gridColumn: "1 / -1", // span all columns
-    }}
-  >
-    <AddAppBanner />
-  </div>
-  
-</div>
-
+                {/* Third block spans 2 columns */}
+                <div
+                  style={{
+                    background: "#fff",
+                    borderRadius: "8px",
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                    padding: "16px",
+                    gridColumn: "1 / -1", // span all columns
+                  }}
+                >
+                  <BlockedDatesTable />
+                </div>
+                <div
+                  style={{
+                    background: "#fff",
+                    borderRadius: "8px",
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                    padding: "16px",
+                    gridColumn: "1 / -1", // span all columns
+                  }}
+                >
+                  <AddAppBanner />
+                </div>
+              </div>
             ) : (
               <LockedBox
                 className="flex justify-center items-center h-screen"
@@ -1093,21 +1058,20 @@ console.dir(updatedServices, { depth: null });
   return isAuthenticated != true ? (
     <DashboardLogin />
   ) : (
-    <div className="flex flex-col md:flex-row bg-gray-100 min-h-screen font-sans"> 
-     {/* <ImageUploadPopup /> */}
+    <div className="flex flex-col md:flex-row bg-gray-100 min-h-screen font-sans">
+      {/* <ImageUploadPopup /> */}
       <DashboardNavigator
         activeTab={activeTab}
         handleTabClick={handleTabClick}
         handleLogout={handleLogout}
       />
-  
-  
+
       {/* --------------------------------------------------------------------------------------------------- */}
       <>
         {/* Main Content Area */}
-        <main className="flex-1 w-full p-2 h-[100vh] overflow-auto">{renderContent()}</main>    
-
-     
+        <main className="flex-1 w-full p-2 h-[100vh] overflow-auto">
+          {renderContent()}
+        </main>
 
         {activeTab === "services" &&
           selectedService &&
@@ -1125,110 +1089,128 @@ console.dir(updatedServices, { depth: null });
                 });
               }}
               className="fixed bottom-6 right-6 md:bottom-8 md:right-8 w-14 h-14 bg-green-500 text-white text-3xl font-bold rounded-full shadow-lg flex items-center justify-center hover:bg-green-600 transition-colors duration-200 z-50"
-            > 
+            >
               <PlusIcon className="w-6 h-6" />
             </button>
           )}
 
         {/* Modal Form for adding/editing a vendor */}
         {showVendorForm && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4">
             <form
               onSubmit={editingVendorId ? handleUpdateVendor : handleAddVendor}
-              className="bg-white p-4 md:p-6 rounded-xl shadow-lg w-full max-w-lg" 
-            > 
-              <h3 className="text-xl font-semibold mb-4">
-                {editingVendorId ? "Edit Vendor" : "Add New Vendor"}
-              </h3>
-              <GetVenderData passVender={passVender} />
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <input
-                  type="text"
-                  placeholder="Vendor Name"
-                  value={vendorFormData.vendorName}
-                  onChange={(e) =>
-                    setVendorFormData({
-                      ...vendorFormData,
-                      vendorName: e.target.value,
-                    })
-                  }
-                  disabled={true}
-                  className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-                <input
-                  type="text"
-                  placeholder="Vendor Image URL"
-                  disabled={true}
-                  value={vendorFormData.vendorImage}
-                  onChange={(e) =>
-                    setVendorFormData({
-                      ...vendorFormData,
-                      vendorImage: e.target.value,
-                    })
-                  }
-                  className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-
-                <input
-                  type="number"
-                  step="0.1"
-                  placeholder="Rating (e.g., 4.9)"
-                  value={vendorFormData.rating}
-                  disabled={true}
-                  onChange={(e) =>
-                    setVendorFormData({
-                      ...vendorFormData,
-                      rating: e.target.value,
-                    })
-                  }
-                  className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-                <input
-                  type="text"
-                  placeholder="Reviews (e.g., 245+)"
-                  disabled={true}
-                  value={vendorFormData.reviews}
-                  onChange={(e) =>
-                    setVendorFormData({
-                      ...vendorFormData,
-                      reviews: e.target.value,
-                    })
-                  }
-                  className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-
-                <select
-                  id="vendorLocation"
-                  name="vendorLocation"
-                  value={vendorFormData.location}
-                  onChange={(e) =>
-                    setVendorFormData({
-                      ...vendorFormData,
-                      location: e.target.value,
-                    })
-                  }
-                  required
-                  className="mt-1 block w-full border border-gray-300 rounded-lg shadow-sm p-3 focus:ring-blue-500 focus:border-blue-500 transition duration-150 max-h-40 overflow-y-auto"
-                >
-                  <option value="">-- Select City --</option>
-                  {cities.map((city, index) => (
-                    <option
-                      key={index}
-                      value={city}
-                      className="bg-blue-900 text-white" // navy blue background + white text
-                    >
-                      {city}
-                    </option>
-                  ))}
-                </select>
+              className="w-full max-w-xl rounded-2xl bg-white shadow-2xl"
+            >
+              <div className="border-b border-zinc-200 px-6 py-5">
+                <h3 className="text-xl font-semibold text-zinc-900">
+                  {editingVendorId ? "Edit Vendor" : "Add New Vendor"}
+                </h3>
+                <p className="mt-1 text-sm text-zinc-500">
+                  Select vendor and assign service location.
+                </p>
               </div>
-              <div className="flex space-x-2 mt-4">
+
+              <div className="space-y-5 p-6">
+                <GetVenderData passVender={passVender} />
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <input
+                    type="text"
+                    placeholder="Vendor Name"
+                    value={vendorFormData.vendorName}
+                    onChange={(e) =>
+                      setVendorFormData({
+                        ...vendorFormData,
+                        vendorName: e.target.value,
+                      })
+                    }
+                    disabled
+                    className="w-full cursor-not-allowed rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-500 outline-none"
+                  />
+
+                  <input
+                    type="text"
+                    placeholder="Vendor Image URL"
+                    disabled
+                    value={vendorFormData.vendorImage}
+                    onChange={(e) =>
+                      setVendorFormData({
+                        ...vendorFormData,
+                        vendorImage: e.target.value,
+                      })
+                    }
+                    className="w-full cursor-not-allowed rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-500 outline-none"
+                  />
+
+                  <input
+                    type="number"
+                    step="0.1"
+                    placeholder="Rating"
+                    value={vendorFormData.rating}
+                    disabled
+                    onChange={(e) =>
+                      setVendorFormData({
+                        ...vendorFormData,
+                        rating: e.target.value,
+                      })
+                    }
+                    className="w-full cursor-not-allowed rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-500 outline-none"
+                  />
+
+                  <input
+                    type="text"
+                    placeholder="Reviews"
+                    disabled
+                    value={vendorFormData.reviews}
+                    onChange={(e) =>
+                      setVendorFormData({
+                        ...vendorFormData,
+                        reviews: e.target.value,
+                      })
+                    }
+                    className="w-full cursor-not-allowed rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-500 outline-none"
+                  />
+
+                  <div className="sm:col-span-2">
+                    <label
+                      htmlFor="vendorLocation"
+                      className="mb-1 block text-sm font-medium text-zinc-700"
+                    >
+                      Vendor Location
+                    </label>
+
+                    <select
+                      id="vendorLocation"
+                      name="vendorLocation"
+                      value={vendorFormData.location}
+                      onChange={(e) =>
+                        setVendorFormData({
+                          ...vendorFormData,
+                          location: e.target.value,
+                        })
+                      }
+                      required
+                      className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-zinc-900 focus:ring-2 focus:ring-zinc-100"
+                    >
+                      <option value="">Select City</option>
+                      {cities.map((city, index) => (
+                        <option key={index} value={city}>
+                          {city}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-3 border-t border-zinc-200 px-6 py-4">
                 <button
                   type="submit"
-                  className="flex-1 px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 transition-colors duration-200"
+                  className="flex-1 rounded-xl bg-black px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-zinc-800 active:scale-95"
                 >
                   {editingVendorId ? "Save Vendor" : "Create Vendor"}
                 </button>
+
                 <button
                   type="button"
                   onClick={() => {
@@ -1242,7 +1224,7 @@ console.dir(updatedServices, { depth: null });
                       location: "",
                     });
                   }}
-                  className="flex-1 px-6 py-3 bg-gray-400 text-white font-semibold rounded-lg shadow-md hover:bg-gray-500 transition-colors duration-200"
+                  className="flex-1 rounded-xl border border-zinc-300 px-5 py-3 text-sm font-semibold text-zinc-700 transition hover:bg-zinc-50"
                 >
                   Cancel
                 </button>
@@ -1337,14 +1319,13 @@ console.dir(updatedServices, { depth: null });
                       onClick={(e) => {
                         e.stopPropagation();
 
-                      const confirmDelete = window.confirm(
-                          "Are you sure you want to delete this service?"
+                        const confirmDelete = window.confirm(
+                          "Are you sure you want to delete this service?",
                         );
 
                         if (confirmDelete) {
                           handleDeleteVendorService(service.id);
                         }
-                      
                       }}
                       className="flex-1 px-4 py-2 bg-red-500 text-white rounded-lg shadow-sm hover:bg-red-600 transition-colors duration-200 flex items-center justify-center"
                     >
@@ -1365,223 +1346,223 @@ console.dir(updatedServices, { depth: null });
 
         {/* Modal Form for adding/editing a vendor's service */}
         {showServiceForm && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4">
             <form
               onSubmit={
                 editingServiceIdInVendor
                   ? handleUpdateVendorService
                   : handleAddServiceToVendor
               }
-              className="bg-white p-6 rounded-xl shadow-lg w-full max-w-lg overflow-y-auto max-h-[90vh]"
+              className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl bg-white shadow-2xl"
             >
-              <h3 className="text-xl font-semibold mb-4">
-                {editingServiceIdInVendor ? "Edit Service" : "Add New Service"}
-              </h3>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Title */}
-                <input
-                  type="text"
-                  placeholder="Title"
-                  value={serviceFormData.title}
-                  onChange={(e) =>
-                    setServiceFormData({
-                      ...serviceFormData,
-                      title: e.target.value,
-                    })
-                  }
-                  className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-
-                {/* Location */}
-
-                {/* Original Price */}
-                <input
-                  type="number"
-                  step="1"
-                  placeholder="Original Price"
-                  value={serviceFormData.originalPrice}
-                  onChange={(e) => {
-                    const originalPrice = parseFloat(e.target.value) || 0;
-                    const discount = parseFloat(serviceFormData.discount) || 0;
-                    const price =
-                      originalPrice - (originalPrice * discount) / 100;
-                    setServiceFormData({
-                      ...serviceFormData,
-                      originalPrice,
-                      price,
-                    });
-                  }}
-                  className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-
-                {/* Discount (%) */}
-                <input
-                  type="number"
-                  step="1"
-                  placeholder="Discount %"
-                  value={serviceFormData.discount}
-                  onChange={(e) => {
-                    const discount = parseFloat(e.target.value) || 0;
-                    const originalPrice =
-                      parseFloat(serviceFormData.originalPrice) || 0;
-                    const price =
-                      originalPrice - (originalPrice * discount) / 100;
-                    setServiceFormData({ ...serviceFormData, discount, price });
-                  }}
-                  className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-
-                {/* Auto-calculated Price (Read-only) */}
-                <input
-                  type="number"
-                  placeholder="Price"
-                  value={serviceFormData.price}
-                  readOnly
-                  className="p-3 border rounded-lg bg-gray-100 text-gray-500 focus:outline-none"
-                />
-
-                {/* Description */}
-                <textarea
-                  placeholder="Description"
-                  value={serviceFormData.description}
-                  onChange={(e) =>
-                    setServiceFormData({
-                      ...serviceFormData,
-                      description: e.target.value,
-                    })
-                  }
-                  className="p-3 border rounded-lg col-span-1 sm:col-span-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  rows="3"
-                ></textarea>
-
-                {/* Image URL */}
-                <input
-                  type="text"
-                  placeholder="Image URL"
-                  value={serviceFormData.serviceImage}
-                  onChange={(e) =>
-                    setServiceFormData({
-                      ...serviceFormData,
-                      serviceImage: e.target.value,
-                    })
-                  }
-                  className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-
-                {/* Rating */}
-                <input
-                  type="number"
-                  step="0.1"
-                  placeholder="Rating"
-                  value={serviceFormData.rating}
-                  onChange={(e) =>
-                    setServiceFormData({
-                      ...serviceFormData,
-                      rating: e.target.value,
-                    })
-                  }
-                  className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-
-                {/* Reviews */}
-                <input
-                  type="text"
-                  placeholder="Reviews"
-                  value={serviceFormData.reviews}
-                  onChange={(e) =>
-                    setServiceFormData({
-                      ...serviceFormData,
-                      reviews: e.target.value,
-                    })
-                  }
-                  className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-
-                {/* Duration */}
-                <input
-                  type="text"
-                  placeholder="Duration (e.g., 45 mins)"
-                  value={serviceFormData.duration}
-                  onChange={(e) =>
-                    setServiceFormData({
-                      ...serviceFormData,
-                      duration: e.target.value,
-                    })
-                  }
-                  className="p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-
-                {/* Inclusions */}
-                <textarea
-                  placeholder="Inclusions (comma separated)"
-                  value={serviceFormData.inclusions}
-                  onChange={(e) =>
-                    setServiceFormData({
-                      ...serviceFormData,
-                      inclusions: e.target.value,
-                    })
-                  }
-                  className="p-3 border rounded-lg col-span-1 sm:col-span-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  rows="2"
-                ></textarea>
-
-                {/* Exclusions */}
-                <textarea
-                  placeholder="Exclusions (comma separated)"
-                  value={serviceFormData.exclusions}
-                  onChange={(e) =>
-                    setServiceFormData({
-                      ...serviceFormData,
-                      exclusions: e.target.value,
-                    })
-                  }
-                  className="p-3 border rounded-lg col-span-1 sm:col-span-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  rows="2"
-                ></textarea>
+              <div className="sticky top-0 z-10 border-b border-zinc-200 bg-white px-6 py-5">
+                <h3 className="text-xl font-semibold text-zinc-900">
+                  {editingServiceIdInVendor
+                    ? "Edit Service"
+                    : "Add New Service"}
+                </h3>
+                <p className="mt-1 text-sm text-zinc-500">
+                  Update service pricing, media, duration and public details.
+                </p>
               </div>
 
-              {/* Buttons */}
-            <div className="flex space-x-2 mt-4">
-  <button
-    type="submit"
-    disabled={editingServiceIdInVendor && isEdtSubmitting}
-    className={`flex-1 px-6 py-3 text-white font-semibold rounded-lg shadow-md transition-colors duration-200 ${
-      editingServiceIdInVendor && isEdtSubmitting
-        ? "bg-gray-400 cursor-not-allowed"
-        : "bg-indigo-600 hover:bg-indigo-700"
-    }`}
-  >
-    {editingServiceIdInVendor ? (
-      isEdtSubmitting ? (
-        <div className="flex items-center justify-center gap-2">
-          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-          Saving...
-        </div>
-      ) : (
-        "Save Service"
-      )
-    ) : (
-      "Create Service"
-    )}
-  </button>
+              <div className="space-y-5 p-6">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <input
+                    type="text"
+                    placeholder="Title"
+                    value={serviceFormData.title}
+                    onChange={(e) =>
+                      setServiceFormData({
+                        ...serviceFormData,
+                        title: e.target.value,
+                      })
+                    }
+                    className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-zinc-900 focus:ring-2 focus:ring-zinc-100"
+                  />
 
-  <button
-    type="button"
-    disabled={editingServiceIdInVendor && isEdtSubmitting}
-    onClick={() => {
-      setShowServiceForm(false);
-      setEditingServiceIdInVendor(null);
-    }}
-    className={`flex-1 px-6 py-3 text-white font-semibold rounded-lg shadow-md transition-colors duration-200 ${
-      editingServiceIdInVendor && isEdtSubmitting
-        ? "bg-gray-300 cursor-not-allowed"
-        : "bg-gray-400 hover:bg-gray-500"
-    }`}
-  >
-    Cancel
-  </button>
-</div>
+                  <input
+                    type="number"
+                    step="1"
+                    placeholder="Original Price"
+                    value={serviceFormData.originalPrice}
+                    onChange={(e) => {
+                      const originalPrice = parseFloat(e.target.value) || 0;
+                      const discount =
+                        parseFloat(serviceFormData.discount) || 0;
+                      const price =
+                        originalPrice - (originalPrice * discount) / 100;
+                      setServiceFormData({
+                        ...serviceFormData,
+                        originalPrice,
+                        price,
+                      });
+                    }}
+                    className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-zinc-900 focus:ring-2 focus:ring-zinc-100"
+                  />
+
+                  <input
+                    type="number"
+                    step="1"
+                    placeholder="Discount %"
+                    value={serviceFormData.discount}
+                    onChange={(e) => {
+                      const discount = parseFloat(e.target.value) || 0;
+                      const originalPrice =
+                        parseFloat(serviceFormData.originalPrice) || 0;
+                      const price =
+                        originalPrice - (originalPrice * discount) / 100;
+                      setServiceFormData({
+                        ...serviceFormData,
+                        discount,
+                        price,
+                      });
+                    }}
+                    className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-zinc-900 focus:ring-2 focus:ring-zinc-100"
+                  />
+
+                  <input
+                    type="number"
+                    placeholder="Price"
+                    value={serviceFormData.price}
+                    readOnly
+                    className="w-full cursor-not-allowed rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-500 outline-none"
+                  />
+
+                  <textarea
+                    placeholder="Description"
+                    value={serviceFormData.description}
+                    onChange={(e) =>
+                      setServiceFormData({
+                        ...serviceFormData,
+                        description: e.target.value,
+                      })
+                    }
+                    rows="3"
+                    className="sm:col-span-2 w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-zinc-900 focus:ring-2 focus:ring-zinc-100"
+                  />
+
+                  <input
+                    type="text"
+                    placeholder="Image URL"
+                    value={serviceFormData.serviceImage}
+                    onChange={(e) =>
+                      setServiceFormData({
+                        ...serviceFormData,
+                        serviceImage: e.target.value,
+                      })
+                    }
+                    className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-zinc-900 focus:ring-2 focus:ring-zinc-100"
+                  />
+
+                  <input
+                    type="number"
+                    step="0.1"
+                    placeholder="Rating"
+                    value={serviceFormData.rating}
+                    onChange={(e) =>
+                      setServiceFormData({
+                        ...serviceFormData,
+                        rating: e.target.value,
+                      })
+                    }
+                    className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-zinc-900 focus:ring-2 focus:ring-zinc-100"
+                  />
+
+                  <input
+                    type="text"
+                    placeholder="Reviews"
+                    value={serviceFormData.reviews}
+                    onChange={(e) =>
+                      setServiceFormData({
+                        ...serviceFormData,
+                        reviews: e.target.value,
+                      })
+                    }
+                    className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-zinc-900 focus:ring-2 focus:ring-zinc-100"
+                  />
+
+                  <input
+                    type="text"
+                    placeholder="Duration"
+                    value={serviceFormData.duration}
+                    onChange={(e) =>
+                      setServiceFormData({
+                        ...serviceFormData,
+                        duration: e.target.value,
+                      })
+                    }
+                    className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-zinc-900 focus:ring-2 focus:ring-zinc-100"
+                  />
+
+                  <textarea
+                    placeholder="Inclusions, comma separated"
+                    value={serviceFormData.inclusions}
+                    onChange={(e) =>
+                      setServiceFormData({
+                        ...serviceFormData,
+                        inclusions: e.target.value,
+                      })
+                    }
+                    rows="2"
+                    className="sm:col-span-2 w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-zinc-900 focus:ring-2 focus:ring-zinc-100"
+                  />
+
+                  <textarea
+                    placeholder="Exclusions, comma separated"
+                    value={serviceFormData.exclusions}
+                    onChange={(e) =>
+                      setServiceFormData({
+                        ...serviceFormData,
+                        exclusions: e.target.value,
+                      })
+                    }
+                    rows="2"
+                    className="sm:col-span-2 w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-zinc-900 focus:ring-2 focus:ring-zinc-100"
+                  />
+                </div>
+              </div>
+
+              <div className="sticky bottom-0 flex gap-3 border-t border-zinc-200 bg-white px-6 py-4">
+                <button
+                  type="submit"
+                  disabled={editingServiceIdInVendor && isEdtSubmitting}
+                  className={`flex-1 rounded-xl px-5 py-3 text-sm font-semibold shadow-sm transition active:scale-95 ${
+                    editingServiceIdInVendor && isEdtSubmitting
+                      ? "cursor-not-allowed bg-zinc-300 text-white"
+                      : "bg-black text-white hover:bg-zinc-800"
+                  }`}
+                >
+                  {editingServiceIdInVendor ? (
+                    isEdtSubmitting ? (
+                      <div className="flex items-center justify-center gap-2">
+                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                        Saving...
+                      </div>
+                    ) : (
+                      "Save Service"
+                    )
+                  ) : (
+                    "Create Service"
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  disabled={editingServiceIdInVendor && isEdtSubmitting}
+                  onClick={() => {
+                    setShowServiceForm(false);
+                    setEditingServiceIdInVendor(null);
+                  }}
+                  className={`flex-1 rounded-xl border px-5 py-3 text-sm font-semibold transition ${
+                    editingServiceIdInVendor && isEdtSubmitting
+                      ? "cursor-not-allowed border-zinc-200 bg-zinc-100 text-zinc-400"
+                      : "border-zinc-300 text-zinc-700 hover:bg-zinc-50"
+                  }`}
+                >
+                  Cancel
+                </button>
+              </div>
             </form>
           </div>
         )}
@@ -1673,7 +1654,7 @@ console.dir(updatedServices, { depth: null });
                             {selectedVendorService.exclusions.map(
                               (item, index) => (
                                 <li key={index}>{item}</li>
-                              )
+                              ),
                             )}
                           </ul>
                         </div>
