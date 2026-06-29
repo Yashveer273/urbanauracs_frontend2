@@ -1061,7 +1061,7 @@ useEffect(() => {
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4">
             <form
               onSubmit={editingVendorId ? handleUpdateVendor : handleAddVendor}
-              className="w-full max-w-xl rounded-2xl bg-white shadow-2xl"
+              className="w-full max-w-180 rounded-2xl bg-white shadow-2xl"
             >
               <div className="border-b border-zinc-200 px-6 py-5">
                 <h3 className="text-xl font-semibold text-zinc-900">
@@ -1090,19 +1090,23 @@ useEffect(() => {
                     className="w-full cursor-not-allowed rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-500 outline-none"
                   />
 
-                  <input
-                    type="text"
-                    placeholder="Vendor Image URL"
-                    disabled
-                    value={vendorFormData.vendorImage}
-                    onChange={(e) =>
-                      setVendorFormData({
-                        ...vendorFormData,
-                        vendorImage: e.target.value,
-                      })
-                    }
-                    className="w-full cursor-not-allowed rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-500 outline-none"
-                  />
+                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+  <input
+    type="text"
+    placeholder="Vendor Image URL"
+    disabled
+    value={vendorFormData.vendorImage}
+    onChange={(e) =>
+      setVendorFormData({
+        ...vendorFormData,
+        vendorImage: e.target.value,
+      })
+    }
+    className="flex-1 w-full cursor-not-allowed rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-500 outline-none"
+  />
+
+  <ImageUploadPopup/>
+</div>
 
                   <input
                     type="number"
@@ -1315,7 +1319,7 @@ useEffect(() => {
                   ? handleUpdateVendorService
                   : handleAddServiceToVendor
               }
-              className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl bg-white shadow-2xl"
+              className="w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl bg-white shadow-2xl"
             >
               <div className="sticky top-0 z-10 border-b border-zinc-200 bg-white px-6 py-5">
                 <h3 className="text-xl font-semibold text-zinc-900">
@@ -1404,18 +1408,22 @@ useEffect(() => {
                     className="sm:col-span-2 w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-zinc-900 focus:ring-2 focus:ring-zinc-100"
                   />
 
-                  <input
-                    type="text"
-                    placeholder="Image URL"
-                    value={serviceFormData.serviceImage}
-                    onChange={(e) =>
-                      setServiceFormData({
-                        ...serviceFormData,
-                        serviceImage: e.target.value,
-                      })
-                    }
-                    className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-zinc-900 focus:ring-2 focus:ring-zinc-100"
-                  />
+                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+  <input
+    type="text"
+    placeholder="Image URL"
+    value={serviceFormData.serviceImage}
+    onChange={(e) =>
+      setServiceFormData({
+        ...serviceFormData,
+        serviceImage: e.target.value,
+      })
+    }
+    className="flex-1 w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-zinc-900 focus:ring-2 focus:ring-zinc-100"
+  />
+
+  <ImageUploadPopup />
+</div>
 
                   <input
                     type="number"
@@ -1530,103 +1538,147 @@ useEffect(() => {
         )}
 
         {/* Service Details Panel (Slide-in) */}
-        {selectedVendorService && (
-          <div
-            className={`fixed inset-0 bg-gray-100 shadow-2xl p-8 transform transition-transform duration-500 ease-in-out z-50 overflow-y-auto ${
-              showServiceDetailsPanel ? "translate-x-0" : "translate-x-full"
-            }`}
-          >
-            <div className="max-w-4xl mx-auto">
-              <div className="flex justify-between items-center mb-6">
-                <button
-                  onClick={handleCloseServiceDetailsPanel}
-                  className="text-gray-500 hover:text-gray-800 text-3xl font-bold p-2 rounded-full hover:bg-gray-200 transition-colors duration-200 flex items-center"
-                >
-                  <ChevronLeftIcon className="w-6 h-6 mr-2" />
-                  <span className="hidden sm:inline">Back</span>
-                </button>
-                <h2 className="text-3xl font-bold text-gray-800 ml-auto">
-                  Service Details
-                </h2>
-              </div>
+       {selectedVendorService && (
+  <div
+    className={`fixed inset-0 bg-white transform transition-transform duration-500 ease-in-out z-50 overflow-y-auto ${
+      showServiceDetailsPanel ? "translate-x-0" : "translate-x-full"
+    }`}
+  >
+    {/* Header */}
+    <div className="sticky top-0 z-20 bg-white/90 backdrop-blur border-b border-zinc-200 px-5 sm:px-8 py-4 flex items-center justify-between">
+      <button
+        onClick={handleCloseServiceDetailsPanel}
+        className="inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-4 py-2 text-sm font-medium text-zinc-600 hover:text-zinc-900 hover:bg-zinc-50 transition"
+      >
+        <ChevronLeftIcon className="w-5 h-5" />
+        Back
+      </button>
 
-              <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-                <img
-                  src={selectedVendorService.serviceImage}
-                  alt={selectedVendorService.title}
-                  className="w-full h-56 md:h-80 object-cover"
-                />
-                <div className="p-8">
-                  <h1 className="text-4xl font-extrabold text-gray-900 mb-2">
-                    {selectedVendorService.title}
-                  </h1>
-                  <p className="text-gray-600 mb-4">
-                    {selectedVendorService.location}
-                  </p>
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-baseline space-x-2">
-                      <span className="text-3xl font-bold text-indigo-600">
-                        ₹{selectedVendorService.price}
-                      </span>
-                      <span className="text-lg text-gray-400 line-through">
-                        ₹{selectedVendorService.originalPrice}
-                      </span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <span className="text-yellow-500 text-2xl">★</span>
-                      <span className="font-bold text-gray-700 text-lg">
-                        {selectedVendorService.rating}
-                      </span>
-                      <span className="text-gray-500">
-                        ({selectedVendorService.reviews})
-                      </span>
-                    </div>
-                  </div>
+      <h2 className="text-lg sm:text-xl font-semibold text-zinc-900 tracking-tight">
+        Service Details
+      </h2>
 
-                  <p className="text-gray-700 leading-relaxed mb-6">
-                    {selectedVendorService.description}
-                  </p>
+      <div className="w-[86px]" />
+    </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                        Duration
-                      </h3>
-                      <p className="text-gray-600">
-                        {selectedVendorService.duration}
-                      </p>
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                        Inclusions
-                      </h3>
-                      <ul className="list-disc list-inside space-y-1 text-gray-600">
-                        {selectedVendorService.inclusions.map((item, index) => (
-                          <li key={index}>{item}</li>
-                        ))}
-                      </ul>
-                    </div>
-                    {selectedVendorService.exclusions &&
-                      selectedVendorService.exclusions.length > 0 && (
-                        <div>
-                          <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                            Exclusions
-                          </h3>
-                          <ul className="list-disc list-inside space-y-1 text-gray-600">
-                            {selectedVendorService.exclusions.map(
-                              (item, index) => (
-                                <li key={index}>{item}</li>
-                              ),
-                            )}
-                          </ul>
-                        </div>
-                      )}
-                  </div>
-                </div>
-              </div>
+    {/* Hero Image */}
+    <div className="w-full bg-zinc-100">
+      <img
+        src={selectedVendorService.serviceImage}
+        alt={selectedVendorService.title}
+        className="w-full h-[260px] sm:h-[360px] lg:h-[430px] object-cover"
+      />
+    </div>
+
+    {/* Content */}
+    <div className="w-full px-5 sm:px-8 lg:px-12 py-8">
+      <div className="max-w-7xl mx-auto">
+        {/* Top Info */}
+        <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6 border-b border-zinc-200 pb-8">
+          <div>
+            <p className="text-sm font-medium text-zinc-500 mb-2">
+              Vendor Service
+            </p>
+
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-zinc-950 tracking-tight">
+              {selectedVendorService.title}
+            </h1>
+
+            <p className="mt-3 text-base text-zinc-500">
+              {selectedVendorService.location}
+            </p>
+
+            <div className="inline-flex items-center gap-2 mt-5 rounded-full bg-zinc-100 px-4 py-2 text-sm">
+              <span className="text-yellow-500 text-base">★</span>
+              <span className="font-semibold text-zinc-900">
+                {selectedVendorService.rating}
+              </span>
+              <span className="text-zinc-500">
+                ({selectedVendorService.reviews} reviews)
+              </span>
             </div>
           </div>
-        )}
+
+          <div className="lg:text-right">
+            <p className="text-sm font-medium text-zinc-500 mb-2">Price</p>
+
+            <div className="flex lg:justify-end items-baseline gap-3">
+              <span className="text-4xl font-bold text-zinc-950">
+                ₹{selectedVendorService.price}
+              </span>
+
+              <span className="text-lg text-zinc-400 line-through">
+                ₹{selectedVendorService.originalPrice}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Description */}
+        <div className="py-8 border-b border-zinc-200">
+          <h3 className="text-xl font-semibold text-zinc-900 mb-3">
+            Description
+          </h3>
+
+          <p className="text-zinc-600 leading-8 max-w-5xl">
+            {selectedVendorService.description}
+          </p>
+        </div>
+
+        {/* Details Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 py-8">
+          <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
+            <p className="text-sm font-medium text-zinc-500 mb-2">
+              Duration
+            </p>
+
+            <h3 className="text-xl font-semibold text-zinc-900">
+              {selectedVendorService.duration}
+            </h3>
+          </div>
+
+          <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
+            <p className="text-sm font-medium text-zinc-500 mb-4">
+              Inclusions
+            </p>
+
+            <ul className="space-y-3 text-sm text-zinc-600">
+              {selectedVendorService.inclusions?.map((item, index) => (
+                <li key={index} className="flex gap-3">
+                  <span className="mt-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-50 text-xs font-bold text-emerald-600">
+                    ✓
+                  </span>
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm">
+            <p className="text-sm font-medium text-zinc-500 mb-4">
+              Exclusions
+            </p>
+
+            {selectedVendorService.exclusions?.length > 0 ? (
+              <ul className="space-y-3 text-sm text-zinc-600">
+                {selectedVendorService.exclusions.map((item, index) => (
+                  <li key={index} className="flex gap-3">
+                    <span className="mt-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-50 text-xs font-bold text-red-500">
+                      ×
+                    </span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-zinc-400">No exclusions added</p>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
       </>
     </div>
   );

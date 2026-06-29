@@ -7,6 +7,7 @@ import {
   updateDoc,
 } from "firebase/firestore";
 import { firestore } from "../firebaseCon";
+import ImageUploadPopup from "./ImageUploadPopup";
 
 export default function HomeCarousalAssetController() {
   const [images, setImages] = useState([]);
@@ -81,15 +82,21 @@ export default function HomeCarousalAssetController() {
 
   return (
     <div className="min-h-screen bg-gray-100 p-4 sm:p-8 flex flex-col font-sans w-full">
+        
       <h1 className="text-4xl font-extrabold text-gray-800 mb-6 sm:mb-8 ">
         Website Home Page Slider Controller
       </h1>
 
       {/* Input section */}
       <div className="w-full max-w-2xl bg-white p-6 sm:p-8 rounded-2xl shadow-lg mb-8">
-        <h2 className="text-2xl font-semibold text-gray-700 mb-4">
-          Add New Image
-        </h2>
+     <div className="flex items-center justify-between mb-4">
+  <h2 className="text-2xl font-semibold text-gray-700">
+    Add New Image
+  </h2>
+
+  <ImageUploadPopup />
+</div>
+        
         <div className="flex flex-col sm:flex-row gap-4">
           <input
             type="url"

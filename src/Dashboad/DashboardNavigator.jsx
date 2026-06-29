@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { notificationSound } from "./sound";
 import { NavLink } from "react-router-dom";
 import {
   Package2Icon,
@@ -112,15 +113,13 @@ const DashboardNavigator = ({ handleLogout }) => {
   const [open, setOpen] = useState(false);
   const [chatUnread, setChatUnread] = useState(0);
   const [ticketNewCount, setTicketNewCount] = useState(0);
+  const [ticketUnreadIds, setTicketUnreadIds] = useState([]);
   const [chatUserIds, setChatUserIds] = useState([]);
   const [unreadPerUser, setUnreadPerUser] = useState({});
 
   const unreadPrevRef = useRef({ auth: 0, sales: 0, chat: 0, ticket: 0 });
   const unsubscribersRef = useRef([]);
 
-  const ringtoneRef = useRef(
-    typeof Audio !== "undefined" ? new Audio("/ringtone.mp4") : null
-  );
 
   useEffect(() => {
     const ref = collection(firestore, "notificationCounters");
@@ -150,38 +149,25 @@ const DashboardNavigator = ({ handleLogout }) => {
     setCounts((prev) => ({ ...prev, "Chat-Controller": chatUnread }));
   }, [chatUnread]);
 
-  useEffect(() => {
-    if (ringtoneRef.current) {
-      ringtoneRef.current.preload = "auto";
-    }
+useEffect(() => {
+  const currentUnread = {
+    auth: counts.auth || 0,
+    sales: counts.sales || 0,
+    chat: counts["Chat-Controller"] || 0,
+    ticket: ticketNewCount || 0,
+  };
 
-    const currentUnread = {
-      auth: counts.auth || 0,
-      sales: counts.sales || 0,
-      chat: counts["Chat-Controller"] || 0,
-      ticket: ticketNewCount,
-    };
+  const hasNewUnread = Object.keys(currentUnread).some(
+    (key) => currentUnread[key] > (unreadPrevRef.current[key] || 0)
+  );
 
-    const hasNewUnread = Object.keys(currentUnread).some(
-      (key) => currentUnread[key] > unreadPrevRef.current[key]
-    );
+  if (hasNewUnread) {
+    notificationSound.stop();
+    notificationSound.play();
+  }
 
-    if (hasNewUnread) {
-      try {
-        if (ringtoneRef.current) {
-          ringtoneRef.current.pause();
-          ringtoneRef.current.currentTime = 0;
-          ringtoneRef.current.play().catch((err) => {
-            console.warn("Unable to play ringtone:", err);
-          });
-        }
-      } catch (err) {
-        console.warn("Unable to play ringtone:", err);
-      }
-    }
-
-    unreadPrevRef.current = currentUnread;
-  }, [counts, ticketNewCount]);
+  unreadPrevRef.current = currentUnread;
+}, [counts, ticketNewCount]);
 
   useEffect(() => {
     const usersUnsub = onSnapshot(
@@ -266,46 +252,71 @@ const DashboardNavigator = ({ handleLogout }) => {
     setChatUnread((prev) => (prev === total ? prev : total));
   }, [unreadPerUser]);
 
-  useEffect(() => {
-    const ticketsRef = collection(firestore, "homeCleaningTicket");
-    const ticketsQuery = query(ticketsRef, where("data.status", "==", "New"));
+useEffect(() => {
+  const ticketsRef = collection(firestore, "homeCleaningTicket");
+  const ticketsQuery = query(ticketsRef, where("data.status", "==", "New"));
 
-    const unsubscribe = onSnapshot(ticketsQuery, (snapshot) => {
-      setTicketNewCount(snapshot.size);
-    });
+  const unsubscribe = onSnapshot(ticketsQuery, (snapshot) => {
+    const unreadTickets = snapshot.docs.filter(
+      (docSnap) => docSnap.data()?.adminRead !== true
+    );
 
-    return () => unsubscribe();
-  }, []);
+    setTicketUnreadIds(unreadTickets.map((docSnap) => docSnap.id));
+    setTicketNewCount(unreadTickets.length);
+  });
 
-  const handleRouteClickWithReset = async (counterKey) => {
-    setOpen(false);
+  return () => unsubscribe();
+}, []);
 
-    if (countTabs.includes(counterKey) && counts[counterKey] > 0) {
-      const docRef = doc(firestore, "notificationCounters", counterKey);
+ const handleRouteClickWithReset = async (counterKey) => {
+  setOpen(false);
 
-      try {
-        await updateDoc(docRef, { unreadCount: 0 });
-      } catch (err) {
-        console.log(err);
-        await setDoc(docRef, { unreadCount: 0 });
-      }
+  // Users / Sales counter reset
+  if (countTabs.includes(counterKey) && counts[counterKey] > 0) {
+    const docRef = doc(firestore, "notificationCounters", counterKey);
 
-      setCounts((prev) => ({ ...prev, [counterKey]: 0 }));
+    try {
+      await updateDoc(docRef, { unreadCount: 0 });
+    } catch (err) {
+      console.log(err);
+      await setDoc(docRef, { unreadCount: 0 });
     }
 
-    if (counterKey === "Chat-Controller" && chatUnread > 0) {
-      setChatUnread(0);
+    setCounts((prev) => ({ ...prev, [counterKey]: 0 }));
+  }
 
-      const docRef = doc(firestore, "notificationCounters", "Chat-Controller");
+  // Chat counter reset
+  if (counterKey === "Chat-Controller" && chatUnread > 0) {
+    setChatUnread(0);
 
-      try {
-        await updateDoc(docRef, { unreadCount: 0 });
-      } catch (err) {
-        console.log(err);
-        await setDoc(docRef, { unreadCount: 0 });
-      }
+    const docRef = doc(firestore, "notificationCounters", "Chat-Controller");
+
+    try {
+      await updateDoc(docRef, { unreadCount: 0 });
+    } catch (err) {
+      console.log(err);
+      await setDoc(docRef, { unreadCount: 0 });
     }
-  };
+  }
+
+  // Ticket counter reset
+  if (counterKey === "Ticket" && ticketUnreadIds.length > 0) {
+    try {
+      await Promise.all(
+        ticketUnreadIds.map((ticketId) =>
+          updateDoc(doc(firestore, "homeCleaningTicket", ticketId), {
+            adminRead: true,
+          })
+        )
+      );
+
+      setTicketNewCount(0);
+      setTicketUnreadIds([]);
+    } catch (err) {
+      console.log("Unable to mark tickets as read:", err);
+    }
+  }
+};
 
   return (
     <>
@@ -317,9 +328,7 @@ const DashboardNavigator = ({ handleLogout }) => {
     <Menu className="w-5 h-5 text-gray-800" />
   </button>
 
-  <div className="flex items-center gap-2">
-    <ImageUploadPopup />
-  </div>
+  
 </div>
 
       {open && (
@@ -328,20 +337,7 @@ const DashboardNavigator = ({ handleLogout }) => {
           className="fixed inset-0 bg-black/40 z-40 md:hidden"
         />
       )}
-<div className="hidden md:flex fixed top-0 right-0 w-150 right-0 h-16 bg-transparent backdrop-blur-xl border-b border-gray-100 z-30 items-center justify-between px-6">
-      <div>
-        <h2 className="text-sm font-semibold text-gray-900">
-          Admin Dashboard
-        </h2>
-        <p className="text-xs text-gray-500">
-          Manage your website content and services
-        </p>
-      </div>
 
-      <div className="flex items-center gap-3">
-        <ImageUploadPopup />
-      </div>
-    </div>
     <aside
   className={`
     fixed md:relative top-0 left-0 z-50

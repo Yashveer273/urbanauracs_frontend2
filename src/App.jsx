@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { Howl } from "howler";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 import HomePage from "./pages/HomePage";
@@ -31,8 +32,29 @@ import CheckoutSummaryCard from "./pages/CartProductSummery";
 import Termsandconditions from "./pages/Termsandconditions";
 import Shippingpolicy from "./pages/Shippingpolicy";
 import WebsiteContentPage from "./Dashboad/WebsiteContentPage";
-
+const notificationSound = new Howl({
+  src: ["/sound1.mp3"],
+  volume: 1,
+  preload: true,
+});
 function App() {
+   useEffect(() => {
+    const unlockAudio = () => {
+      notificationSound.play();
+      notificationSound.stop();
+
+      window.removeEventListener("click", unlockAudio);
+      window.removeEventListener("keydown", unlockAudio);
+    };
+
+    window.addEventListener("click", unlockAudio);
+    window.addEventListener("keydown", unlockAudio);
+
+    return () => {
+      window.removeEventListener("click", unlockAudio);
+      window.removeEventListener("keydown", unlockAudio);
+    };
+  }, []);
   return (
     <Router>
       <Routes>
