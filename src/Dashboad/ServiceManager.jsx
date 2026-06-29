@@ -31,10 +31,7 @@ const ServiceManager = ({
   handleEditVendor,
   handleDeleteVendor,
 }) => {
-  console.log(
-    "---------------------------------------------------------",
-    services,
-  );
+ 
 
   // States for City Hype
   const [isCityHypeOpen, setIsCityHypeOpen] = useState(false);

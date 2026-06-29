@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-
+import { useLocation } from "react-router-dom";
 import {
   collection,
   doc,
@@ -32,6 +32,7 @@ import BlockedDatesTable from "./blockDate";
 import AddAppBanner from "./AddAppBanner";
 import AdminChat from "../chat/AdminChat";
 import ImageUploadPopup from "./ImageUploadPopup";
+import WebsiteContentPage from "./WebsiteContentPage";
 
 const PlusIcon = () => (
   <svg
@@ -106,7 +107,24 @@ const ChevronLeftIcon = () => (
 );
 
 const Dashboard = () => {
-  const [activeTab, setActiveTab] = useState("auth");
+const location = useLocation();
+
+const pathToTab = {
+  "/Dashboard/users": "auth",
+  "/Dashboard/ticket": "Ticket",
+  "/Dashboard/sales": "sales",
+  "/Dashboard/venders": "VandersSection",
+  "/Dashboard/services": "services",
+  "/Dashboard/chat-controller": "Chat-Controller",
+  "/Dashboard/banner": "Banner",
+  "/Dashboard/coupon-manager": "Coupon-Manager",
+  "/Dashboard/website-content": "Website-Content",
+  "/Dashboard/export-sales": "Export-Sales",
+  "/Dashboard/notification": "Notification",
+  "/Dashboard/dashboard-controller": "dashboard-controller",
+};
+
+const activeTab = pathToTab[location.pathname] || "auth";
   const [services, setServices] = useState([]);
   const [FDBservices, setFDBServices] = useState([]);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -263,7 +281,12 @@ const Dashboard = () => {
     initialized.current = true;
     checkAuth();
   }, []);
-
+useEffect(() => {
+  setSelectedService(null);
+  setShowVendorServicesPanel(false);
+  setEditingVendorId(null);
+  setSearchTerm("");
+}, [activeTab]);
   const [editingServiceId, setEditingServiceId] = useState(null);
   const [newServiceName, setNewServiceName] = useState("");
   const [selectedService, setSelectedService] = useState(null);
@@ -802,13 +825,7 @@ const Dashboard = () => {
       location: vendorFormData.location,
     });
   };
-  const handleTabClick = (tabName) => {
-    setActiveTab(tabName);
-    setSelectedService(null);
-    setShowVendorServicesPanel(false);
-    setEditingVendorId(null);
-    setSearchTerm("");
-  };
+ 
 
   const renderContent = () => {
     switch (activeTab) {
@@ -963,67 +980,16 @@ const Dashboard = () => {
           </div>
         );
       case "Website-Content":
-        return (
-          <div className="">
-            {tagAccess.includes("Website Content") ||
-            tagAccess.includes("Admin") ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
-                {/* First block */}
-                <div
-                  style={{
-                    background: "#fff",
-                    borderRadius: "8px",
-                    boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-                    padding: "16px",
-                  }}
-                >
-                  <HomeCarousalAssetController />
-                </div>
-
-                {/* Second block */}
-                <div
-                  style={{
-                    background: "#fff",
-                    borderRadius: "8px",
-                    boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-                    padding: "16px",
-                  }}
-                >
-                  <SocialLinksManager />
-                </div>
-
-                {/* Third block spans 2 columns */}
-                <div
-                  style={{
-                    background: "#fff",
-                    borderRadius: "8px",
-                    boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-                    padding: "16px",
-                    gridColumn: "1 / -1", // span all columns
-                  }}
-                >
-                  <BlockedDatesTable />
-                </div>
-                <div
-                  style={{
-                    background: "#fff",
-                    borderRadius: "8px",
-                    boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-                    padding: "16px",
-                    gridColumn: "1 / -1", // span all columns
-                  }}
-                >
-                  <AddAppBanner />
-                </div>
-              </div>
-            ) : (
-              <LockedBox
-                className="flex justify-center items-center h-screen"
-                label="Users"
-              />
-            )}
-          </div>
-        );
+  return (
+    <div className="">
+      {tagAccess.includes("Website Content") ||
+      tagAccess.includes("Admin") ? (
+        <WebsiteContentPage />
+      ) : (
+        <LockedBox label="Website Content" />
+      )}
+    </div>
+  );
       case "VandersSection":
         return (
           <div className="">
@@ -1060,11 +1026,7 @@ const Dashboard = () => {
   ) : (
     <div className="flex flex-col md:flex-row bg-gray-100 min-h-screen font-sans">
       {/* <ImageUploadPopup /> */}
-      <DashboardNavigator
-        activeTab={activeTab}
-        handleTabClick={handleTabClick}
-        handleLogout={handleLogout}
-      />
+     <DashboardNavigator handleLogout={handleLogout} />
 
       {/* --------------------------------------------------------------------------------------------------- */}
       <>

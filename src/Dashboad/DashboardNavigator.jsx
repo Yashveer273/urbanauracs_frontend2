@@ -1,4 +1,5 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { NavLink } from "react-router-dom";
 import {
   Package2Icon,
   LayoutDashboardIcon,
@@ -13,9 +14,10 @@ import {
   MessageCircle,
   Bell,
   GalleryHorizontal,
+  Menu,
+  X,
 } from "lucide-react";
 
-import { Menu, X } from "lucide-react";
 import {
   collection,
   doc,
@@ -26,51 +28,116 @@ import {
   where,
 } from "firebase/firestore";
 import { firestore } from "../firebaseCon";
+import ImageUploadPopup from "./ImageUploadPopup";
 
 const countTabs = ["auth", "sales"];
 
-const DashboardNavigator = ({ activeTab, handleTabClick, handleLogout }) => {
+const tabs = [
+  {
+    path: "/Dashboard/users",
+    counterKey: "auth",
+    label: "Users",
+    icon: LayoutDashboardIcon,
+  },
+  {
+    path: "/Dashboard/ticket",
+    counterKey: "Ticket",
+    label: "Ticket",
+    icon: TicketIcon,
+  },
+  {
+    path: "/Dashboard/sales",
+    counterKey: "sales",
+    label: "Sales",
+    icon: DollarSignIcon,
+  },
+  {
+    path: "/Dashboard/venders",
+    counterKey: "VandersSection",
+    label: "Vanders",
+    icon: UserCheckIcon,
+  },
+  {
+    path: "/Dashboard/services",
+    counterKey: "services",
+    label: "Services",
+    icon: Package2Icon,
+  },
+  {
+    path: "/Dashboard/chat-controller",
+    counterKey: "Chat-Controller",
+    label: "Chat Box",
+    icon: MessageCircle,
+  },
+  {
+    path: "/Dashboard/banner",
+    counterKey: "Banner",
+    label: "Banner",
+    icon: GalleryHorizontal,
+  },
+  {
+    path: "/Dashboard/coupon-manager",
+    counterKey: "Coupon-Manager",
+    label: "Coupon Manager",
+    icon: TagIcon,
+  },
+  {
+  path: "/Dashboard/website-content",
+  counterKey: "Website-Content",
+  label: "Website Content",
+  icon: GlobeIcon,
+},
+  {
+    path: "/Dashboard/export-sales",
+    counterKey: "Export-Sales",
+    label: "Export Sales Data",
+    icon: BarChart2Icon,
+  },
+  {
+    path: "/Dashboard/notification",
+    counterKey: "Notification",
+    label: "Notification Controller",
+    icon: Bell,
+  },
+  {
+    path: "/Dashboard/dashboard-controller",
+    counterKey: "dashboard-controller",
+    label: "Dashboard Controller",
+    icon: SettingsIcon,
+  },
+];
+
+const DashboardNavigator = ({ handleLogout }) => {
   const [counts, setCounts] = useState({});
   const [open, setOpen] = useState(false);
   const [chatUnread, setChatUnread] = useState(0);
   const [ticketNewCount, setTicketNewCount] = useState(0);
+  const [chatUserIds, setChatUserIds] = useState([]);
+  const [unreadPerUser, setUnreadPerUser] = useState({});
+
   const unreadPrevRef = useRef({ auth: 0, sales: 0, chat: 0, ticket: 0 });
   const unsubscribersRef = useRef([]);
 
-  const tabs = [
-    { tab: "auth", label: "Users", icon: LayoutDashboardIcon },
-    { tab: "Ticket", label: "Ticket", icon: TicketIcon },
-    { tab: "sales", label: "Sales", icon: DollarSignIcon },
-    { tab: "VandersSection", label: "Vanders", icon: UserCheckIcon },
-    { tab: "services", label: "Services", icon: Package2Icon },
-    { tab: "Chat-Controller", label: "Chat Box", icon: MessageCircle },
-    { tab: "Banner", label: "Banner", icon: GalleryHorizontal },
+  const ringtoneRef = useRef(
+    typeof Audio !== "undefined" ? new Audio("/ringtone.mp4") : null
+  );
 
-    { tab: "Coupon-Manager", label: "Coupon Manager", icon: TagIcon },
-    { tab: "Website-Content", label: "Website Content", icon: GlobeIcon },
-    { tab: "Export-Sales", label: "Export Sales Data", icon: BarChart2Icon },
-    { tab: "Notification", label: "Notification Controller", icon: Bell },
-    {
-      tab: "dashboard-controller",
-      label: "Dashboard Controller",
-      icon: SettingsIcon,
-    },
-  ];
-
-  // Listen to notificationCounters for other tabs
   useEffect(() => {
     const ref = collection(firestore, "notificationCounters");
 
     const unsubscribe = onSnapshot(ref, (snapshot) => {
       const newCounts = {};
-      snapshot.forEach((doc) => {
-        if (countTabs.includes(doc.id)) {
-          newCounts[doc.id] = doc.data().unreadCount || 0;
+
+      snapshot.forEach((snap) => {
+        if (countTabs.includes(snap.id)) {
+          newCounts[snap.id] = snap.data().unreadCount || 0;
         }
       });
 
       countTabs.forEach((tab) => {
-        if (newCounts[tab] === undefined) newCounts[tab] = 0;
+        if (newCounts[tab] === undefined) {
+          newCounts[tab] = 0;
+        }
       });
 
       setCounts((prev) => ({ ...prev, ...newCounts }));
@@ -79,18 +146,14 @@ const DashboardNavigator = ({ activeTab, handleTabClick, handleLogout }) => {
     return () => unsubscribe();
   }, []);
 
-  // Update chat count separately
   useEffect(() => {
     setCounts((prev) => ({ ...prev, "Chat-Controller": chatUnread }));
   }, [chatUnread]);
-const ringtoneRef = useRef(
-  typeof Audio !== "undefined" ? new Audio("/ringtone.mp4") : null
-);
-  // Play a short alert when unread counts increase
+
   useEffect(() => {
-      if (ringtoneRef.current) {
-    ringtoneRef.current.preload = "auto";
-  }
+    if (ringtoneRef.current) {
+      ringtoneRef.current.preload = "auto";
+    }
 
     const currentUnread = {
       auth: counts.auth || 0,
@@ -100,38 +163,35 @@ const ringtoneRef = useRef(
     };
 
     const hasNewUnread = Object.keys(currentUnread).some(
-      (key) => currentUnread[key] > unreadPrevRef.current[key],
+      (key) => currentUnread[key] > unreadPrevRef.current[key]
     );
 
     if (hasNewUnread) {
-  try {
-  if (ringtoneRef.current) {
-    ringtoneRef.current.pause();
-    ringtoneRef.current.currentTime = 0;
-    ringtoneRef.current.play().catch((err) => {
-      console.warn("Unable to play ringtone:", err);
-    });
-  }
-} catch (err) {
-  console.warn("Unable to play ringtone:", err);
-}
+      try {
+        if (ringtoneRef.current) {
+          ringtoneRef.current.pause();
+          ringtoneRef.current.currentTime = 0;
+          ringtoneRef.current.play().catch((err) => {
+            console.warn("Unable to play ringtone:", err);
+          });
+        }
+      } catch (err) {
+        console.warn("Unable to play ringtone:", err);
+      }
     }
 
     unreadPrevRef.current = currentUnread;
   }, [counts, ticketNewCount]);
 
-  // Listen to users and calculate chat unread
-  const [chatUserIds, setChatUserIds] = useState([]);
-  const [unreadPerUser, setUnreadPerUser] = useState({});
-
   useEffect(() => {
     const usersUnsub = onSnapshot(
       collection(firestore, "User"),
       (usersSnapshot) => {
-        const users = usersSnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
+        const users = usersSnapshot.docs.map((snap) => ({
+          id: snap.id,
+          ...snap.data(),
         }));
+
         const nextUserIds = users.map((u) => u.id).sort();
 
         setChatUserIds((prev) => {
@@ -141,11 +201,13 @@ const ringtoneRef = useRef(
           ) {
             return prev;
           }
+
           return nextUserIds;
         });
 
         setUnreadPerUser((prev) => {
           const nextUnread = {};
+
           nextUserIds.forEach((id) => {
             nextUnread[id] = prev[id] || 0;
           });
@@ -159,23 +221,24 @@ const ringtoneRef = useRef(
 
           return nextUnread;
         });
-      },
+      }
     );
+
     return () => usersUnsub();
   }, []);
 
   useEffect(() => {
-    // Clean previous listeners
     unsubscribersRef.current.forEach((unsub) => unsub());
     unsubscribersRef.current = [];
 
     chatUserIds.forEach((userId) => {
       const chatId = `${userId}_admin_1`;
       const messagesRef = collection(firestore, "chats", chatId, "messages");
+
       const q = query(
         messagesRef,
         where("senderRole", "==", "user"),
-        where("seen", "==", false),
+        where("seen", "==", false)
       );
 
       const unsub = onSnapshot(q, (snapshot) => {
@@ -197,8 +260,9 @@ const ringtoneRef = useRef(
   useEffect(() => {
     const total = Object.values(unreadPerUser).reduce(
       (sum, count) => sum + count,
-      0,
+      0
     );
+
     setChatUnread((prev) => (prev === total ? prev : total));
   }, [unreadPerUser]);
 
@@ -213,12 +277,11 @@ const ringtoneRef = useRef(
     return () => unsubscribe();
   }, []);
 
-  const handleTabClickWithReset = async (tab) => {
-    handleTabClick(tab);
+  const handleRouteClickWithReset = async (counterKey) => {
     setOpen(false);
 
-    if (countTabs.includes(tab) && counts[tab] > 0) {
-      const docRef = doc(firestore, "notificationCounters", tab);
+    if (countTabs.includes(counterKey) && counts[counterKey] > 0) {
+      const docRef = doc(firestore, "notificationCounters", counterKey);
 
       try {
         await updateDoc(docRef, { unreadCount: 0 });
@@ -226,14 +289,15 @@ const ringtoneRef = useRef(
         console.log(err);
         await setDoc(docRef, { unreadCount: 0 });
       }
-      // Update local state immediately for instant UI feedback
-      setCounts((prev) => ({ ...prev, [tab]: 0 }));
+
+      setCounts((prev) => ({ ...prev, [counterKey]: 0 }));
     }
 
-    if (tab === "Chat-Controller" && chatUnread > 0) {
-      // Reset chat unread
+    if (counterKey === "Chat-Controller" && chatUnread > 0) {
       setChatUnread(0);
+
       const docRef = doc(firestore, "notificationCounters", "Chat-Controller");
+
       try {
         await updateDoc(docRef, { unreadCount: 0 });
       } catch (err) {
@@ -245,98 +309,144 @@ const ringtoneRef = useRef(
 
   return (
     <>
-      {/* Mobile Top Bar */}
-      <div className="md:hidden flex items-center justify-between p-4 bg-white shadow sticky top-0 z-40">
-        <button onClick={() => setOpen(true)}>
-          <Menu className="w-6 h-6 text-gray-800" />
-        </button>
+     <div className="md:hidden flex items-center justify-between p-4 bg-white/90 backdrop-blur-xl border-b border-gray-100 sticky top-0 z-40">
+  <button
+    onClick={() => setOpen(true)}
+    className="h-10 w-10 rounded-xl border border-gray-200 bg-white flex items-center justify-center shadow-sm"
+  >
+    <Menu className="w-5 h-5 text-gray-800" />
+  </button>
 
-        <h1 className="font-bold text-lg">Dashboard</h1>
+  <div className="flex items-center gap-2">
+    <ImageUploadPopup />
+  </div>
+</div>
+
+      {open && (
+        <div
+          onClick={() => setOpen(false)}
+          className="fixed inset-0 bg-black/40 z-40 md:hidden"
+        />
+      )}
+<div className="hidden md:flex fixed top-0 left-64 right-0 h-16 bg-white/90 backdrop-blur-xl border-b border-gray-100 z-30 items-center justify-between px-6">
+      <div>
+        <h2 className="text-sm font-semibold text-gray-900">
+          Admin Dashboard
+        </h2>
+        <p className="text-xs text-gray-500">
+          Manage your website content and services
+        </p>
       </div>
 
-      {/* Sidebar */}
-      <aside
-        className={`
-      fixed md:relative top-0 left-0  md:h-auto
-      w-64 bg-white shadow-xl p-6
-      transform transition-transform duration-300
-      ${open ? "translate-x-0" : "-translate-x-full"}
-      md:translate-x-0
-      z-50
-  
-    `}
-        style={{
-          height: "100vh",
-          overflow: "scroll",
-        }}
-      >
-        {/* Close Button (mobile only) */}
-        <div className="flex items-center justify-between mb-6 md:hidden">
-          <h2 className="font-bold text-lg">Menu</h2>
-          <button onClick={() => setOpen(false)}>
-            <X className="w-6 h-6" />
-          </button>
+      <div className="flex items-center gap-3">
+        <ImageUploadPopup />
+      </div>
+    </div>
+    <aside
+  className={`
+    fixed md:relative top-0 left-0 z-50
+    h-screen w-[248px]
+    bg-white border-r border-slate-200
+    transition-transform duration-300
+    ${open ? "translate-x-0" : "-translate-x-full"}
+    md:translate-x-0
+  `}
+>
+  <div className="flex h-full flex-col">
+    <div className="flex h-16 items-center justify-between border-b border-slate-100 px-4">
+      <div className="flex items-center gap-2.5">
+        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-900">
+          <Package2Icon className="h-4.5 w-4.5 text-white" />
         </div>
 
         <div>
-          <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-6 md:mb-8 flex items-center">
-            <Package2Icon className="w-8 h-8 mr-2 text-indigo-600" />
+          <h1 className="text-sm font-semibold text-slate-900 leading-none">
             Dashboard
           </h1>
-
-          <nav>
-            <ul>
-              {tabs.map((tabItem) => {
-                const Icon = tabItem.icon;
-                const count =
-                  tabItem.tab === "Ticket"
-                    ? ticketNewCount
-                    : counts[tabItem.tab];
-
-                return (
-                  <li className="mb-1 md:mb-2" key={tabItem.tab}>
-                    <a
-                      href="#"
-                      onClick={() => handleTabClickWithReset(tabItem.tab)}
-                      className={`flex items-center justify-between p-2 md:p-3 text-sm md:text-base rounded-lg transition-colors duration-200 ${
-                        activeTab === tabItem.tab
-                          ? "bg-indigo-100 text-indigo-700"
-                          : "text-gray-600 hover:bg-gray-200"
-                      }`}
-                    >
-                      <div className="flex items-center">
-                        <Icon className="w-5 h-5 mr-3" />
-                        {tabItem.label}
-                      </div>
-
-                      {((tabItem.tab === "Ticket" && ticketNewCount > 0) ||
-                        ((countTabs.includes(tabItem.tab) ||
-                          tabItem.tab === "Chat-Controller") &&
-                          count > 0)) && (
-                        <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-                          {count}
-                        </span>
-                      )}
-                    </a>
-                  </li>
-                );
-              })}
-            </ul>
-
-            <button
-              onClick={handleLogout}
-              className="
-            flex items-center px-4 md:px-5 py-2 text-sm md:text-base bg-red-500 text-white font-semibold rounded-lg
-            shadow-md hover:bg-red-600 hover:shadow-lg transition-all duration-200
-            focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-1 mt-4
-          "
-            >
-              <LogOutIcon className="w-5 h-5 mr-2" />
-              Logout
-            </button>
-          </nav>
+          <p className="mt-1 text-[11px] text-slate-400">Admin Panel</p>
         </div>
-      </aside>
+      </div>
+
+      <button
+        onClick={() => setOpen(false)}
+        className="md:hidden flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100"
+      >
+        <X className="h-4 w-4" />
+      </button>
+    </div>
+
+    <nav className="flex-1 overflow-y-auto px-3 py-4">
+      <div className="mb-2 px-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+        Menu
+      </div>
+
+      <ul className="space-y-0.5">
+        {tabs.map((tabItem) => {
+          const Icon = tabItem.icon;
+
+          const count =
+            tabItem.counterKey === "Ticket"
+              ? ticketNewCount
+              : counts[tabItem.counterKey];
+
+          return (
+            <li key={tabItem.path}>
+              <NavLink
+                to={tabItem.path}
+                onClick={() => handleRouteClickWithReset(tabItem.counterKey)}
+                className={({ isActive }) =>
+                  `relative flex h-10 items-center gap-2.5 rounded-lg px-2.5 text-[13px] font-medium transition-all ${
+                    isActive
+                      ? "bg-slate-100 text-slate-950"
+                      : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+                  }`
+                }
+              >
+                {({ isActive }) => (
+                  <>
+                    <span
+                      className={`absolute left-0 h-5 w-[3px] rounded-full ${
+                        isActive ? "bg-slate-900" : "bg-transparent"
+                      }`}
+                    />
+
+                    <Icon
+                      className={`h-4 w-4 shrink-0 ${
+                        isActive ? "text-slate-900" : "text-slate-400"
+                      }`}
+                    />
+
+                    <span className="flex-1 truncate">{tabItem.label}</span>
+
+                    {((tabItem.counterKey === "Ticket" &&
+                      ticketNewCount > 0) ||
+                      ((countTabs.includes(tabItem.counterKey) ||
+                        tabItem.counterKey === "Chat-Controller") &&
+                        count > 0)) && (
+                      <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-[10px] font-semibold text-white">
+                        {count}
+                      </span>
+                    )}
+                  </>
+                )}
+              </NavLink>
+            </li>
+          );
+        })}
+      </ul>
+    </nav>
+
+    <div className="border-t border-slate-100 p-3">
+      <button
+        onClick={handleLogout}
+        className="flex h-10 w-full items-center justify-center gap-2 rounded-lg text-[13px] font-medium text-red-600 transition hover:bg-red-50"
+      >
+        <LogOutIcon className="h-4 w-4" />
+        Logout
+      </button>
+    </div>
+  </div>
+</aside>
     </>
   );
 };
