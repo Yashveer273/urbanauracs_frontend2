@@ -309,7 +309,7 @@ const DashboardNavigator = ({ handleLogout }) => {
 
   return (
     <>
-     <div className="md:hidden flex items-center justify-between p-4 bg-white/90 backdrop-blur-xl border-b border-gray-100 sticky top-0 z-40">
+     <div className="md:hidden flex items-center justify-between p-4 bg-transparent backdrop-blur-xl border-b border-gray-100 sticky top-0 z-40">
   <button
     onClick={() => setOpen(true)}
     className="h-10 w-10 rounded-xl border border-gray-200 bg-white flex items-center justify-center shadow-sm"
@@ -328,7 +328,7 @@ const DashboardNavigator = ({ handleLogout }) => {
           className="fixed inset-0 bg-black/40 z-40 md:hidden"
         />
       )}
-<div className="hidden md:flex fixed top-0 left-64 right-0 h-16 bg-white/90 backdrop-blur-xl border-b border-gray-100 z-30 items-center justify-between px-6">
+<div className="hidden md:flex fixed top-0 right-0 w-150 right-0 h-16 bg-transparent backdrop-blur-xl border-b border-gray-100 z-30 items-center justify-between px-6">
       <div>
         <h2 className="text-sm font-semibold text-gray-900">
           Admin Dashboard

@@ -88,8 +88,8 @@ const CouponManager = () => {
 
   return (
     <div className="w-full bg-gray-100 p-3 sm:p-4 md:p-6 font-sans">
-      <div className="w-full max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">🎟 Coupon Manager</h1>
+      <div className="w-full  mx-auto">
+      <h1 className="text-2xl font-bold mb-6"> Coupon Manager</h1>
 
       {/* ✅ Notification */}
       {message && (
