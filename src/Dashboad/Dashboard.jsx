@@ -409,6 +409,73 @@ useEffect(() => {
     setEditingServiceId(null);
   };
 
+  const handleHypePriceUpdate = async ({ type, value, amount }) => {
+    const docId = FDBservices[0]?.id;
+    if (!docId) {
+      throw new Error("Firestore service document not found");
+    }
+
+    const numericAmount = Number(amount);
+    if (!Number.isFinite(numericAmount) || numericAmount === 0) {
+      throw new Error("Please enter a valid amount");
+    }
+
+    const docRef = doc(firestore, "homeCleaningServiceDB", docId);
+    const snapshot = await getDoc(docRef);
+
+    if (!snapshot.exists()) {
+      throw new Error("Firestore service document not found");
+    }
+
+    let updatedPriceCount = 0;
+    const currentArray = snapshot.data().data || [];
+
+    const updatedArray = currentArray.map((serviceCategory) => {
+      const shouldUpdateWholeService =
+        type === "service" && serviceCategory.ServiceName === value;
+
+      const updatedVendors = (serviceCategory.data || []).map((vendor) => {
+        const shouldUpdateCity =
+          type === "city" &&
+          (vendor.location === value || vendor.vendorlocation === value);
+
+        if (!shouldUpdateWholeService && !shouldUpdateCity) {
+          return vendor;
+        }
+
+        const updatedServices = (vendor.services || []).map((vendorService) => {
+          updatedPriceCount += 1;
+          return {
+            ...vendorService,
+            price: (Number(vendorService.price) || 0) + numericAmount,
+          };
+        });
+
+        return { ...vendor, services: updatedServices };
+      });
+
+      return { ...serviceCategory, data: updatedVendors };
+    });
+
+    if (updatedPriceCount === 0) {
+      throw new Error("No matching service prices found to update");
+    }
+
+    await updateDoc(docRef, { data: updatedArray });
+    setServices(updatedArray);
+    setFDBServices((prev) =>
+      prev.map((serviceDoc) =>
+        serviceDoc.id === docId ? { ...serviceDoc, data: updatedArray } : serviceDoc,
+      ),
+    );
+    setSelectedService((current) => {
+      if (!current) return current;
+      return updatedArray.find((service) => service.id === current.id) || current;
+    });
+
+    return { updatedPriceCount };
+  };
+
   // Handles opening the vendor details panel for a selected top-level service.
   const handleSelectService = (service) => {
     setSelectedService(service);
@@ -862,6 +929,7 @@ useEffect(() => {
                 handleSelectVendor={handleSelectVendor}
                 handleEditVendor={handleEditVendor}
                 handleDeleteVendor={handleDeleteVendor}
+                onHypePriceUpdate={handleHypePriceUpdate}
               />
             ) : (
               <LockedBox

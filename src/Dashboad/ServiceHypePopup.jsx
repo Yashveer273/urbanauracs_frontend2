@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { X, Layers, ArrowRight, ShieldCheck, Banknote, ChevronDown } from 'lucide-react';
 
-const ServiceHypePopup = ({ isOpen, onClose, selectedService, onSubmit, services = [] }) => {
+const ServiceHypePopup = ({ isOpen, onClose, selectedService, onSubmit, services = [], isSubmitting = false }) => {
   const [amount, setAmount] = useState('');
   const [showServiceList, setShowServiceList] = useState(false);
   const [localSelectedService, setLocalSelectedService] = useState(selectedService || "Select Service");
 
-  const handleLocalSubmit = () => {
+  const handleLocalSubmit = async () => {
+    if (isSubmitting) return;
+
     if (!localSelectedService || localSelectedService === "Select Service") {
       alert("Please select a service");
       return;
@@ -16,7 +18,7 @@ const ServiceHypePopup = ({ isOpen, onClose, selectedService, onSubmit, services
       return;
     }
 
-    onSubmit?.({ service: localSelectedService, adjustmentAmount: amount });
+    await onSubmit?.({ service: localSelectedService, adjustmentAmount: amount });
     setAmount('');
     setLocalSelectedService("Select Service");
   };
@@ -95,10 +97,11 @@ const ServiceHypePopup = ({ isOpen, onClose, selectedService, onSubmit, services
 
             <button
               onClick={handleLocalSubmit}
+              disabled={isSubmitting || !amount || localSelectedService === "Select Service"}
               className={`w-full py-4 rounded-xl font-bold text-sm uppercase tracking-widest transition-all 
-                ${(!amount || localSelectedService === "Select Service") ? 'bg-slate-100 text-slate-300 cursor-not-allowed' : 'bg-purple-600 text-white hover:bg-purple-700'}`}
+                ${(isSubmitting || !amount || localSelectedService === "Select Service") ? 'bg-slate-100 text-slate-300 cursor-not-allowed' : 'bg-purple-600 text-white hover:bg-purple-700'}`}
             >
-              Update Service
+              {isSubmitting ? "Updating..." : "Update Service"}
             </button>
           </div>
         </div>

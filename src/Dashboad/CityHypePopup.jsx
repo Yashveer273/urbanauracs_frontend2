@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { X, Layers, ArrowRight, ShieldCheck, Banknote, ChevronDown } from 'lucide-react';
 
-const CityHypePopup = ({ isOpen, onClose, selectedCity, onSubmit, cities = [] }) => {
+const CityHypePopup = ({ isOpen, onClose, selectedCity, onSubmit, cities = [], isSubmitting = false }) => {
   const [amount, setAmount] = useState('');
   const [showCityList, setShowCityList] = useState(false);
   const [localSelectedCity, setLocalSelectedCity] = useState(selectedCity || "Select City");
 
-  const handleLocalSubmit = () => {
+  const handleLocalSubmit = async () => {
+    if (isSubmitting) return;
+
     if (!localSelectedCity || localSelectedCity === "Select City") {
       alert("Please select a city");
       return;
@@ -16,7 +18,7 @@ const CityHypePopup = ({ isOpen, onClose, selectedCity, onSubmit, cities = [] })
       return;
     }
 
-    onSubmit?.({ city: localSelectedCity, adjustmentAmount: amount });
+    await onSubmit?.({ city: localSelectedCity, adjustmentAmount: amount });
     setAmount('');
     setLocalSelectedCity("Select City");
   };
@@ -99,10 +101,11 @@ const CityHypePopup = ({ isOpen, onClose, selectedCity, onSubmit, cities = [] })
 
             <button
               onClick={handleLocalSubmit}
+              disabled={isSubmitting || !amount || localSelectedCity === "Select City"}
               className={`w-full py-4 rounded-xl font-bold text-sm uppercase tracking-widest transition-all 
-                ${(!amount || localSelectedCity === "Select City") ? 'bg-slate-100 text-slate-300 cursor-not-allowed' : 'bg-purple-600 text-white hover:bg-purple-700'}`}
+                ${(isSubmitting || !amount || localSelectedCity === "Select City") ? 'bg-slate-100 text-slate-300 cursor-not-allowed' : 'bg-purple-600 text-white hover:bg-purple-700'}`}
             >
-              Update City
+              {isSubmitting ? "Updating..." : "Update City"}
             </button>
           </div>
         </div>

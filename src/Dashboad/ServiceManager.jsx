@@ -30,6 +30,7 @@ const ServiceManager = ({
   handleSelectVendor,
   handleEditVendor,
   handleDeleteVendor,
+  onHypePriceUpdate,
 }) => {
  
 
@@ -41,9 +42,10 @@ const ServiceManager = ({
   const [isServiceHypeOpen, setIsServiceHypeOpen] = useState(false);
   const [selectedServiceHype, setSelectedServiceHype] =
     useState("Select Service");
+  const [isHypeSaving, setIsHypeSaving] = useState(false);
   const [isMigrateinProcess, setisMigrateinProcess] = useState(false);
   // Handle Service Hype Update
-  const handleServiceHypeUpdate = (data) => {
+  const handleServiceHypeUpdate = async (data) => {
     console.log("Service Hype Update:", data);
     const { service, adjustmentAmount } = data;
     const amount = parseFloat(adjustmentAmount) || 0;
@@ -52,6 +54,31 @@ const ServiceManager = ({
       alert("Please enter a valid amount");
       return;
     }
+
+    if (!onHypePriceUpdate) {
+      alert("Firebase update handler is not available");
+      return;
+    }
+
+    setIsHypeSaving(true);
+    try {
+      const result = await onHypePriceUpdate({
+        type: "service",
+        value: service,
+        amount,
+      });
+      alert(
+        `Successfully added Rs ${amount} to ${result.updatedPriceCount} prices in ${service}`,
+      );
+      setIsServiceHypeOpen(false);
+    } catch (error) {
+      console.error("Error updating service hype:", error);
+      alert(error.message || "Failed to update service prices");
+    } finally {
+      setIsHypeSaving(false);
+    }
+
+    if (onHypePriceUpdate) return;
 
     // Update all vendors for the selected service
     services.forEach((svc) => {
@@ -69,7 +96,7 @@ const ServiceManager = ({
   };
 
   // Handle City Hype Update
-  const handleCityHypeUpdate = (data) => {
+  const handleCityHypeUpdate = async (data) => {
     console.log("City Hype Update:", data);
     const { city, adjustmentAmount } = data;
     const amount = parseFloat(adjustmentAmount) || 0;
@@ -78,6 +105,31 @@ const ServiceManager = ({
       alert("Please enter a valid amount");
       return;
     }
+
+    if (!onHypePriceUpdate) {
+      alert("Firebase update handler is not available");
+      return;
+    }
+
+    setIsHypeSaving(true);
+    try {
+      const result = await onHypePriceUpdate({
+        type: "city",
+        value: city,
+        amount,
+      });
+      alert(
+        `Successfully added Rs ${amount} to ${result.updatedPriceCount} prices in ${city}`,
+      );
+      setIsCityHypeOpen(false);
+    } catch (error) {
+      console.error("Error updating city hype:", error);
+      alert(error.message || "Failed to update city prices");
+    } finally {
+      setIsHypeSaving(false);
+    }
+
+    if (onHypePriceUpdate) return;
 
     // Update all vendors in the selected city
     services.forEach((svc) => {
@@ -117,6 +169,7 @@ const ServiceManager = ({
               onServiceClick={() => setSelectedServiceHype("")}
               onSubmit={handleServiceHypeUpdate}
               services={services.map((s) => s.ServiceName)}
+              isSubmitting={isHypeSaving}
             />
             <button
               onClick={() => setIsCityHypeOpen(true)}
@@ -133,6 +186,7 @@ const ServiceManager = ({
               selectedCity={selectedCity}
               onCityClick={() => setSelectedCity("")}
               onSubmit={handleCityHypeUpdate}
+              isSubmitting={isHypeSaving}
               cities={[
                 ...new Set(
                   services.flatMap((s) => s.data.map((v) => v.location)),
