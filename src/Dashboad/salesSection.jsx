@@ -194,76 +194,109 @@ export default function SalesSection() {
     setFilteredData(salesData);
   };
 
-  const applyFilters = () => {
-    const result = salesData.filter((sale) => {
-      const saleDate = normalizeDate(sale.date_time);
+ const safeText = (value) => String(value || "").toLowerCase().trim();
 
-      // TEXT FILTERS
-      if (
-        filters.phone &&
-        !sale.phone_number?.toString().includes(filters.phone)
-      )
-        return false;
+const applyFilters = () => {
+  const result = salesData.filter((sale) => {
+    const saleDate = normalizeDate(sale.date_time);
+
+    const phoneFilter = String(filters.phone || "").trim();
+    const nameFilter = safeText(filters.name);
+    const orderIdFilter = String(filters.orderId || "").trim();
+    const responsibleFilter = safeText(filters.responsible);
+    const vendorFilter = safeText(filters.responsibleVendor);
+    const statusFilter = safeText(filters.status);
+
+    // Phone
+    if (phoneFilter) {
+      const salePhone = String(sale.phone_number || "");
+      const whatsappPhone = String(sale.ConfurmWhatsAppMobileNumber || "");
 
       if (
-        filters.name &&
-        !sale.name?.toLowerCase().includes(filters.name.toLowerCase())
-      )
-        return false;
-      if (
-        filters.responsible &&
-        sale.responsible?.toLowerCase() == filters.responsible.toLowerCase()
-      )
-        return true;
-      if (
-        filters.responsibleVendor &&
-        sale?.responsibleVendor?.vendorName === filters.responsibleVendor
+        !salePhone.includes(phoneFilter) &&
+        !whatsappPhone.includes(phoneFilter)
       ) {
-        console.log(
-          filters.responsibleVendor,
-          "filters",
-          sale?.responsibleVendor?.vendorName,
-        );
-        return true;
+        return false;
       }
+    }
 
-      if (filters.status) {
-        const saleStatus = (sale.status || "").toLowerCase();
-        const filterStatus = filters.status.toLowerCase();
+    // Name
+    if (nameFilter) {
+      if (!safeText(sale.name).includes(nameFilter)) {
+        return false;
+      }
+    }
 
-        if (filterStatus === "pending") {
-          if (saleStatus !== "" && saleStatus !== "pending") {
-            return false;
-          }
-        } else {
-          if (saleStatus != filterStatus) {
-            return false;
-          } else return true;
+    // Order ID
+    if (orderIdFilter) {
+      const orderId = String(sale.orderId || "");
+      const sOrderId = String(sale.S_orderId || "");
+      const firestoreId = String(sale.id || "");
+
+      if (
+        !orderId.includes(orderIdFilter) &&
+        !sOrderId.includes(orderIdFilter) &&
+        !firestoreId.includes(orderIdFilter)
+      ) {
+        return false;
+      }
+    }
+
+    // Responsible Person
+    if (responsibleFilter) {
+      if (safeText(sale.responsible) !== responsibleFilter) {
+        return false;
+      }
+    }
+
+    // Responsible Vendor
+    if (vendorFilter) {
+      const saleVendorName = safeText(sale?.responsibleVendor?.vendorName);
+
+      if (saleVendorName !== vendorFilter) {
+        return false;
+      }
+    }
+
+    // Status
+    if (statusFilter) {
+      const saleStatus = safeText(sale.status);
+
+      if (statusFilter === "pending") {
+        if (saleStatus && saleStatus !== "pending") {
+          return false;
+        }
+      } else {
+        if (saleStatus !== statusFilter) {
+          return false;
         }
       }
+    }
 
-      if (
-        filters.orderId &&
-        sale.orderId?.toString() == filters.orderId.toString()
-      ) {
-        return true;
-      }
-
-      // SINGLE DATE (onDate)
-      if (filters.dateMode === "single" && filters.onDate) {
-        return saleDate === filters.onDate;
-      }
-
-      // DATE RANGE (X → Y)
-      if (filters.dateMode === "range" && filters.dateX_To && filters.dateY) {
-        return saleDate >= filters.dateX_To && saleDate <= filters.dateY;
-      }
-      if (filters.responsible && !sale.orderId?.includes(filters.orderId))
+    // Single Date
+    if (filters.dateMode === "single" && filters.onDate) {
+      if (saleDate !== filters.onDate) {
         return false;
-    });
+      }
+    }
 
-    setFilteredData(result);
-  };
+    // Date Range
+    if (filters.dateMode === "range") {
+      if (filters.dateX_To && saleDate < filters.dateX_To) {
+        return false;
+      }
+
+      if (filters.dateY && saleDate > filters.dateY) {
+        return false;
+      }
+    }
+
+    return true;
+  });
+
+  setFilteredData(result);
+  setCurrentPage(1);
+};
 
   const currentData = [...filteredData]
     .sort((a, b) => (b.S_orderId || 0) - (a.S_orderId || 0))
@@ -715,9 +748,9 @@ export default function SalesSection() {
                 type="number"
                 placeholder="Phone"
                 value={filters.phone}
-                onChange={(e) =>
-                  setFilters((p) => ({ ...p, phone: Number(e.target.value) }))
-                }
+               onChange={(e) =>
+  setFilters((p) => ({ ...p, phone: e.target.value }))
+}
                 className="p-2 border rounded-md text-sm w-full"
               />
             </div>
@@ -741,9 +774,9 @@ export default function SalesSection() {
                 type="text"
                 placeholder="Order ID"
                 value={filters.orderId}
-                onChange={(e) =>
-                  setFilters((p) => ({ ...p, orderId: Number(e.target.value) }))
-                }
+               onChange={(e) =>
+  setFilters((p) => ({ ...p, orderId: e.target.value }))
+}
                 className="p-2 border rounded-md text-sm w-full"
               />
             </div>
