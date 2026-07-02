@@ -4,6 +4,7 @@ import { Edit, Trash2, X, PlusCircle, AlertTriangle, CheckCircle, Loader2, List,
 
 import { API_BASE_URL } from "../API"
 import { Link } from 'react-router-dom';
+import ImageUploadPopup from './ImageUploadPopup';
 
 // --- Notification Component (Self-hiding) ---
 const Notification = ({ message, type, onClose }) => {
@@ -136,8 +137,9 @@ const VendorFormModal = ({ isOpen, onClose, onSubmit, initialData, isEdit }) => 
             className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-zinc-900 focus:ring-2 focus:ring-zinc-100"
           />
         </div>
-
+<ImageUploadPopup/>
         <div>
+            
           <label
             htmlFor="vendorImage"
             className="mb-1 block text-sm font-medium text-zinc-700"
