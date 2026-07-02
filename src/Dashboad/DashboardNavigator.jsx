@@ -221,11 +221,12 @@ useEffect(() => {
       const chatId = `${userId}_admin_1`;
       const messagesRef = collection(firestore, "chats", chatId, "messages");
 
-      const q = query(
-        messagesRef,
-        where("senderRole", "==", "user"),
-        where("seen", "==", false)
-      );
+   const q = query(
+  messagesRef,
+  where("senderRole", "==", "user"),
+  where("seenByAdmin", "==", false),
+  where("deleted", "==", false)
+);
 
       const unsub = onSnapshot(q, (snapshot) => {
         setUnreadPerUser((prev) => {

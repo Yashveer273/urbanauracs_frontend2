@@ -49,7 +49,7 @@ const UserList = ({ onSelectUser, selectedUser }) => {
       const unreadQuery = query(
         messagesRef,
         where("senderRole", "==", "user"),
-        where("seen", "==", false)
+        where("seenByAdmin", "==", false)
       );
 
       const unreadUnsub = onSnapshot(unreadQuery, (snapshot) => {
