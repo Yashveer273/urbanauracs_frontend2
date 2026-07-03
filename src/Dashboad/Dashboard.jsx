@@ -33,6 +33,7 @@ import AddAppBanner from "./AddAppBanner";
 import AdminChat from "../chat/AdminChat";
 import ImageUploadPopup from "./ImageUploadPopup";
 import WebsiteContentPage from "./WebsiteContentPage";
+import LockedBox from "./LockedBox";
 
 const PlusIcon = () => (
   <svg
@@ -146,32 +147,7 @@ const activeTab = pathToTab[location.pathname] || "auth";
       setTagAccess([]);
     }
   };
-  const LockedBox = ({ label }) => (
-    <div className="w-full max-w-md h-64 flex flex-col items-center justify-center p-6 bg-blue-50 border border-gray-300 rounded-3xl shadow-2xl transition-all duration-500 hover:scale-105">
-      {/* Custom SVG for the lock icon. */}
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        className="w-16 h-16 text-rose-500 animate-pulse"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-      </svg>
-      {/* Title with improved typography. */}
-      <h2 className="text-3xl font-extrabold text-gray-900 mt-4 tracking-tight">
-        {label}
-      </h2>
-      {/* Sub-label with refined text. */}
-      <p className="text-gray-700 mt-2 text-sm font-medium text-center">
-        Access Restricted
-      </p>
-    </div>
-  );
+  
   const handleLogout = () => {
     localStorage.removeItem("urbanauraservicesdashauthToken");
     localStorage.removeItem("urbanauraservicesdashtagAccess");
@@ -409,72 +385,84 @@ useEffect(() => {
     setEditingServiceId(null);
   };
 
-  const handleHypePriceUpdate = async ({ type, value, amount }) => {
-    const docId = FDBservices[0]?.id;
-    if (!docId) {
-      throw new Error("Firestore service document not found");
-    }
+const handleHypePriceUpdate = async ({ type, value, city, service, amount }) => {
+  const docId = FDBservices[0]?.id;
+  if (!docId) throw new Error("Firestore service document not found");
 
-    const numericAmount = Number(amount);
-    if (!Number.isFinite(numericAmount) || numericAmount === 0) {
-      throw new Error("Please enter a valid amount");
-    }
+  const numericAmount = Number(amount);
+  if (!Number.isFinite(numericAmount) || numericAmount === 0) {
+    throw new Error("Please enter a valid amount");
+  }
 
-    const docRef = doc(firestore, "homeCleaningServiceDB", docId);
-    const snapshot = await getDoc(docRef);
+  const docRef = doc(firestore, "homeCleaningServiceDB", docId);
+  const snapshot = await getDoc(docRef);
 
-    if (!snapshot.exists()) {
-      throw new Error("Firestore service document not found");
-    }
+  if (!snapshot.exists()) {
+    throw new Error("Firestore service document not found");
+  }
 
-    let updatedPriceCount = 0;
-    const currentArray = snapshot.data().data || [];
+  let updatedPriceCount = 0;
+  const currentArray = snapshot.data().data || [];
 
-    const updatedArray = currentArray.map((serviceCategory) => {
-      const shouldUpdateWholeService =
-        type === "service" && serviceCategory.ServiceName === value;
+  const updatedArray = currentArray.map((serviceCategory) => {
+    const shouldUpdateWholeService =
+      type === "service" && serviceCategory.ServiceName === value;
 
-      const updatedVendors = (serviceCategory.data || []).map((vendor) => {
-        const shouldUpdateCity =
-          type === "city" &&
-          (vendor.location === value || vendor.vendorlocation === value);
+    const shouldUpdateCityServiceCategory =
+      type === "cityService" && serviceCategory.ServiceName === service;
 
-        if (!shouldUpdateWholeService && !shouldUpdateCity) {
-          return vendor;
-        }
+    const updatedVendors = (serviceCategory.data || []).map((vendor) => {
+      const shouldUpdateCity =
+        type === "city" &&
+        (vendor.location === value || vendor.vendorlocation === value);
 
-        const updatedServices = (vendor.services || []).map((vendorService) => {
-          updatedPriceCount += 1;
-          return {
-            ...vendorService,
-            price: (Number(vendorService.price) || 0) + numericAmount,
-          };
-        });
+      const shouldUpdateCityService =
+        type === "cityService" &&
+        shouldUpdateCityServiceCategory &&
+        (vendor.location === city || vendor.vendorlocation === city);
 
-        return { ...vendor, services: updatedServices };
+      if (!shouldUpdateWholeService && !shouldUpdateCity && !shouldUpdateCityService) {
+        return vendor;
+      }
+
+      const updatedServices = (vendor.services || []).map((vendorService) => {
+        updatedPriceCount += 1;
+
+        return {
+          ...vendorService,
+          price: (Number(vendorService.price) || 0) + numericAmount,
+        };
       });
 
-      return { ...serviceCategory, data: updatedVendors };
+      return { ...vendor, services: updatedServices };
     });
 
-    if (updatedPriceCount === 0) {
-      throw new Error("No matching service prices found to update");
-    }
+    return { ...serviceCategory, data: updatedVendors };
+  });
 
-    await updateDoc(docRef, { data: updatedArray });
-    setServices(updatedArray);
-    setFDBServices((prev) =>
-      prev.map((serviceDoc) =>
-        serviceDoc.id === docId ? { ...serviceDoc, data: updatedArray } : serviceDoc,
-      ),
-    );
-    setSelectedService((current) => {
-      if (!current) return current;
-      return updatedArray.find((service) => service.id === current.id) || current;
-    });
+  if (updatedPriceCount === 0) {
+    throw new Error("No matching service prices found to update");
+  }
 
-    return { updatedPriceCount };
-  };
+  await updateDoc(docRef, { data: updatedArray });
+
+  setServices(updatedArray);
+
+  setFDBServices((prev) =>
+    prev.map((serviceDoc) =>
+      serviceDoc.id === docId
+        ? { ...serviceDoc, data: updatedArray }
+        : serviceDoc,
+    ),
+  );
+
+  setSelectedService((current) => {
+    if (!current) return current;
+    return updatedArray.find((service) => service.id === current.id) || current;
+  });
+
+  return { updatedPriceCount };
+};
 
   // Handles opening the vendor details panel for a selected top-level service.
   const handleSelectService = (service) => {
@@ -1002,7 +990,7 @@ useEffect(() => {
       case "Chat-Controller":
         return (
           <div className="">
-            {tagAccess.includes("Chat Controller") ||
+            {tagAccess.includes("Chat Box") ||
             tagAccess.includes("Admin") ? (
               <div className="flex">
                 <AdminChat />
@@ -1020,8 +1008,7 @@ useEffect(() => {
           <div className="">
             {tagAccess.includes("Banner") || tagAccess.includes("Admin") ? (
               <div className="flex">
-                {/* This is the component we just coded */}
-                <BannerManagement />
+                   <BannerManagement />
               </div>
             ) : (
               <LockedBox

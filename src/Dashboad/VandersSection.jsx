@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 // We'll use icons from lucide-react (or similar library) for better aesthetics
 import { Edit, Trash2, X, PlusCircle, AlertTriangle, CheckCircle, Loader2, List, Save } from 'lucide-react';
-
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
+import { Download } from "lucide-react";
 import { API_BASE_URL } from "../API"
 import { Link } from 'react-router-dom';
 import ImageUploadPopup from './ImageUploadPopup';
@@ -259,7 +261,8 @@ const VandersSection = () => {
     const [vendors, setVendors] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [notification, setNotification] = useState(null);
-
+const [currentPage, setCurrentPage] = useState(1);
+const itemsPerPage = 10;
     // Modal State
     const [isFormModalOpen, setIsFormModalOpen] = useState(false);
     const [isEditMode, setIsEditMode] = useState(false);
@@ -268,7 +271,39 @@ const VandersSection = () => {
     // Confirmation State
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
     const [vendorToDelete, setVendorToDelete] = useState(null);
+const handleDownloadExcel = () => {
+  if (!vendors.length) {
+    alert("No vendor data available");
+    return;
+  }
 
+  const excelData = vendors.map((vendor, index) => ({
+    "S.No": index + 1,
+    "Vendor ID": vendor._id || "",
+    "Vendor Name": vendor.vendorName || "",
+    "Vendor Location": vendor.vendorLocation || "",
+    "Vendor Phone No": vendor.vendorPhoneNo || "",
+    "Image URL": vendor.vendorImage || "",
+    Rating: vendor.rating ?? "N/A",
+    Reviews: vendor.reviews ?? "N/A",
+  }));
+
+  const worksheet = XLSX.utils.json_to_sheet(excelData);
+  const workbook = XLSX.utils.book_new();
+
+  XLSX.utils.book_append_sheet(workbook, worksheet, "Vendors");
+
+  const excelBuffer = XLSX.write(workbook, {
+    bookType: "xlsx",
+    type: "array",
+  });
+
+  const file = new Blob([excelBuffer], {
+    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  });
+
+  saveAs(file, "vendors-list.xlsx");
+};
     // Helper for API calls with Exponential Backoff
     const safeFetch = useCallback(async (url, options = {}, retries = 3) => {
         for (let i = 0; i < retries; i++) {
@@ -373,7 +408,12 @@ const VandersSection = () => {
             setVendorToDelete(null);
         }
     };
+    const totalPages = Math.ceil(vendors.length / itemsPerPage);
 
+const paginatedVendors = vendors.slice(
+  (currentPage - 1) * itemsPerPage,
+  currentPage * itemsPerPage,
+);
     // --- Render Functions ---
 
     const renderTableBody = () => {
@@ -402,7 +442,7 @@ const VandersSection = () => {
             );
         }
 
-        return vendors.map(vendor => (
+     return paginatedVendors.map(vendor => (
             <tr key={vendor._id} className="hover:bg-gray-50 transition duration-150"> {/* Shivani */}
                 <td className="px-3 md:px-6 py-3 md:py-4 whitespace-nowrap text-sm font-medium text-gray-900"> 
                     {vendor._id}
@@ -483,16 +523,27 @@ const VandersSection = () => {
             </header>
 
             {/* Action Bar */}
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">   
-                <h2 className="text-2xl font-bold text-gray-700">Vendor List</h2>
-                <button
-                    onClick={handleOpenCreate}
-                    className="flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-xl shadow-lg transition duration-200 transform hover:scale-[1.02] w-full sm:w-auto"
-                >     
-                    <PlusCircle className="w-5 h-5 mr-2" />
-                    Add New Vendor
-                </button>
-            </div>
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
+  <h2 className="text-2xl font-bold text-gray-700">Vendor List</h2>
+
+  <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+    <button
+      onClick={handleDownloadExcel}
+      className="flex items-center justify-center bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-xl shadow-lg transition duration-200 w-full sm:w-auto"
+    >
+      <Download className="w-5 h-5 mr-2" />
+      Download Excel
+    </button>
+
+    <button
+      onClick={handleOpenCreate}
+      className="flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-xl shadow-lg transition duration-200 transform hover:scale-[1.02] w-full sm:w-auto"
+    >
+      <PlusCircle className="w-5 h-5 mr-2" />
+      Add New Vendor
+    </button>
+  </div>
+</div>
 
             {/* Vendors Table */}
             <div className="bg-white shadow-xl rounded-xl overflow-hidden">
@@ -533,7 +584,39 @@ const VandersSection = () => {
                     </table>
                 </div>
             </div>
+{vendors.length > itemsPerPage && (
+  <div className="flex flex-col sm:flex-row justify-between items-center gap-4 p-4 bg-white border-t">
+    <p className="text-sm text-gray-500">
+      Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
+      {Math.min(currentPage * itemsPerPage, vendors.length)} of{" "}
+      {vendors.length} vendors
+    </p>
 
+    <div className="flex items-center gap-2">
+      <button
+        onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+        disabled={currentPage === 1}
+        className="px-4 py-2 rounded-lg border text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+      >
+        Previous
+      </button>
+
+      <span className="px-4 py-2 rounded-lg bg-blue-50 text-blue-700 text-sm font-bold">
+        Page {currentPage} of {totalPages}
+      </span>
+
+      <button
+        onClick={() =>
+          setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+        }
+        disabled={currentPage === totalPages}
+        className="px-4 py-2 rounded-lg border text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+      >
+        Next
+      </button>
+    </div>
+  </div>
+)}
             {/* Vendor Form Modal */}
             <VendorFormModal
                 isOpen={isFormModalOpen}

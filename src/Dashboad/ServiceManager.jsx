@@ -97,54 +97,53 @@ const ServiceManager = ({
 
   // Handle City Hype Update
   const handleCityHypeUpdate = async (data) => {
-    console.log("City Hype Update:", data);
-    const { city, adjustmentAmount } = data;
-    const amount = parseFloat(adjustmentAmount) || 0;
+  console.log("City Service Hype Update:", data);
 
-    if (amount === 0) {
-      alert("Please enter a valid amount");
-      return;
-    }
+  const { city, service, adjustmentAmount } = data;
+  const amount = parseFloat(adjustmentAmount) || 0;
 
-    if (!onHypePriceUpdate) {
-      alert("Firebase update handler is not available");
-      return;
-    }
+  if (!city || city === "Select City") {
+    alert("Please select a city");
+    return;
+  }
 
-    setIsHypeSaving(true);
-    try {
-      const result = await onHypePriceUpdate({
-        type: "city",
-        value: city,
-        amount,
-      });
-      alert(
-        `Successfully added Rs ${amount} to ${result.updatedPriceCount} prices in ${city}`,
-      );
-      setIsCityHypeOpen(false);
-    } catch (error) {
-      console.error("Error updating city hype:", error);
-      alert(error.message || "Failed to update city prices");
-    } finally {
-      setIsHypeSaving(false);
-    }
+  if (!service || service === "Select Service") {
+    alert("Please select a service");
+    return;
+  }
 
-    if (onHypePriceUpdate) return;
+  if (amount === 0) {
+    alert("Please enter a valid amount");
+    return;
+  }
 
-    // Update all vendors in the selected city
-    services.forEach((svc) => {
-      svc.data.forEach((vendor) => {
-        if (vendor.location === city || vendor.vendorlocation === city) {
-          vendor.services?.forEach((svc) => {
-            svc.price = (parseFloat(svc.price) || 0) + amount;
-          });
-        }
-      });
+  if (!onHypePriceUpdate) {
+    alert("Firebase update handler is not available");
+    return;
+  }
+
+  setIsHypeSaving(true);
+
+  try {
+    const result = await onHypePriceUpdate({
+      type: "cityService",
+      city,
+      service,
+      amount,
     });
 
-    alert(`Successfully added ₹${amount} to all services in ${city}`);
+    alert(
+      `Successfully added Rs ${amount} to ${result.updatedPriceCount} prices in ${service} for ${city}`,
+    );
+
     setIsCityHypeOpen(false);
-  };
+  } catch (error) {
+    console.error("Error updating city service hype:", error);
+    alert(error.message || "Failed to update city service prices");
+  } finally {
+    setIsHypeSaving(false);
+  }
+};
   return (
     <>
       {/* ================= SERVICES LIST ================= */}
@@ -181,18 +180,21 @@ const ServiceManager = ({
 
             {/* The Popup Call */}
             <CityHypePopup
-              isOpen={isCityHypeOpen}
-              onClose={() => setIsCityHypeOpen(false)}
-              selectedCity={selectedCity}
-              onCityClick={() => setSelectedCity("")}
-              onSubmit={handleCityHypeUpdate}
-              isSubmitting={isHypeSaving}
-              cities={[
-                ...new Set(
-                  services.flatMap((s) => s.data.map((v) => v.location)),
-                ),
-              ]}
-            />
+  isOpen={isCityHypeOpen}
+  onClose={() => setIsCityHypeOpen(false)}
+  selectedCity={selectedCity}
+  selectedService="Select Service"
+  onSubmit={handleCityHypeUpdate}
+  isSubmitting={isHypeSaving}
+  cities={[
+    ...new Set(
+      services.flatMap((s) =>
+        s.data.map((v) => v.location || v.vendorlocation),
+      ),
+    ),
+  ]}
+  services={services.map((s) => s.ServiceName)}
+/>
             <button
               onClick={async () => {
                 if (isMigrateinProcess) {
