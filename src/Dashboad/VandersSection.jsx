@@ -262,6 +262,7 @@ const VandersSection = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [notification, setNotification] = useState(null);
 const [currentPage, setCurrentPage] = useState(1);
+const [searchQuery, setSearchQuery] = useState("");
 const itemsPerPage = 10;
     // Modal State
     const [isFormModalOpen, setIsFormModalOpen] = useState(false);
@@ -271,6 +272,24 @@ const itemsPerPage = 10;
     // Confirmation State
     const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
     const [vendorToDelete, setVendorToDelete] = useState(null);
+const filteredVendors = vendors.filter((vendor) => {
+  const search = searchQuery.toLowerCase();
+
+  return (
+    vendor._id?.toLowerCase().includes(search) ||
+    vendor.vendorName?.toLowerCase().includes(search) ||
+    vendor.vendorLocation?.toLowerCase().includes(search) ||
+    String(vendor.vendorPhoneNo || "").toLowerCase().includes(search)
+  );
+});
+
+const totalPages = Math.ceil(filteredVendors.length / itemsPerPage);
+
+const paginatedVendors = filteredVendors.slice(
+  (currentPage - 1) * itemsPerPage,
+  currentPage * itemsPerPage
+);
+
 const handleDownloadExcel = () => {
   if (!vendors.length) {
     alert("No vendor data available");
@@ -408,12 +427,7 @@ const handleDownloadExcel = () => {
             setVendorToDelete(null);
         }
     };
-    const totalPages = Math.ceil(vendors.length / itemsPerPage);
-
-const paginatedVendors = vendors.slice(
-  (currentPage - 1) * itemsPerPage,
-  currentPage * itemsPerPage,
-);
+    
     // --- Render Functions ---
 
     const renderTableBody = () => {
@@ -427,8 +441,7 @@ const paginatedVendors = vendors.slice(
                 </tr>
             );
         }
-
-        if (vendors.length === 0) {
+if (filteredVendors.length === 0){
             return (
                 <tr>
                     <td colSpan="6" className="p-4">
@@ -527,6 +540,7 @@ const paginatedVendors = vendors.slice(
   <h2 className="text-2xl font-bold text-gray-700">Vendor List</h2>
 
   <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+    
     <button
       onClick={handleDownloadExcel}
       className="flex items-center justify-center bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-xl shadow-lg transition duration-200 w-full sm:w-auto"
@@ -543,6 +557,17 @@ const paginatedVendors = vendors.slice(
       Add New Vendor
     </button>
   </div>
+</div><div className="mb-5 bg-white p-4 rounded-xl shadow-md">
+  <input
+    type="text"
+    value={searchQuery}
+    onChange={(e) => {
+      setSearchQuery(e.target.value);
+      setCurrentPage(1);
+    }}
+    placeholder="Search by Vendor ID, Name, Location or Phone No."
+    className="w-full px-4 py-3 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+  />
 </div>
 
             {/* Vendors Table */}
