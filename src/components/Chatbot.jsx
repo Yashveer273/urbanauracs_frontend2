@@ -1,5 +1,4 @@
-import React, { useState } from "react";
-
+import React, { useState, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { toggleChatbox, selectChatbox } from "../store/chatboxSlice";
@@ -8,145 +7,233 @@ import { createUnread } from "../Dashboad/utility";
 
 export default function Chatbot() {
   const dispatch = useDispatch();
-  const isOpen = useSelector(selectChatbox); // ✅ from Redux
+  const isOpen = useSelector(selectChatbox);
+
+  const messagesEndRef = useRef(null);
 
   const [step, setStep] = useState(1);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const [messages, setMessages] = useState([
-    { from: "bot", text: "Hello! Please enter your Name." },
-  ]);
   const [inputValue, setInputValue] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+
+  const [messages, setMessages] = useState([
+    { from: "bot", text: "Hello! Please enter your name." },
+  ]);
+
+  const queryOptions = [
+    "I want to book a cleaning service",
+    "I want to know the service price",
+    "I need help with my existing booking",
+    "I want to cancel or reschedule my booking",
+    "I want to talk to support",
+  ];
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, step]);
 
   const chatIcon = (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       fill="currentColor"
       viewBox="0 0 16 16"
-      className="w-8 h-8"
+      className="w-7 h-7"
     >
       <path d="M14 1a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H4.414A2 2 0 0 0 3 11.586l-2 2V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12.793a.5.5 0 0 0 .854.353l2.853-2.853A1 1 0 0 1 4.414 12H14a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z" />
     </svg>
   );
 
   const closeIcon = (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      fill="currentColor"
-      viewBox="0 0 16 16"
-      className="w-8 h-8"
-    >
-      <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z" />
-    </svg>
+    <span className="text-3xl leading-none font-light">×</span>
   );
 
-  const handleUserInput = async (value) => {
-    let newMessages = [...messages, { from: "user", text: value }];
+  const addMessage = (from, text) => {
+    setMessages((prev) => [...prev, { from, text }]);
+  };
 
-    if (step === 1) {
-      setName(value.trim());
-      if (value.trim() !== "") {
-        newMessages.push({ from: "bot", text: "Now enter your 10-digit Phone Number." });
-        setStep(2);
-      } else {
-        newMessages.push({ from: "bot", text: "❌ Name cannot be empty." });
-      }
-    } else if (step === 2) {
-      setPhone(value.trim());
-      const isPhoneValid = value.replace(/\D/g, "").length === 10;
-      if (isPhoneValid) {
-        newMessages.push({
-          from: "bot",
-          text: "Please let us know your query",
-        });
-        setStep(3);
-      } else {
-        newMessages.push({
-          from: "bot",
-          text: "📞 Phone must be exactly 10 digits.",
-        });
-      }
-    } else if (step === 3) {
-      setStep(4);
+  const validateName = (value) => {
+    return /^[A-Za-z\s]{2,40}$/.test(value.trim());
+  };
 
-      // Save to Firestore
+  const normalizeIndianMobile = (value) => {
+    return value.replace(/\s/g, "").replace(/^(\+91|91|0)/, "");
+  };
+
+  const validateIndianMobile = (value) => {
+    const mobile = normalizeIndianMobile(value);
+    return /^[6-9]\d{9}$/.test(mobile);
+  };
+
+  const saveTicket = async (queryMessage) => {
+    try {
+      setIsSaving(true);
+
       await addDoc(collection(firestore, "homeCleaningTicket"), {
         data: {
           name,
           phone,
-          message: value.trim(),
+          message: queryMessage,
           status: "New",
           createdAt: serverTimestamp(),
         },
       });
-await createUnread("Ticket");
-      newMessages.push({ from: "bot", text: "✅ We'll get back to you within 24 hours." });
+
+      await createUnread("Ticket");
+
+      addMessage("bot", "Thank you! Your request has been submitted successfully. We’ll get back to you within 24 hours.");
+      setStep(4);
+    } catch (error) {
+      console.error("Ticket save error:", error);
+      addMessage("bot", "Something went wrong while submitting your request. Please try again.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleUserInput = async (value) => {
+    const trimmedValue = value.trim();
+
+    if (!trimmedValue || isSaving) return;
+
+    addMessage("user", trimmedValue);
+
+    if (step === 1) {
+      if (!validateName(trimmedValue)) {
+        addMessage("bot", "Please enter a valid name using only letters.");
+        return;
+      }
+
+      setName(trimmedValue);
+      addMessage("bot", "Please enter your Indian mobile number.");
+      setStep(2);
+      return;
     }
 
-    setMessages(newMessages);
+    if (step === 2) {
+      if (!validateIndianMobile(trimmedValue)) {
+        addMessage("bot", "Please enter a valid Indian mobile number. Example: 98*******");
+        return;
+      }
+
+      const cleanMobile = normalizeIndianMobile(trimmedValue);
+      setPhone(cleanMobile);
+      addMessage("bot", "Please select your query from the options below.");
+      setStep(3);
+      return;
+    }
+
+    if (step === 3) {
+      if (!queryOptions.includes(trimmedValue)) {
+        addMessage("bot", "Please select one of the available query options.");
+        return;
+      }
+
+      await saveTicket(trimmedValue);
+    }
   };
 
   const handleSend = () => {
-    if (inputValue.trim() !== "") {
-      handleUserInput(inputValue.trim());
+    if (inputValue.trim()) {
+      handleUserInput(inputValue);
       setInputValue("");
     }
   };
 
+  const handleQueryClick = (query) => {
+    handleUserInput(query);
+  };
+
   return (
     <>
-      {/* Chat button */}
+      {/* Floating Chat Button */}
       <div
-        className="fixed bottom-15 right-6 z-50 p-4 bg-teal-500 text-white rounded-full shadow-lg cursor-pointer transition-transform duration-300 hover:scale-110"
-        onClick={() => dispatch(toggleChatbox())} // ✅ use Redux toggle
+        className="fixed bottom-15 right-6 z-50 w-15 h-15 p-4 bg-slate-950 text-white rounded-full shadow-2xl cursor-pointer transition-all duration-300 hover:scale-110 hover:bg-blue-950 flex items-center justify-center"
+        onClick={() => dispatch(toggleChatbox())}
       >
         {isOpen ? closeIcon : chatIcon}
       </div>
 
-      
+      {/* Chat Box */}
       <div
-        className={`fixed bottom-34 right-6 w-1=96  h-100 max-w-[90vw] bg-white rounded-xl shadow-xl flex flex-col overflow-hidden z-40 transition-all duration-400 ${
-          isOpen ? "flex" : "hidden"
+        className={`fixed bottom-34 right-6 w-96 h-100 max-w-[90vw] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden z-40 border border-gray-200 transition-all duration-300 ${
+          isOpen ? "opacity-100 scale-100" : "opacity-0 scale-95 pointer-events-none"
         }`}
       >
-        <div className="flex justify-between items-center px-5 py-4 bg-gray-100 border-b border-gray-200">
-          <span className="text-lg font-semibold text-gray-800">Chatbot</span>
+        {/* Header */}
+        <div className="flex justify-between items-center px-5 py-4 bg-gradient-to-r from-slate-950 via-slate-900 to-blue-950 text-white border-b border-gray-200">
+          <div>
+            <h3 className="text-lg font-semibold leading-tight">Support Chat</h3>
+            <p className="text-xs text-gray-300 mt-0.5">We usually reply within 24 hours</p>
+          </div>
+
           <button
-            className="text-2xl text-gray-500 hover:text-gray-800"
+            className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition"
             onClick={() => dispatch(toggleChatbox())}
           >
-            ✖
+            ✕
           </button>
         </div>
 
-        <div className="p-4 flex-grow h-96 overflow-y-auto bg-gray-50">
+        {/* Messages */}
+        <div className="p-4 flex-grow h-96 overflow-y-auto bg-slate-50">
           {messages.map((msg, index) => (
-            <p
+            <div
               key={index}
-              className={`py-2 px-3 mb-2 rounded-lg max-w-[80%] text-sm ${
-                msg.from === "bot"
-                  ? "bg-gray-200 text-gray-800"
-                  : "bg-blue-200 text-blue-800 ml-auto"
-              }`}
+              className={`mb-3 flex ${msg.from === "user" ? "justify-end" : "justify-start"}`}
             >
-              {msg.text}
-            </p>
+              <div
+                className={`py-2.5 px-4 rounded-2xl max-w-[82%] text-sm leading-relaxed shadow-sm ${
+                  msg.from === "bot"
+                    ? "bg-white text-gray-800 rounded-bl-md border border-gray-100"
+                    : "bg-slate-950 text-white rounded-br-md"
+                }`}
+              >
+                {msg.text}
+              </div>
+            </div>
           ))}
+
+          {step === 3 && (
+            <div className="mt-3 space-y-2">
+              {queryOptions.map((query, index) => (
+                <button
+                  key={index}
+                  disabled={isSaving}
+                  onClick={() => handleQueryClick(query)}
+                  className="w-full text-left px-4 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl text-sm hover:bg-slate-100 hover:border-slate-400 transition disabled:opacity-60"
+                >
+                  {query}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {isSaving && (
+            <div className="mt-3 text-xs text-gray-500">Submitting your request...</div>
+          )}
+
+          <div ref={messagesEndRef} />
         </div>
 
-        {step !== 4 && (
+        {/* Input */}
+        {step !== 4 && step !== 3 && (
           <div className="flex p-4 border-t border-gray-200 bg-white">
             <input
-              type="text"
-              className="flex-1 p-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Type your message..."
+              type={step === 2 ? "tel" : "text"}
+              className="flex-1 p-2.5 border border-gray-300 rounded-xl outline-none text-sm focus:ring-2 focus:ring-slate-800 focus:border-slate-800"
+              placeholder={step === 1 ? "Enter your name..." : "Enter mobile number..."}
               value={inputValue}
+              maxLength={step === 2 ? 14 : 40}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSend()}
+              disabled={isSaving}
             />
+
             <button
-              className="px-4 py-2 bg-blue-500 text-white rounded-lg ml-2 cursor-pointer hover:bg-blue-600 transition-colors duration-200"
+              className="px-4 py-2.5 bg-slate-950 text-white rounded-xl ml-2 cursor-pointer hover:bg-blue-950 transition-colors duration-200 disabled:opacity-60"
               onClick={handleSend}
+              disabled={isSaving}
             >
               Send
             </button>

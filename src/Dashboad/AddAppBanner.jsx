@@ -1,34 +1,26 @@
 import React, { useState, useEffect } from "react";
 import { firestore } from "../firebaseCon";
-import {
-  doc,
-  getDoc,
-  updateDoc,
-  setDoc
-} from "firebase/firestore";
-// eslint-disable-next-line no-unused-vars
+import { doc, getDoc, updateDoc, setDoc } from "firebase/firestore";
 import { motion } from "framer-motion";
 
 export default function AddAppBanner() {
-  const [title, setTitle] = useState("");
-  const [subtitle, setSubtitle] = useState("");
-  const [discount, setDiscount] = useState("");
   const [image, setImage] = useState("");
-  const [duration, setDuration] = useState("");
-  const [type, setType] = useState("banner_m_style_1");
-  const [press, setPress] = useState(true);
   const [loading, setLoading] = useState(false);
   const [banners, setBanners] = useState([]);
 
   const ref = doc(firestore, "appAssets", "app-image-banner");
 
-  // FETCH BANNERS
   const fetchBanners = async () => {
-    const snap = await getDoc(ref);
+    try {
+      const snap = await getDoc(ref);
 
-    if (snap.exists()) {
-      const data = snap.data().data || [];
-      setBanners(data);
+      if (snap.exists()) {
+        setBanners(snap.data().data || []);
+      } else {
+        setBanners([]);
+      }
+    } catch (error) {
+      console.error("Fetch banners error:", error);
     }
   };
 
@@ -37,25 +29,25 @@ export default function AddAppBanner() {
   }, []);
 
   const handleSubmit = async () => {
+    if (!image.trim()) {
+      alert("Please enter image URL");
+      return;
+    }
+
     try {
       setLoading(true);
 
       const snap = await getDoc(ref);
-
-      let existingData = [];
-
-      if (snap.exists()) {
-        existingData = snap.data().data || [];
-      }
+      const existingData = snap.exists() ? snap.data().data || [] : [];
 
       const newBanner = {
-        title,
-        subtitle,
-        discount: Number(discount),
-        image,
-        duration: duration ? Number(duration) : null,
-        press,
-        type,
+        title: "",
+        subtitle: "",
+        discount: null,
+        image: image.trim(),
+        duration: null,
+        press: false,
+        type: "",
       };
 
       const updatedData = [...existingData, newBanner];
@@ -63,199 +55,152 @@ export default function AddAppBanner() {
       if (snap.exists()) {
         await updateDoc(ref, { data: updatedData });
       } else {
-        await setDoc(ref, { data: [newBanner] });
+        await setDoc(ref, { data: updatedData });
       }
 
-      setTitle("");
-      setSubtitle("");
-      setDiscount("");
       setImage("");
-      setDuration("");
-
-      fetchBanners();
-    } catch (err) {
-      console.error(err);
+      setBanners(updatedData);
+    } catch (error) {
+      console.error("Save banner error:", error);
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   const deleteBanner = async (index) => {
-    const updated = banners.filter((_, i) => i !== index);
+    try {
+      const updated = banners.filter((_, i) => i !== index);
 
-    await updateDoc(ref, { data: updated });
-
-    setBanners(updated);
+      await updateDoc(ref, { data: updated });
+      setBanners(updated);
+    } catch (error) {
+      console.error("Delete banner error:", error);
+    }
   };
 
   return (
-    <div className="p-6">
-
-      {/* FORM */}
+    <div className="min-h-screen bg-gray-50 p-4 md:p-6">
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="bg-white border rounded-xl p-6 shadow-sm"
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="max-w-5xl mx-auto"
       >
-        <h2 className="text-xl font-semibold mb-6">
-          App Slider Banners
-        </h2>
+        <div className="bg-white border border-gray-200 rounded-2xl p-5 md:p-6 shadow-sm">
+          <div className="mb-6">
+            <h2 className="text-xl font-semibold text-gray-900">
+              App Slider Banner
+            </h2>
+            <p className="text-sm text-gray-500 mt-1">
+              Add banner image URL for mobile app slider.
+            </p>
+          </div>
 
-        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Image URL
+            </label>
 
-          <input
-            placeholder="Title"
-            className="border rounded-lg px-3 py-2"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
+            <input
+              placeholder="Paste banner image URL here"
+              className="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-black/10 focus:border-black"
+              value={image}
+              onChange={(e) => setImage(e.target.value)}
+            />
 
-          <input
-            placeholder="Subtitle"
-            className="border rounded-lg px-3 py-2"
-            value={subtitle}
-            onChange={(e) => setSubtitle(e.target.value)}
-          />
+            <p className="text-xs text-gray-500 mt-2">
+              Recommended size: <b>1200 × 500 px</b> | Ratio 12:5
+            </p>
+          </div>
 
-          <input
-            type="number"
-            placeholder="Discount"
-            className="border rounded-lg px-3 py-2"
-            value={discount}
-            onChange={(e) => setDiscount(e.target.value)}
-          />
-
-          <input
-            type="number"
-            placeholder="Duration (hours)"
-            className="border rounded-lg px-3 py-2"
-            value={duration}
-            onChange={(e) => setDuration(e.target.value)}
-          />
-
-        </div>
-
-        <div className="mt-4">
-  <input
-    placeholder="Image URL"
-    className="border rounded-lg px-3 py-2 w-full"
-    value={image}
-    onChange={(e) => setImage(e.target.value)}
-  />
-
-  <p className="text-xs text-gray-500 mt-1">
-    Recommended size: <b>1200 × 500 px</b> (Ratio 12:5)
-  </p>
-</div>
-
-        {image && (
-          <img
-            src={image}
-            alt="preview"
-            className="mt-3 rounded-lg h-40 object-cover"
-          />
-        )}
-
-        <div className="flex gap-4 mt-4">
-
-          <select
-            value={type}
-            onChange={(e) => setType(e.target.value)}
-            className="border rounded-lg px-3 py-2"
-          >
-            <option value="banner_m_style_1">Banner Style 1</option>
-            <option value="banner_m_style_2">Banner Style 2</option>
-            <option value="banner_m_style_3">Banner Style 3</option>
-            <option value="banner_m_style_4">Banner Style 4</option>
-            <option value="banner_with_counter">
-              Banner With Counter
-            </option>
-          </select>
+          {image && (
+            <div className="mt-5 overflow-hidden rounded-xl border border-gray-200 bg-gray-100">
+              <img
+                src={image}
+                alt="Preview"
+                className="w-full max-h-64 object-cover"
+                onError={(e) => {
+                  e.currentTarget.style.display = "none";
+                }}
+              />
+            </div>
+          )}
 
           <button
-            onClick={() => setPress(!press)}
-            className={`px-4 py-2 rounded ${
-              press ? "bg-black text-white" : "bg-gray-200"
-            }`}
+            onClick={handleSubmit}
+            disabled={loading}
+            className="mt-6 bg-black text-white px-6 py-3 rounded-xl text-sm font-medium disabled:opacity-60 disabled:cursor-not-allowed hover:bg-gray-800 transition"
           >
-            {press ? "Clickable" : "Not Clickable"}
+            {loading ? "Saving..." : "Save Banner"}
           </button>
-
         </div>
 
-        <button
-          onClick={handleSubmit}
-          className="mt-6 bg-black text-white px-6 py-2 rounded-lg"
-        >
-          {loading ? "Saving..." : "Save Banner"}
-        </button>
+        <div className="mt-8 bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+          <div className="p-5 border-b border-gray-200">
+            <h3 className="font-semibold text-gray-900">Banner List</h3>
+            <p className="text-sm text-gray-500 mt-1">
+              Manage saved app slider banners.
+            </p>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="min-w-[700px] w-full text-sm">
+              <thead className="bg-gray-50 text-gray-600">
+                <tr>
+                  <th className="p-4 text-left font-medium">Image</th>
+                  <th className="p-4 text-left font-medium">Image URL</th>
+                  
+                  <th className="p-4 text-right font-medium">Action</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {banners.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan="5"
+                      className="p-6 text-center text-gray-500"
+                    >
+                      No banners added yet.
+                    </td>
+                  </tr>
+                ) : (
+                  banners.map((banner, index) => (
+                    <tr
+                      key={index}
+                      className="border-t border-gray-100 hover:bg-gray-50 transition"
+                    >
+                      <td className="p-4">
+                        <img
+                          src={banner.image}
+                          className="h-14 w-24 object-cover rounded-lg border border-gray-200"
+                          alt="Banner"
+                        />
+                      </td>
+
+                      <td className="p-4 max-w-[360px]">
+                        <div className="truncate text-gray-700">
+                          {banner.image || "-"}
+                        </div>
+                      </td>
+
+                      
+
+                      <td className="p-4 text-right">
+                        <button
+                          onClick={() => deleteBanner(index)}
+                          className="text-red-600 hover:text-red-700 font-medium"
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </motion.div>
-
-      {/* TABLE */}
-      <div className="mt-10 bg-white border rounded-xl shadow-sm">
-
-        <div className="p-4 border-b font-semibold">
-          Banner List
-        </div>
-
-        <table className="w-full text-sm">
-
-          <thead className="bg-gray-50 text-gray-600">
-            <tr>
-              <th className="p-3 text-left">Image</th>
-              <th className="p-3 text-left">Title</th>
-              <th className="p-3 text-left">Discount</th>
-              <th className="p-3 text-left">Duration</th>
-              <th className="p-3 text-left">Type</th>
-              <th className="p-3 text-left">Action</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {banners.map((banner, index) => (
-              <tr key={index} className="border-t">
-
-                <td className="p-3">
-                  <img
-                    src={banner.image}
-                    className="h-12 w-20 object-cover rounded"
-                    alt=""
-                  />
-                </td>
-
-                <td className="p-3">{banner.title}</td>
-
-                <td className="p-3">
-                  {banner.discount}%
-                </td>
-
-                <td className="p-3">
-                  {banner.duration || "-"}
-                </td>
-
-                <td className="p-3">
-                  {banner.type}
-                </td>
-
-                <td className="p-3">
-
-                  <button
-                    onClick={() => deleteBanner(index)}
-                    className="text-red-600 hover:underline"
-                  >
-                    Delete
-                  </button>
-
-                </td>
-
-              </tr>
-            ))}
-          </tbody>
-
-        </table>
-
-      </div>
-
     </div>
   );
 }
