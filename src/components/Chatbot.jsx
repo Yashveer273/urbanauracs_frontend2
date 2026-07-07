@@ -8,7 +8,6 @@ import { createUnread } from "../Dashboad/utility";
 export default function Chatbot() {
   const dispatch = useDispatch();
   const isOpen = useSelector(selectChatbox);
-
   const messagesEndRef = useRef(null);
 
   const [step, setStep] = useState(1);
@@ -23,9 +22,8 @@ export default function Chatbot() {
 
   const queryOptions = [
     "I want to book a cleaning service",
-    "I want to know the service price",
+ 
     "I need help with my existing booking",
-    "I want to cancel or reschedule my booking",
     "I want to talk to support",
   ];
 
@@ -44,9 +42,7 @@ export default function Chatbot() {
     </svg>
   );
 
-  const closeIcon = (
-    <span className="text-3xl leading-none font-light">×</span>
-  );
+  const closeIcon = <span className="text-3xl leading-none font-light">×</span>;
 
   const addMessage = (from, text) => {
     setMessages((prev) => [...prev, { from, text }]);
@@ -81,11 +77,19 @@ export default function Chatbot() {
 
       await createUnread("Ticket");
 
-      addMessage("bot", "Thank you! Your request has been submitted successfully. We’ll get back to you within 24 hours.");
+      addMessage(
+        "bot",
+        "Thank you! Your request has been submitted successfully. We’ll get back to you within 24 hours."
+      );
+
       setStep(4);
+      setInputValue("");
     } catch (error) {
       console.error("Ticket save error:", error);
-      addMessage("bot", "Something went wrong while submitting your request. Please try again.");
+      addMessage(
+        "bot",
+        "Something went wrong while submitting your request. Please try again."
+      );
     } finally {
       setIsSaving(false);
     }
@@ -112,20 +116,27 @@ export default function Chatbot() {
 
     if (step === 2) {
       if (!validateIndianMobile(trimmedValue)) {
-        addMessage("bot", "Please enter a valid Indian mobile number. Example: 98*******");
+        addMessage(
+          "bot",
+          "Please enter a valid Indian mobile number. Example: 9876543210"
+        );
         return;
       }
 
       const cleanMobile = normalizeIndianMobile(trimmedValue);
+
       setPhone(cleanMobile);
-      addMessage("bot", "Please select your query from the options below.");
+      addMessage(
+        "bot",
+        "Please select a suggestion below or type your own query."
+      );
       setStep(3);
       return;
     }
 
     if (step === 3) {
-      if (!queryOptions.includes(trimmedValue)) {
-        addMessage("bot", "Please select one of the available query options.");
+      if (trimmedValue.length < 5) {
+        addMessage("bot", "Please write a little more about your query.");
         return;
       }
 
@@ -157,14 +168,20 @@ export default function Chatbot() {
       {/* Chat Box */}
       <div
         className={`fixed bottom-34 right-6 w-96 h-100 max-w-[90vw] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden z-40 border border-gray-200 transition-all duration-300 ${
-          isOpen ? "opacity-100 scale-100" : "opacity-0 scale-95 pointer-events-none"
+          isOpen
+            ? "opacity-100 scale-100"
+            : "opacity-0 scale-95 pointer-events-none"
         }`}
       >
         {/* Header */}
         <div className="flex justify-between items-center px-5 py-4 bg-gradient-to-r from-slate-950 via-slate-900 to-blue-950 text-white border-b border-gray-200">
           <div>
-            <h3 className="text-lg font-semibold leading-tight">Support Chat</h3>
-            <p className="text-xs text-gray-300 mt-0.5">We usually reply within 24 hours</p>
+            <h3 className="text-lg font-semibold leading-tight">
+              Support Chat
+            </h3>
+            <p className="text-xs text-gray-300 mt-0.5">
+              We usually reply within 24 hours
+            </p>
           </div>
 
           <button
@@ -180,7 +197,9 @@ export default function Chatbot() {
           {messages.map((msg, index) => (
             <div
               key={index}
-              className={`mb-3 flex ${msg.from === "user" ? "justify-end" : "justify-start"}`}
+              className={`mb-3 flex ${
+                msg.from === "user" ? "justify-end" : "justify-start"
+              }`}
             >
               <div
                 className={`py-2.5 px-4 rounded-2xl max-w-[82%] text-sm leading-relaxed shadow-sm ${
@@ -210,21 +229,29 @@ export default function Chatbot() {
           )}
 
           {isSaving && (
-            <div className="mt-3 text-xs text-gray-500">Submitting your request...</div>
+            <div className="mt-3 text-xs text-gray-500">
+              Submitting your request...
+            </div>
           )}
 
           <div ref={messagesEndRef} />
         </div>
 
         {/* Input */}
-        {step !== 4 && step !== 3 && (
+        {step !== 4 && (
           <div className="flex p-4 border-t border-gray-200 bg-white">
             <input
               type={step === 2 ? "tel" : "text"}
               className="flex-1 p-2.5 border border-gray-300 rounded-xl outline-none text-sm focus:ring-2 focus:ring-slate-800 focus:border-slate-800"
-              placeholder={step === 1 ? "Enter your name..." : "Enter mobile number..."}
+              placeholder={
+                step === 1
+                  ? "Enter your name..."
+                  : step === 2
+                  ? "Enter mobile number..."
+                  : "Type your query..."
+              }
               value={inputValue}
-              maxLength={step === 2 ? 14 : 40}
+              maxLength={step === 2 ? 14 : step === 1 ? 40 : 200}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSend()}
               disabled={isSaving}
