@@ -3,6 +3,7 @@ import { FaFacebookF, FaInstagram, FaYoutube } from "react-icons/fa";
 import "./FooterWithCarousel.css";
 import Chatbot from "./Chatbot";
 import { useSelector } from "react-redux";
+
 const cities = [
   "Delhi",
   "Gurgaon",
@@ -52,6 +53,7 @@ const FooterWithCarousel = () => {
       <div className="bg-[#1e1e1e] text-gray-300 font-[Inter] px-8 sm:px-12 lg:px-16 py-8 sm:py-8 lg:py-8 min-h-[200px] rounded-3xl mx-4 mb-2 shadow-md">
         <div className="container mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-12">
+            
             {/* Company Info */}
             <div className="flex flex-col space-y-4">
               <div className="flex items-center space-x-2">
@@ -63,7 +65,7 @@ const FooterWithCarousel = () => {
                   className="object-cover rounded-full transition-transform duration-500"
                 />
               </div>
-
+  <GooglePlayButton2 url="https://tinyurl.com/urbenauraservices" />
               <p className="text-md">
                 Your one-stop solution for all home services – from expert
                 cleaning to reliable repairs and professional plumbing. Quick,
@@ -134,6 +136,8 @@ const FooterWithCarousel = () => {
                   </a>
                 </li>
               </ul>
+           
+                          
             </div>
 
             {/* Social Media */}
@@ -210,6 +214,7 @@ const FooterWithCarousel = () => {
 
       {/* Bottom Bar */}
       <div className="footer-bottom-bar">
+        
         <p>
           ©Urban Aura Services Pvt Ltd - All rights reserved |{" "}
           <a href="/PrivacyPolicy">Privacy Policy </a> |{" "}
@@ -224,5 +229,36 @@ const FooterWithCarousel = () => {
     </>
   );
 };
+
+
+/**
+ * A custom Google Play button with a white background and black text.
+ * Uses the official Google Play triangle logo image.
+ */
+const GooglePlayButton2 = ({ url, className = '' }) => {
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      // White background, black text, rounded corners
+      className={`inline-flex w-45  h-13 items-center gap-3 bg-white px-5 py-2.5 rounded-lg transition-transform duration-200 hover:scale-105 hover:bg-gray-100 ${className}`}
+    >
+      {/* Official multi-colored Google Play triangle logo image */}
+      <img 
+        src="https://img.icons8.com/?size=100&id=L1ws9zn2uD01&format=png&color=000000" 
+        alt="Google Play Icon" 
+        className="h-8 w-8 object-contain"
+      />
+      
+      {/* Black text labels */}
+      <div className="flex flex-col items-start leading-tight">
+        <span className="text-[10px] uppercase font-bold text-black">Get it on</span>
+        <span className="text-lg font-bold text-black">Google Play</span>
+      </div>
+    </a>
+  );
+};
+
 
 export default FooterWithCarousel;

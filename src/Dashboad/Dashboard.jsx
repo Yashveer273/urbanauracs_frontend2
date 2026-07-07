@@ -114,7 +114,7 @@ const pathToTab = {
   "/Dashboard/users": "auth",
   "/Dashboard/ticket": "Ticket",
   "/Dashboard/sales": "sales",
-  "/Dashboard/venders": "VandersSection",
+  "/Dashboard/vendors": "VandersSection",
   "/Dashboard/services": "services",
   "/Dashboard/chat-controller": "Chat-Controller",
   "/Dashboard/banner": "Banner",
@@ -1048,7 +1048,7 @@ const handleHypePriceUpdate = async ({ type, value, city, service, amount }) => 
       case "VandersSection":
         return (
           <div className="">
-            {tagAccess.includes("Venders Section") ||
+            {tagAccess.includes("Vendors Section") ||
             tagAccess.includes("Admin") ? (
               <VandersSection />
             ) : (

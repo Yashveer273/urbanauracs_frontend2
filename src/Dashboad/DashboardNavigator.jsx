@@ -53,9 +53,9 @@ const tabs = [
     icon: DollarSignIcon,
   },
   {
-    path: "/Dashboard/venders",
+    path: "/Dashboard/vendors",
     counterKey: "VandersSection",
-    label: "Vanders",
+    label: "Vendors",
     icon: UserCheckIcon,
   },
   {

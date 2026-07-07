@@ -65,7 +65,7 @@ function App() {
           <Route path="users" element={<AuthDashboard />} />
           <Route path="ticket" element={<TicketDashboard />} />
           <Route path="sales" element={<SalesSection />} />
-          <Route path="venders" element={<VandersSection />} />
+          <Route path="vendors" element={<VandersSection />} />
           <Route path="services" element={<ServiceManager />} />
           <Route path="chat-controller" element={<AdminChat />} />
           <Route path="banner" element={<BannerManagement />} />
