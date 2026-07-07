@@ -24,7 +24,7 @@ export default function Chatbot() {
     "I want to book a cleaning service",
  
     "I need help with my existing booking",
-    "I want to talk to support",
+    "Connect me with an agent",
   ];
 
   useEffect(() => {
@@ -177,7 +177,7 @@ export default function Chatbot() {
         <div className="flex justify-between items-center px-5 py-4 bg-gradient-to-r from-slate-950 via-slate-900 to-blue-950 text-white border-b border-gray-200">
           <div>
             <h3 className="text-lg font-semibold leading-tight">
-              Chat Support
+              Chat Bot Support
             </h3>
             <p className="text-xs text-gray-300 mt-0.5">
               We usually reply within 24 hours
