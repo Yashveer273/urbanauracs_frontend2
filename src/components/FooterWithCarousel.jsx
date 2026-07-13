@@ -242,7 +242,7 @@ const GooglePlayButton2 = ({ url, className = '' }) => {
       target="_blank"
       rel="noopener noreferrer"
       // White background, black text, rounded corners
-      className={`inline-flex w-45  h-13 items-center gap-3 bg-white px-5 py-2.5 rounded-lg transition-transform duration-200 hover:scale-105 hover:bg-gray-100 ${className}`}
+      className={`inline-flex w-48  h-15 items-center gap-3 bg-white px-5 py-2.5 rounded-lg transition-transform duration-200 hover:scale-105 hover:bg-gray-100 ${className}`}
     >
       {/* Official multi-colored Google Play triangle logo image */}
       <img 

@@ -4,7 +4,7 @@ import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { toggleChatbox, selectChatbox } from "../store/chatboxSlice";
 import { firestore } from "../firebaseCon";
 import { createUnread } from "../Dashboad/utility";
-
+import { FaWhatsapp } from "react-icons/fa";
 export default function Chatbot() {
   const dispatch = useDispatch();
   const isOpen = useSelector(selectChatbox);
@@ -158,13 +158,34 @@ export default function Chatbot() {
   return (
     <>
       {/* Floating Chat Button */}
-      <div
-        className="fixed bottom-15 right-6 z-50 w-15 h-15 p-4 bg-slate-950 text-white rounded-full shadow-2xl cursor-pointer transition-all duration-300 hover:scale-110 hover:bg-blue-950 flex items-center justify-center"
-        onClick={() => dispatch(toggleChatbox())}
-      >
-        {isOpen ? closeIcon : chatIcon}
-      </div>
+      
 
+
+<div className="fixed bottom-6 right-6 z-50 flex flex-row items-center gap-4">
+  {/* WhatsApp Floating Button */}
+  <a
+  href={`https://wa.me/917015953419?text=${encodeURIComponent(
+    `Hello Urban Aura Services,
+
+I would like to know more about your services and discuss my requirements. Please let me know how we can proceed.
+
+Thank you.`
+  )}`}
+  target="_blank"
+  rel="noopener noreferrer"
+  className="w-15 h-15 rounded-full bg-green-500 hover:bg-green-600 shadow-2xl transition-all duration-300 hover:scale-110 flex items-center justify-center"
+>
+  <FaWhatsapp size={34} className="text-white" />
+</a>
+
+  {/* Chatbot Floating Button */}
+  <div
+    className="w-15 h-15 bg-slate-950 hover:bg-blue-950 text-white rounded-full shadow-2xl cursor-pointer transition-all duration-300 hover:scale-110 flex items-center justify-center"
+    onClick={() => dispatch(toggleChatbox())}
+  >
+    {isOpen ? closeIcon : chatIcon}
+  </div>
+</div>
       {/* Chat Box */}
       <div
         className={`fixed bottom-34 right-6 w-96 h-100 max-w-[90vw] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden z-40 border border-gray-200 transition-all duration-300 ${

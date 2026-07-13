@@ -90,7 +90,32 @@ export default function SalesSection() {
 
   const [tagAccess, setTagAccess] = useState([]);
   const [saleDataTem, setsaleDataTem] = useState(null);
+const getSaleDate = (dateValue) => {
+  if (!dateValue) return null;
 
+  let date;
+
+  // Firebase Timestamp
+  if (typeof dateValue?.toDate === "function") {
+    date = dateValue.toDate();
+  }
+
+  // Firebase Timestamp object: { seconds, nanoseconds }
+  else if (typeof dateValue?.seconds === "number") {
+    date = new Date(dateValue.seconds * 1000);
+  }
+
+  // Normal JavaScript date string / ISO date
+  else {
+    date = new Date(dateValue);
+  }
+
+  if (Number.isNaN(date.getTime())) {
+    return null;
+  }
+
+  return date;
+};
   // ------------------------------------------------------------------
   const checkAuth = () => {
     const token = localStorage.getItem("urbanauraservicesdashauthToken");
@@ -198,7 +223,7 @@ export default function SalesSection() {
 
 const applyFilters = () => {
   const result = salesData.filter((sale) => {
-    const saleDate = normalizeDate(sale.date_time);
+    const saleDate = getSaleDate(sale.date_time);
 
     const phoneFilter = String(filters.phone || "").trim();
     const nameFilter = safeText(filters.name);
@@ -210,7 +235,9 @@ const applyFilters = () => {
     // Phone
     if (phoneFilter) {
       const salePhone = String(sale.phone_number || "");
-      const whatsappPhone = String(sale.ConfurmWhatsAppMobileNumber || "");
+      const whatsappPhone = String(
+        sale.ConfurmWhatsAppMobileNumber || "",
+      );
 
       if (
         !salePhone.includes(phoneFilter) &&
@@ -221,10 +248,11 @@ const applyFilters = () => {
     }
 
     // Name
-    if (nameFilter) {
-      if (!safeText(sale.name).includes(nameFilter)) {
-        return false;
-      }
+    if (
+      nameFilter &&
+      !safeText(sale.name).includes(nameFilter)
+    ) {
+      return false;
     }
 
     // Order ID
@@ -243,15 +271,18 @@ const applyFilters = () => {
     }
 
     // Responsible Person
-    if (responsibleFilter) {
-      if (safeText(sale.responsible) !== responsibleFilter) {
-        return false;
-      }
+    if (
+      responsibleFilter &&
+      safeText(sale.responsible) !== responsibleFilter
+    ) {
+      return false;
     }
 
     // Responsible Vendor
     if (vendorFilter) {
-      const saleVendorName = safeText(sale?.responsibleVendor?.vendorName);
+      const saleVendorName = safeText(
+        sale?.responsibleVendor?.vendorName,
+      );
 
       if (saleVendorName !== vendorFilter) {
         return false;
@@ -266,28 +297,53 @@ const applyFilters = () => {
         if (saleStatus && saleStatus !== "pending") {
           return false;
         }
-      } else {
-        if (saleStatus !== statusFilter) {
-          return false;
-        }
+      } else if (saleStatus !== statusFilter) {
+        return false;
       }
+    }
+
+    // A record without a valid date must not pass a date filter
+    if (
+      (filters.dateMode === "single" ||
+        filters.dateMode === "range") &&
+      !saleDate
+    ) {
+      return false;
     }
 
     // Single Date
     if (filters.dateMode === "single" && filters.onDate) {
-      if (saleDate !== filters.onDate) {
+      const selectedStart = new Date(`${filters.onDate}T00:00:00`);
+      const selectedEnd = new Date(`${filters.onDate}T23:59:59.999`);
+
+      if (
+        saleDate < selectedStart ||
+        saleDate > selectedEnd
+      ) {
         return false;
       }
     }
 
     // Date Range
     if (filters.dateMode === "range") {
-      if (filters.dateX_To && saleDate < filters.dateX_To) {
-        return false;
+      if (filters.dateX_To) {
+        const rangeStart = new Date(
+          `${filters.dateX_To}T00:00:00`,
+        );
+
+        if (saleDate < rangeStart) {
+          return false;
+        }
       }
 
-      if (filters.dateY && saleDate > filters.dateY) {
-        return false;
+      if (filters.dateY) {
+        const rangeEnd = new Date(
+          `${filters.dateY}T23:59:59.999`,
+        );
+
+        if (saleDate > rangeEnd) {
+          return false;
+        }
       }
     }
 
@@ -662,8 +718,8 @@ const applyFilters = () => {
     "Responsible",
     "Comment",
     "Vendor",
-    "create Invoice",
     "WhatsApp Msg",
+    "create Invoice",
   ];
   const orderStatusOptions = [
     "Pending",

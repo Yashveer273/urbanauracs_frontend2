@@ -3,6 +3,7 @@ import { FaFacebook, FaInstagram, FaYoutube } from "react-icons/fa";
 import { Copy, Check} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import GooglePlayButton from "../components/GooglePlayButton";
 
 export default function OrderSuccess({id}) {
   const navigator =useNavigate();
@@ -73,7 +74,7 @@ const handleCopy = async (text) => {
       </a>
 
       {/* Social Media */}
-      <div className="flex space-x-6 mt-10">
+      <div className="flex space-x-6 mt-5">
         <a
           href="https://www.facebook.com/people/Urban-Aura-Services/61578697472510/?rdid=dSpmNYdUtKxfvQEg&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F1AyHYzdyE5%2F"
           target="_blank"
@@ -95,6 +96,9 @@ const handleCopy = async (text) => {
         >
           <FaYoutube size={28} className="text-red-600 hover:text-red-800" />
         </a>
+      </div>
+<div className="mt-5">
+      <GooglePlayButton />
       </div>
     </div>
   );
