@@ -93,7 +93,7 @@ export default function HeroBannerSlider() {
           heroBannerImages.map((img, index) => (
             <SwiperSlide key={index}>
               <img
-                src={img.src}
+                src={img.src?.trim() || null}
                 alt={"Banner image"}
                 className="w-full h-[300px] md:h-[400px] object-cover rounded-2xl"
                 onError={(e) => {

@@ -114,7 +114,7 @@ const handleDecrease = (id) => {
             >
               <div className="flex-shrink-0 w-16 h-16 overflow-hidden rounded-md mr-4">
                 <img
-                  src={item.serviceImage}
+                  src={item.serviceImage?.trim() || null}
                   alt={item.title}
                   className="w-full h-full object-cover"
                 />

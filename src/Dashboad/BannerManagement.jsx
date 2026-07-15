@@ -139,7 +139,7 @@ const BannerManagement = () => {
                   >
                     <div className="h-64 overflow-hidden bg-slate-100">
                       <img
-                        src={banner.imageLink}
+                        src={banner.imageLink?.trim() || null}
                         alt={banner.bannerType}
                         className="h-full w-full object-cover"
                       />

@@ -128,61 +128,96 @@ export const fetchdashAuth = async () => {
   return res;
 };
 
+
+
 export const fetchProdDataDESC = async () => {
   try {
-    const snapshot = await getDocs(
+    const categorySnapshot = await getDocs(
       collection(firestore, "homeCleaningServiceDB"),
     );
 
-    // Step 1: get raw data
-    let result = snapshot.docs.map((doc) => doc.data());
+    const categories = await Promise.all(
+      categorySnapshot.docs.map(async (categoryDoc) => {
+        const categoryData = categoryDoc.data();
 
-    // Step 2: reverse order of main list by ID
-    result.sort((a, b) => (b.id || 0) - (a.id || 0));
+        const vendorSnapshot = await getDocs(
+          collection(
+            firestore,
+            "homeCleaningServiceDB",
+            categoryDoc.id,
+            "vendors",
+          ),
+        );
 
-    // Step 3: reverse order inside each "data" array
-    result = result.map((item) => ({
-      ...item,
-      data: Array.isArray(item.data)
-        ? [...item.data].sort((a, b) => (b.id || 0) - (a.id || 0))
-        : [], // fallback
-    }));
+        const vendors = await Promise.all(
+          vendorSnapshot.docs.map(async (vendorDoc) => {
+            const vendorData = vendorDoc.data();
 
-    return result;
+            const serviceSnapshot = await getDocs(
+              collection(
+                firestore,
+                "homeCleaningServiceDB",
+                categoryDoc.id,
+                "vendors",
+                vendorDoc.id,
+                "services",
+              ),
+            );
+
+            const vendorServices = serviceSnapshot.docs
+              .map((serviceDoc) => ({
+                id: serviceDoc.id,
+                ...serviceDoc.data(),
+              }))
+              .sort(
+                (a, b) =>
+                  Number(b.id || 0) - Number(a.id || 0),
+              );
+
+            return {
+              ...vendorData,
+
+              // Preserve the same old vendor structure
+              vendorId:
+                vendorData.vendorId || vendorDoc.id,
+
+              services: vendorServices,
+            };
+          }),
+        );
+
+        vendors.sort(
+          (a, b) =>
+            Number(b.vendorId || b.id || 0) -
+            Number(a.vendorId || a.id || 0),
+        );
+
+        return {
+          ...categoryData,
+
+          // Preserve the same old category structure
+          id: categoryData.id || categoryDoc.id,
+          ServiceName: categoryData.ServiceName || "",
+
+          // Same as the previous Firebase "data" array
+          data: vendors,
+        };
+      }),
+    );
+
+    categories.sort(
+      (a, b) =>
+        Number(b.id || 0) - Number(a.id || 0),
+    );
+
+    return categories;
   } catch (error) {
     console.error("Error fetching services:", error);
     return [];
   }
 };
-export const migrateServiceDataPure = async (sourceColl, destinationColl) => {
-  try {
-    // 1. Get all documents from source
-    const snapshot = await getDocs(collection(firestore, sourceColl));
 
-    // 2. Initialize a Batch (Atomic operation)
-    const batch = writeBatch(firestore);
 
-    snapshot.docs.forEach((document) => {
-      // Extract the raw data exactly as it is in the DB
-      const rawData = document.data();
-
-      // Create reference in the new collection using the SAME Document ID
-      const newDocRef = doc(firestore, destinationColl, document.id);
-
-      // Set the data without any manipulation
-      batch.set(newDocRef, rawData);
-    });
-
-    // 3. Execute the batch
-    await batch.commit();
-
-    console.log(`Migration Complete: Moved ${snapshot.size} documents.`);
-    return { success: true, count: snapshot.size };
-  } catch (error) {
-    console.error("Migration Error:", error);
-    throw error;
-  }
-};
 export const login = async (mobileNumber, logtoken) => {
   try {
     const res = await axios.post(`${API_BASE_URL}/login`, {

@@ -9,7 +9,8 @@ import {
 import CityHypePopup from "./CityHypePopup";
 import ServiceHypePopup from "./ServiceHypePopup";
 import React, { useState } from "react";
-import { migrateServiceDataPure } from "../API";
+
+import { migrateBackupToNewServiceStructure, migrateServiceDataPure } from "./serviceFirestore";
 
 const ServiceManager = ({
   services,
@@ -32,9 +33,61 @@ const ServiceManager = ({
   handleDeleteVendor,
   onHypePriceUpdate,
 }) => {
- 
-
+  const [isRestoringBackup, setIsRestoringBackup] = useState(false);
+  const [migrationProgress, setMigrationProgress] = useState("");
   // States for City Hype
+
+  const handleRestoreBackupToNewStructure = async () => {
+    if (isRestoringBackup) return;
+
+    const confirmed = window.confirm(
+      "This will read the old backup from updatedCleaningServiceDB and insert or update it in the new homeCleaningServiceDB structure. Existing records with the same IDs will be updated. Continue?",
+    );
+
+    if (!confirmed) return;
+
+    setIsRestoringBackup(true);
+    setMigrationProgress("Starting migration...");
+
+    try {
+      const result = await migrateBackupToNewServiceStructure({
+        onProgress: ({
+          currentCategory,
+          totalCategories,
+          categoryName,
+          migratedVendors,
+          migratedServices,
+        }) => {
+          setMigrationProgress(
+            `Processing ${currentCategory}/${totalCategories}: ${
+              categoryName || "Unnamed category"
+            } · Vendors: ${migratedVendors} · Services: ${migratedServices}`,
+          );
+        },
+      });
+
+      alert(
+        `Migration completed successfully.\n\nCategories: ${result.migratedCategories}\nVendors: ${result.migratedVendors}\nServices: ${result.migratedServices}`,
+      );
+
+      setMigrationProgress(
+        `Completed: ${result.migratedCategories} categories, ${result.migratedVendors} vendors and ${result.migratedServices} services.`,
+      );
+
+      // Refresh the dashboard using your new structure fetch function.
+      if (typeof window !== "undefined") {
+        window.location.reload();
+      }
+    } catch (error) {
+      console.error("Backup migration failed:", error);
+
+      setMigrationProgress("Migration failed.");
+
+      alert(error.message || "Unable to migrate the backup data.");
+    } finally {
+      setIsRestoringBackup(false);
+    }
+  };
   const [isCityHypeOpen, setIsCityHypeOpen] = useState(false);
   const [selectedCity, setSelectedCity] = useState("Select City");
 
@@ -97,62 +150,97 @@ const ServiceManager = ({
 
   // Handle City Hype Update
   const handleCityHypeUpdate = async (data) => {
-  console.log("City Service Hype Update:", data);
+    console.log("City Service Hype Update:", data);
 
-  const { city, service, adjustmentAmount } = data;
-  const amount = parseFloat(adjustmentAmount) || 0;
+    const { city, service, adjustmentAmount } = data;
+    const amount = parseFloat(adjustmentAmount) || 0;
 
-  if (!city || city === "Select City") {
-    alert("Please select a city");
-    return;
-  }
+    if (!city || city === "Select City") {
+      alert("Please select a city");
+      return;
+    }
 
-  if (!service || service === "Select Service") {
-    alert("Please select a service");
-    return;
-  }
+    if (!service || service === "Select Service") {
+      alert("Please select a service");
+      return;
+    }
 
-  if (amount === 0) {
-    alert("Please enter a valid amount");
-    return;
-  }
+    if (amount === 0) {
+      alert("Please enter a valid amount");
+      return;
+    }
 
-  if (!onHypePriceUpdate) {
-    alert("Firebase update handler is not available");
-    return;
-  }
+    if (!onHypePriceUpdate) {
+      alert("Firebase update handler is not available");
+      return;
+    }
 
-  setIsHypeSaving(true);
+    setIsHypeSaving(true);
 
-  try {
-    const result = await onHypePriceUpdate({
-      type: "cityService",
-      city,
-      service,
-      amount,
-    });
+    try {
+      const result = await onHypePriceUpdate({
+        type: "cityService",
+        city,
+        service,
+        amount,
+      });
 
-    alert(
-      `Successfully added Rs ${amount} to ${result.updatedPriceCount} prices in ${service} for ${city}`,
-    );
+      alert(
+        `Successfully added Rs ${amount} to ${result.updatedPriceCount} prices in ${service} for ${city}`,
+      );
 
-    setIsCityHypeOpen(false);
-  } catch (error) {
-    console.error("Error updating city service hype:", error);
-    alert(error.message || "Failed to update city service prices");
-  } finally {
-    setIsHypeSaving(false);
-  }
-};
+      setIsCityHypeOpen(false);
+    } catch (error) {
+      console.error("Error updating city service hype:", error);
+      alert(error.message || "Failed to update city service prices");
+    } finally {
+      setIsHypeSaving(false);
+    }
+  };
   return (
     <>
+      <div className="flex flex-col gap-2">
+        {/* <button
+          type="button"
+          disabled={isRestoringBackup}
+          onClick={handleRestoreBackupToNewStructure}
+          className={`group flex items-center justify-center gap-3 rounded-xl px-6 py-2.5 text-[10px] font-bold uppercase tracking-[0.2em] transition-all duration-300 ${
+            isRestoringBackup
+              ? "cursor-wait bg-slate-300 text-slate-500"
+              : "bg-emerald-600 text-white shadow-lg hover:bg-emerald-700 active:scale-95"
+          }`}
+        >
+          {isRestoringBackup ? (
+            <>
+              <Loader2 size={16} className="animate-spin" />
+              <span>Migrating...</span>
+            </>
+          ) : (
+            <>
+              <DatabaseBackup size={16} />
+              <span>Restore Backup Data</span>
+            </>
+          )}
+        </button> */}
+
+        {migrationProgress && (
+          <p className="max-w-sm text-xs text-slate-500">{migrationProgress}</p>
+        )}
+      </div>
+
       {/* ================= SERVICES LIST ================= */}
       {!selectedService && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 transition-opacity duration-500"> {/* Shivani */}
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-6">     {/* Shivani */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 transition-opacity duration-500">
+          {" "}
+          {/* Shivani */}
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-6">
+            {" "}
+            {/* Shivani */}
             Service Categories
           </h2>
-          <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-6">   {/* Shivani */}
+          <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-6">
+            {" "}
+            {/* Shivani */}
             <button
               onClick={() => setIsServiceHypeOpen(true)}
               className="flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-700 font-semibold rounded-lg border border-indigo-100 hover:bg-indigo-100 transition-colors shadow-sm"
@@ -160,7 +248,6 @@ const ServiceManager = ({
               <TrendingUpIcon size={18} />
               Hype by Service
             </button>
-
             <ServiceHypePopup
               isOpen={isServiceHypeOpen}
               onClose={() => setIsServiceHypeOpen(false)}
@@ -177,24 +264,23 @@ const ServiceManager = ({
               <TrendingUpIcon size={18} />
               Hype by City
             </button>
-
             {/* The Popup Call */}
             <CityHypePopup
-  isOpen={isCityHypeOpen}
-  onClose={() => setIsCityHypeOpen(false)}
-  selectedCity={selectedCity}
-  selectedService="Select Service"
-  onSubmit={handleCityHypeUpdate}
-  isSubmitting={isHypeSaving}
-  cities={[
-    ...new Set(
-      services.flatMap((s) =>
-        s.data.map((v) => v.location || v.vendorlocation),
-      ),
-    ),
-  ]}
-  services={services.map((s) => s.ServiceName)}
-/>
+              isOpen={isCityHypeOpen}
+              onClose={() => setIsCityHypeOpen(false)}
+              selectedCity={selectedCity}
+              selectedService="Select Service"
+              onSubmit={handleCityHypeUpdate}
+              isSubmitting={isHypeSaving}
+              cities={[
+                ...new Set(
+                  services.flatMap((s) =>
+                    s.data.map((v) => v.location || v.vendorlocation),
+                  ),
+                ),
+              ]}
+              services={services.map((s) => s.ServiceName)}
+            />
             <button
               onClick={async () => {
                 if (isMigrateinProcess) {
@@ -210,13 +296,14 @@ const ServiceManager = ({
                 setisMigrateinProcess(false);
               }}
               className={`
-        group flex items-center justify-center gap-3 px-6 py-2.5 
-        rounded-xl font-bold text-[10px] uppercase tracking-[0.25em] 
-        transition-all duration-300
-        ${isMigrateinProcess 
-          ? "bg-slate-900 text-slate-500 cursor-wait" 
-          : "bg-black text-white hover:bg-slate-800 hover:ring-4 hover:ring-slate-900/10 active:scale-95 shadow-xl shadow-black/20"
-        }
+                group flex items-center justify-center gap-3 px-6 py-2.5 
+                rounded-xl font-bold text-[10px] uppercase tracking-[0.25em] 
+                transition-all duration-300
+                ${
+                isMigrateinProcess
+                ? "bg-slate-900 text-slate-500 cursor-wait"
+                : "bg-black text-white hover:bg-slate-800 hover:ring-4 hover:ring-slate-900/10 active:scale-95 shadow-xl shadow-black/20"
+                   }
       `}
             >
               {isMigrateinProcess ? (
@@ -238,10 +325,11 @@ const ServiceManager = ({
           <p className="text-gray-500 mb-6">
             Select a category from the side menu to view and manage vendors.
           </p>
-
           {/* Add Service */}
           <div className="bg-white p-6 rounded-xl shadow-lg mb-8">
-            <div className="flex flex-col md:flex-row gap-4">       {/* Shivani */}
+            <div className="flex flex-col md:flex-row gap-4">
+              {" "}
+              {/* Shivani */}
               <input
                 type="text"
                 className="flex-1 p-3 border rounded-lg focus:ring-2 focus:ring-indigo-500"
@@ -250,7 +338,6 @@ const ServiceManager = ({
                 onChange={(e) => setNewServiceName(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleCreateService()}
               />
-
               <button
                 onClick={handleCreateService}
                 className="px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700"
@@ -260,15 +347,14 @@ const ServiceManager = ({
               </button>
             </div>
           </div>
-
           {/* Services Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">           
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
             {services.map((service) => (
               <div
                 key={service.id}
                 onClick={() => handleSelectService(service)}
-                className="bg-white p-4 md:p-6 rounded-xl shadow-md cursor-pointer hover:scale-105 transition"     
-              >    
+                className="bg-white p-4 md:p-6 rounded-xl shadow-md cursor-pointer hover:scale-105 transition"
+              >
                 {editingServiceId === service.id ? (
                   <input
                     autoFocus
@@ -356,20 +442,20 @@ const ServiceManager = ({
 
       {/* ================= VENDORS LIST ================= */}
       {selectedService && (
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 transition-opacity duration-500"> {/* Shivani */}
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 transition-opacity duration-500">
+          {" "}
+          {/* Shivani */}
           <button
             onClick={handleClosePanel}
             className="mb-4 px-4 py-2 bg-gray-300 rounded"
           >
             ← Back
           </button>
-
           <h2 className="text-3xl font-bold mb-6">
             Vendors for {selectedService.ServiceName}
           </h2>
-
           {selectedService.data.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">     
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {selectedService.data.map((vendor) => (
                 <div
                   key={vendor.vendorId}

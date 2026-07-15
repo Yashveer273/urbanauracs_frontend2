@@ -161,7 +161,7 @@ const AccountMenu = () => {
             <div className="w-20 h-20 rounded-full bg-white flex items-center justify-center text-[#f87559] text-4xl font-bold shadow-md mb-3 border-4 border-white">
               {user?.avatar ? (
                 <img
-                  src={user.avatar}
+                  src={user.avatar?.trim() || null}
                   alt="avatar"
                   className="w-full h-full object-cover rounded-full"
                 />

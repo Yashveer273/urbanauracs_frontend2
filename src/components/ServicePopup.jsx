@@ -21,7 +21,7 @@ const ServicePopup = ({ services }) => {
                 .map((service, index) => (
                   <a href="#" className="custom-service-item-link" key={index}>
                     <div className="custom-service-item">
-                      <img src={service.image} alt={service.ServiceName} className="custom-service-image" />
+                      <img src={service.image?.trim() || null} alt={service.ServiceName} className="custom-service-image" />
                       <span>{service.ServiceName}</span>
                       </div>
                   </a>

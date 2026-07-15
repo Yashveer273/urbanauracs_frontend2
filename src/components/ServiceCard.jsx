@@ -101,7 +101,7 @@ const [imageLoaded, setImageLoaded] = useState(false);
           {!imageLoaded && <div className="image-skeleton" />}
 
           <LazyLoadImage
-            src={service.serviceImage}
+            src={service.serviceImage?.trim() || null}
             alt={service.title}
             className={`service-image ${imageLoaded ? "loaded" : ""}`}
             onLoad={() => setImageLoaded(true)}

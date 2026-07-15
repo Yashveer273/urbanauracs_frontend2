@@ -214,7 +214,7 @@ const DetailedServiceCard = ({ service, userLocation, vendor }) => {
             <div className="flex h-full flex-col md:flex-row">
               <div className="h-130 md:h-full md:w-1/2 flex-shrink-0">
                 <img
-                  src={service.serviceImage}
+                  src={service.serviceImage?.trim() || null}
                   alt={service.title}
                   className="h-130 w-full object-cover"
                 />
@@ -308,7 +308,7 @@ const DetailedServiceCard = ({ service, userLocation, vendor }) => {
     <div className="detailed-card">
       <div className="image-container">
         <img
-          src={service.serviceImage}
+          src={service.serviceImage?.trim() || null}
           alt={service.title}
           className="service-image"
         />

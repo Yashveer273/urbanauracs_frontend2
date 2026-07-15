@@ -115,7 +115,7 @@ export default function AddAppBanner() {
           {image && (
             <div className="mt-5 overflow-hidden rounded-xl border border-gray-200 bg-gray-100">
               <img
-                src={image}
+                src={image.trim() || null}
                 alt="Preview"
                 className="w-full max-h-64 object-cover"
                 onError={(e) => {
@@ -171,7 +171,7 @@ export default function AddAppBanner() {
                     >
                       <td className="p-4">
                         <img
-                          src={banner.image}
+                          src={banner.image?.trim() || null}
                           className="h-14 w-24 object-cover rounded-lg border border-gray-200"
                           alt="Banner"
                         />

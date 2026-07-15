@@ -61,7 +61,7 @@ const Testimonials = () => {
               </div>
               <div className="mt-6 flex items-center gap-3">
                 <img
-                  src={t.avatar}
+                  src={t.avatar?.trim() || null}
                   alt={t.name}
                   className="w-10 h-10 rounded-full object-cover border border-gray-200"
                 />

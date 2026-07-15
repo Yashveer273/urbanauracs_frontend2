@@ -171,7 +171,7 @@ export default function HomeCarousalAssetController() {
                 ) : (
                   <>
                     <img
-                      src={image.src}
+                      src={image.src?.trim() || null}
                       alt={image.alt}
                       className="w-full h-48 object-cover object-center rounded-t-2xl"
                       onError={(e) => {

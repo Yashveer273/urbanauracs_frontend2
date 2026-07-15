@@ -3,12 +3,13 @@ import { useLocation } from "react-router-dom";
 import {
   collection,
   doc,
-  arrayRemove,
+  
   updateDoc,
-  getDocs,
   getDoc,
-  deleteDoc,
+  getDocs,
   addDoc,
+  deleteDoc,
+ 
 } from "firebase/firestore";
 import SalesSection from "./salesSection";
 import { firestore } from "../firebaseCon";
@@ -34,6 +35,10 @@ import AdminChat from "../chat/AdminChat";
 import ImageUploadPopup from "./ImageUploadPopup";
 import WebsiteContentPage from "./WebsiteContentPage";
 import LockedBox from "./LockedBox";
+import { createServiceCategoryInFirestore,updateServiceCategoryInFirestore,
+  deleteServiceCategoryFromFirestore,addVendorToFirestore,updateVendorInFirestore,deleteVendorFromFirestore
+ ,addVendorServiceToFirestore,updateVendorServiceInFirestore,deleteVendorServiceFromFirestore,
+ updateHypePriceInFirestore} from "./serviceFirestore";
 
 const PlusIcon = () => (
   <svg
@@ -130,6 +135,7 @@ const activeTab = pathToTab[location.pathname] || "auth";
   const [FDBservices, setFDBServices] = useState([]);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [tagAccess, setTagAccess] = useState([]);
+  
   // ------------------------------------------------------------------
   const checkAuth = () => {
     const token = localStorage.getItem("urbanauraservicesdashauthToken");
@@ -154,24 +160,49 @@ const activeTab = pathToTab[location.pathname] || "auth";
     window.location.reload();
   };
 
+  const FIRESTORE_MAX_DOC_SIZE_BYTES = 1_048_576;
+
+  const getPayloadSizeInBytes = (payload) =>
+    new TextEncoder().encode(JSON.stringify(payload)).length;
+
+  const syncServicesToFirestore = async (nextServices) => {
+    const normalizedServices = Array.isArray(nextServices) ? nextServices : [];
+    const payload = { data: normalizedServices };
+    const payloadSize = getPayloadSizeInBytes(payload);
+
+    if (payloadSize > FIRESTORE_MAX_DOC_SIZE_BYTES) {
+      throw new Error(
+        `Service data is too large to save in Firestore. Current size is ${payloadSize} bytes, which exceeds the ${FIRESTORE_MAX_DOC_SIZE_BYTES} byte limit.`,
+      );
+    }
+
+    const existingDoc = FDBservices[0];
+
+    if (existingDoc?.id) {
+      const docRef = doc(firestore, "homeCleaningServiceDB", existingDoc.id);
+      await updateDoc(docRef, payload);
+    } else {
+      const newDocRef = await addDoc(collection(firestore, "homeCleaningServiceDB"), payload);
+      setFDBServices([{ id: newDocRef.id, data: normalizedServices }]);
+    }
+
+    setServices(normalizedServices);
+    setFDBServices(
+      normalizedServices.map((service, index) => ({
+        id: service.id || `service-${index}`,
+        data: service.data || [],
+      })),
+    );
+
+    return normalizedServices;
+  };
+
   const SaveSubmit = async (FDBservices, newService) => {
     try {
-      if (FDBservices.length > 0) {
-        // ✅ Document exists → update its 'data' array
-        const docId = FDBservices[0].id;
-        const docRef = doc(firestore, "homeCleaningServiceDB", docId);
-
-        await updateDoc(docRef, {
-          data: newService,
-        });
-      } else {
-        // ❌ No document yet → create a new one
-        await addDoc(collection(firestore, "homeCleaningServiceDB"), {
-          data: newService, // Initialize array with first service
-        });
-      }
+      await syncServicesToFirestore(newService);
     } catch (err) {
       console.error("Error saving service:", err);
+      throw err;
     }
   };
   const DeleteService = async (id) => {
@@ -183,15 +214,7 @@ const activeTab = pathToTab[location.pathname] || "auth";
   };
   const EditServiceDB = async (newService) => {
     try {
-      if (FDBservices.length > 0) {
-        // ✅ Document exists → update its 'data' array
-        const docId = FDBservices[0].id;
-        const docRef = doc(firestore, "homeCleaningServiceDB", docId);
-
-        await updateDoc(docRef, {
-          data: newService,
-        });
-      }
+      await syncServicesToFirestore(newService);
     } catch (err) {
       console.error(err);
     }
@@ -236,19 +259,103 @@ const activeTab = pathToTab[location.pathname] || "auth";
     }
   };
 
-  const fetchServices = async () => {
-    const querySnapshot = await getDocs(
-      collection(firestore, "homeCleaningServiceDB"),
+const SERVICE_COLLECTION = "homeCleaningServiceDB";
+
+const fetchServices = async () => {
+  try {
+    const categorySnapshot = await getDocs(
+      collection(firestore, SERVICE_COLLECTION),
     );
-    const data = querySnapshot.docs.map((doc) => ({
-      id: doc.id, // Firestore document ID
-      ...doc.data(), // Document data
-    }));
-    setFDBServices(data);
-    if (data.length > 0) {
-      setServices(data[0].data || []); // Use [0] only if you have one doc
+
+    if (categorySnapshot.empty) {
+      setFDBServices([]);
+      setServices([]);
+      return;
     }
-  };
+
+    const newStructureCategories = [];
+
+    for (const categoryDoc of categorySnapshot.docs) {
+      const categoryData = categoryDoc.data();
+
+      // A document having ServiceName directly is considered
+      // a category from the new Firestore structure.
+      if (categoryData.ServiceName) {
+        const vendorsSnapshot = await getDocs(
+          collection(
+            firestore,
+            SERVICE_COLLECTION,
+            categoryDoc.id,
+            "vendors",
+          ),
+        );
+
+        const vendors = [];
+
+        for (const vendorDoc of vendorsSnapshot.docs) {
+          const vendorData = vendorDoc.data();
+
+          const vendorServicesSnapshot = await getDocs(
+            collection(
+              firestore,
+              SERVICE_COLLECTION,
+              categoryDoc.id,
+              "vendors",
+              vendorDoc.id,
+              "services",
+            ),
+          );
+
+          const vendorServices = vendorServicesSnapshot.docs.map(
+            (serviceDoc) => ({
+              id: serviceDoc.id,
+              ...serviceDoc.data(),
+            }),
+          );
+
+          vendors.push({
+            vendorId: vendorDoc.id,
+            ...vendorData,
+            services: vendorServices,
+          });
+        }
+
+        newStructureCategories.push({
+          id: categoryDoc.id,
+          ServiceName: categoryData.ServiceName,
+          data: vendors,
+        });
+      }
+    }
+
+    // New structure found
+    if (newStructureCategories.length > 0) {
+      setServices(newStructureCategories);
+      setFDBServices(newStructureCategories);
+      return;
+    }
+
+    // Fall back to your current old structure
+    const oldDocuments = categorySnapshot.docs.map((documentSnapshot) => ({
+      id: documentSnapshot.id,
+      ...documentSnapshot.data(),
+    }));
+
+    const oldMainDocument = oldDocuments.find(
+      (document) => Array.isArray(document.data),
+    );
+
+    const oldServices = oldMainDocument?.data || [];
+
+    setFDBServices(oldDocuments);
+    setServices(oldServices);
+  } catch (error) {
+    console.error("Error fetching services:", error);
+
+    setFDBServices([]);
+    setServices([]);
+  }
+};
   const initialized = useRef(false);
 
   useEffect(() => {
@@ -305,163 +412,136 @@ useEffect(() => {
   const [showServiceDetailsPanel, setShowServiceDetailsPanel] = useState(false);
 
   // Handles adding a new top-level service.
-  const handleCreateService = () => {
-    if (newServiceName.trim() === "") return;
-    const newService = {
-      id: Date.now(),
-      ServiceName: newServiceName.trim(),
-      data: [],
-    };
-    setServices([...services, newService]);
+ const handleCreateService = async () => {
+  const serviceName = newServiceName.trim();
+
+  if (!serviceName) return;
+
+  try {
+    const createdService =
+      await createServiceCategoryInFirestore({
+        id: Date.now(),
+        ServiceName: serviceName,
+      });
+
+    setServices((currentServices) => [
+      ...currentServices,
+      createdService,
+    ]);
+
     setNewServiceName("");
-  };
+  } catch (error) {
+    console.error("Error creating service category:", error);
+    alert(error.message || "Unable to create service category.");
+  }
+};
 
   // Handles deleting a top-level service.
-  const handleDeleteService = async (id) => {
-    try {
-      // ✅ Find the service object to remove
-      const serviceToDelete = services.find((service) => service.id === id);
-      if (!serviceToDelete) return;
+ const handleDeleteService = async (categoryId) => {
+  try {
+    await deleteServiceCategoryFromFirestore(categoryId);
 
-      // ✅ Firestore document reference
-      const docId = FDBservices[0]?.id;
-      if (!docId) {
-        console.error("Firestore doc not found");
-        return;
-      }
-
-      const docRef = doc(firestore, "homeCleaningServiceDB", docId);
-
-      // ✅ Remove that specific object from the array in Firestore
-      await updateDoc(docRef, {
-        data: arrayRemove(serviceToDelete),
-      });
-
-      // ✅ Update React state
-      setServices(services.filter((service) => service.id !== id));
-    } catch (error) {
-      console.error("Error deleting service:", error);
-    }
-  };
-  // Handles saving an edited top-level service name.
-  const handleSaveEdit = async (id, newName) => {
-    const docId = FDBservices[0]?.id;
-    if (!docId || !editingServiceId) {
-      console.error("Missing docId or editingServiceId");
-      return;
-    }
-    setServices(
-      services.map((service) =>
-        service.id === id ? { ...service, ServiceName: newName } : service,
+    setServices((currentServices) =>
+      currentServices.filter(
+        (service) =>
+          String(service.id) !== String(categoryId),
       ),
     );
-    try {
-      const docRef = doc(firestore, "homeCleaningServiceDB", docId);
 
-      // ✅ Fetch current document
-      const snapshot = await getDoc(docRef);
-      if (!snapshot.exists()) {
-        console.error("Document not found");
-        return;
-      }
-
-      const docData = snapshot.data();
-      const currentArray = docData.data || []; // Your services array is under `data`
-
-      // ✅ Update only matching service
-      const updatedArray = currentArray.map((service) =>
-        service.id === editingServiceId
-          ? { ...service, ServiceName: newName }
-          : service,
-      );
-
-      // ✅ Update Firestore
-      await updateDoc(docRef, {
-        data: updatedArray, // ✅ Replace only `data` array
-      });
-    } catch (err) {
-      console.log(err);
+    if (
+      String(selectedService?.id) === String(categoryId)
+    ) {
+      setSelectedService(null);
     }
-    setEditingServiceId(null);
-  };
+  } catch (error) {
+    console.error("Error deleting category:", error);
+    alert(error.message || "Unable to delete category.");
+  }
+};
+  // Handles saving an edited top-level service name.
+ const handleSaveEdit = async (categoryId, newName) => {
+  const cleanName = String(newName || "").trim();
 
-const handleHypePriceUpdate = async ({ type, value, city, service, amount }) => {
-  const docId = FDBservices[0]?.id;
-  if (!docId) throw new Error("Firestore service document not found");
-
-  const numericAmount = Number(amount);
-  if (!Number.isFinite(numericAmount) || numericAmount === 0) {
-    throw new Error("Please enter a valid amount");
+  if (!cleanName) {
+    alert("Please enter the service category name.");
+    return;
   }
 
-  const docRef = doc(firestore, "homeCleaningServiceDB", docId);
-  const snapshot = await getDoc(docRef);
+  try {
+    await updateServiceCategoryInFirestore(
+      categoryId,
+      cleanName,
+    );
 
-  if (!snapshot.exists()) {
-    throw new Error("Firestore service document not found");
-  }
+    setServices((currentServices) =>
+      currentServices.map((service) =>
+        String(service.id) === String(categoryId)
+          ? {
+              ...service,
+              ServiceName: cleanName,
+            }
+          : service,
+      ),
+    );
 
-  let updatedPriceCount = 0;
-  const currentArray = snapshot.data().data || [];
-
-  const updatedArray = currentArray.map((serviceCategory) => {
-    const shouldUpdateWholeService =
-      type === "service" && serviceCategory.ServiceName === value;
-
-    const shouldUpdateCityServiceCategory =
-      type === "cityService" && serviceCategory.ServiceName === service;
-
-    const updatedVendors = (serviceCategory.data || []).map((vendor) => {
-      const shouldUpdateCity =
-        type === "city" &&
-        (vendor.location === value || vendor.vendorlocation === value);
-
-      const shouldUpdateCityService =
-        type === "cityService" &&
-        shouldUpdateCityServiceCategory &&
-        (vendor.location === city || vendor.vendorlocation === city);
-
-      if (!shouldUpdateWholeService && !shouldUpdateCity && !shouldUpdateCityService) {
-        return vendor;
+    setSelectedService((currentService) => {
+      if (
+        !currentService ||
+        String(currentService.id) !== String(categoryId)
+      ) {
+        return currentService;
       }
 
-      const updatedServices = (vendor.services || []).map((vendorService) => {
-        updatedPriceCount += 1;
-
-        return {
-          ...vendorService,
-          price: (Number(vendorService.price) || 0) + numericAmount,
-        };
-      });
-
-      return { ...vendor, services: updatedServices };
+      return {
+        ...currentService,
+        ServiceName: cleanName,
+      };
     });
 
-    return { ...serviceCategory, data: updatedVendors };
+    setEditingServiceId(null);
+    setNewServiceName("");
+  } catch (error) {
+    console.error("Error renaming category:", error);
+    alert(error.message || "Unable to rename category.");
+  }
+};
+
+const handleHypePriceUpdate = async ({
+  type,
+  value,
+  city,
+  service,
+  amount,
+}) => {
+  const {
+    updatedServices,
+    updatedPriceCount,
+  } = await updateHypePriceInFirestore({
+    services: services || [],
+    type,
+    value,
+    city,
+    service,
+    amount,
   });
 
-  if (updatedPriceCount === 0) {
-    throw new Error("No matching service prices found to update");
-  }
-
-  await updateDoc(docRef, { data: updatedArray });
-
-  setServices(updatedArray);
-
-  setFDBServices((prev) =>
-    prev.map((serviceDoc) =>
-      serviceDoc.id === docId
-        ? { ...serviceDoc, data: updatedArray }
-        : serviceDoc,
-    ),
-  );
+  setServices(updatedServices);
+  setFDBServices(updatedServices);
 
   setSelectedService((current) => {
     if (!current) return current;
-    return updatedArray.find((service) => service.id === current.id) || current;
+
+    return (
+      updatedServices.find(
+        (serviceCategory) =>
+          String(serviceCategory.id) === String(current.id),
+      ) || current
+    );
   });
 
-  return { updatedPriceCount };
+  return {
+    updatedPriceCount,
+  };
 };
 
   // Handles opening the vendor details panel for a selected top-level service.
@@ -477,40 +557,72 @@ const handleHypePriceUpdate = async ({ type, value, city, service, amount }) => 
   };
 
   // Handles adding a new vendor to the selected top-level service.
-  const handleAddVendor = (e) => {
-    e.preventDefault();
-    if (!vendorFormData.vendorName.trim()) return;
+  const handleAddVendor = async (e) => {
+  e.preventDefault();
 
-    const newVendor = {
-      ...vendorFormData,
-      vendorId: Date.now(),
-      services: [],
-      rating: parseFloat(vendorFormData.rating) || 0,
-      reviews: vendorFormData.reviews.toString(),
-    };
+  if (!vendorFormData.vendorName.trim()) {
+    alert("Please select a vendor.");
+    return;
+  }
 
-    const updatedServices = services.map((service) => {
-      if (service.id === selectedService.id) {
-        return { ...service, data: [...service.data, newVendor] };
-      }
-      return service;
+  if (!selectedService?.id) {
+    alert("Service category is not selected.");
+    return;
+  }
+
+  try {
+    const createdVendor = await addVendorToFirestore(
+      selectedService.id,
+      {
+        ...vendorFormData,
+        vendorId: Date.now(),
+      },
+    );
+
+    setServices((currentServices) =>
+      currentServices.map((category) => {
+        if (
+          String(category.id) !==
+          String(selectedService.id)
+        ) {
+          return category;
+        }
+
+        return {
+          ...category,
+          data: [...(category.data || []), createdVendor],
+        };
+      }),
+    );
+
+    setSelectedService((currentService) => {
+      if (!currentService) return currentService;
+
+      return {
+        ...currentService,
+        data: [
+          ...(currentService.data || []),
+          createdVendor,
+        ],
+      };
     });
 
-    setServices(updatedServices);
-    const updatedSelectedService = updatedServices.find(
-      (s) => s.id === selectedService.id,
-    );
-    setSelectedService(updatedSelectedService);
-
     setShowVendorForm(false);
+
     setVendorFormData({
       vendorName: "",
       vendorImage: "",
       rating: "",
       reviews: "",
       location: "",
+      vendorlocation: "",
+      vendor_id: "",
     });
-  };
+  } catch (error) {
+    console.error("Error adding vendor:", error);
+    alert(error.message || "Unable to add vendor.");
+  }
+};
 
   // Handles editing an existing vendor.
   const handleEditVendor = (vendor) => {
@@ -526,109 +638,126 @@ const handleHypePriceUpdate = async ({ type, value, city, service, amount }) => 
   };
 
   // Handles updating a vendor's details.
-  const handleUpdateVendor = async (e) => {
-    e.preventDefault();
+ const handleUpdateVendor = async (e) => {
+  e.preventDefault();
 
-    const updatedServices = await Promise.all(
-      services.map(async (service) => {
-        if (service.id === selectedService.id) {
-          const updatedData = await Promise.all(
-            service.data.map(async (vendor) => {
-              if (vendor.vendorId === editingVendorId) {
-                const updatedVendor = {
-                  ...vendor,
-                  vendorName: vendorFormData.vendorName,
-                  vendorImage: vendorFormData.vendorImage,
-                  rating: parseFloat(vendorFormData.rating) || vendor.rating,
-                  reviews: vendorFormData.reviews,
-                  location: vendorFormData.location,
-                };
+  if (!selectedService?.id || !editingVendorId) {
+    alert("Vendor details are incomplete.");
+    return;
+  }
 
-                // ✅ Update in Firestore
-                await EditVendorDB(service.id, vendor.vendorId, updatedVendor);
+  try {
+    await updateVendorInFirestore(
+      selectedService.id,
+      editingVendorId,
+      vendorFormData,
+    );
 
-                return updatedVendor;
-              }
-              return vendor;
-            }),
-          );
-          return { ...service, data: updatedData };
+    const updatedVendor = {
+      ...selectedService.data.find(
+        (vendor) =>
+          String(vendor.vendorId) ===
+          String(editingVendorId),
+      ),
+      ...vendorFormData,
+      vendorId: editingVendorId,
+      rating:
+        Number(vendorFormData.rating) || 0,
+      reviews: String(vendorFormData.reviews || ""),
+    };
+
+    setServices((currentServices) =>
+      currentServices.map((category) => {
+        if (
+          String(category.id) !==
+          String(selectedService.id)
+        ) {
+          return category;
         }
-        return service;
+
+        return {
+          ...category,
+          data: (category.data || []).map((vendor) =>
+            String(vendor.vendorId) ===
+            String(editingVendorId)
+              ? updatedVendor
+              : vendor,
+          ),
+        };
       }),
     );
 
-    // ✅ Update local state with resolved data
-    setServices(updatedServices);
+    setSelectedService((currentService) => ({
+      ...currentService,
+      data: (currentService.data || []).map((vendor) =>
+        String(vendor.vendorId) ===
+        String(editingVendorId)
+          ? updatedVendor
+          : vendor,
+      ),
+    }));
 
-    // ✅ Update selected service too
-    const updatedSelectedService = updatedServices.find(
-      (s) => s.id === selectedService.id,
-    );
-    setSelectedService(updatedSelectedService);
-
-    // ✅ Reset form
     setEditingVendorId(null);
     setShowVendorForm(false);
+
     setVendorFormData({
       vendorName: "",
       vendorImage: "",
       rating: "",
       reviews: "",
       location: "",
+      vendorlocation: "",
+      vendor_id: "",
     });
-  };
+  } catch (error) {
+    console.error("Error updating vendor:", error);
+    alert(error.message || "Unable to update vendor.");
+  }
+};
 
   // Handles deleting a vendor from the selected top-level service.
   const handleDeleteVendor = async (vendorId) => {
-    try {
-      const docId = FDBservices[0]?.id; // Main Firestore doc ID
-      if (!docId) {
-        console.error("Firestore doc not found");
-        return;
-      }
+  if (!selectedService?.id) return;
 
-      const docRef = doc(firestore, "homeCleaningServiceDB", docId);
+  try {
+    await deleteVendorFromFirestore(
+      selectedService.id,
+      vendorId,
+    );
 
-      // ✅ Fetch current document
-      const snapshot = await getDoc(docRef);
-      if (!snapshot.exists()) {
-        console.error("Document not found");
-        return;
-      }
-
-      const docData = snapshot.data();
-      const currentArray = docData.data || []; // Top-level `data` array of services
-
-      // ✅ Create updated array: remove vendor from selected service
-      const updatedArray = currentArray.map((service) => {
-        if (service.id === selectedService.id) {
-          // ✅ Remove vendor by ID using index (not filter)
-          const vendors = [...service.data];
-          const vendorIndex = vendors.findIndex((v) => v.vendorId === vendorId);
-          if (vendorIndex !== -1) {
-            vendors.splice(vendorIndex, 1);
-          }
-          return { ...service, data: vendors };
+    setServices((currentServices) =>
+      currentServices.map((category) => {
+        if (
+          String(category.id) !==
+          String(selectedService.id)
+        ) {
+          return category;
         }
-        return service;
-      });
 
-      // ✅ Update Firestore
-      await updateDoc(docRef, {
-        data: updatedArray, // Replace only `data` array
-      });
+        return {
+          ...category,
+          data: (category.data || []).filter(
+            (vendor) =>
+              String(vendor.vendorId) !==
+              String(vendorId),
+          ),
+        };
+      }),
+    );
 
-      // ✅ Update local state
-      setServices(updatedArray);
-      const updatedSelectedService = updatedArray.find(
-        (s) => s.id === selectedService.id,
-      );
-      setSelectedService(updatedSelectedService);
-    } catch (error) {
-      console.error("Error deleting vendor:", error);
-    }
-  };
+    setSelectedService((currentService) => ({
+      ...currentService,
+      data: (currentService.data || []).filter(
+        (vendor) =>
+          String(vendor.vendorId) !==
+          String(vendorId),
+      ),
+    }));
+  } catch (error) {
+    console.error("Error deleting vendor:", error);
+    alert(error.message || "Unable to delete vendor.");
+  }
+};
 
   // ----- Functions for Vendor Services -----
   const handleSelectVendor = (vendor) => {
@@ -642,56 +771,87 @@ const handleHypePriceUpdate = async ({ type, value, city, service, amount }) => 
   };
 
   // Handles adding a new service to the selected vendor.
-  const handleAddServiceToVendor = async (e) => {
-    e.preventDefault();
-    if (!serviceFormData.title.trim()) return;
+const handleAddServiceToVendor = async (e) => {
+  e.preventDefault();
 
-    const newService = {
-      ...serviceFormData,
-      id: Date.now(),
-      price: parseFloat(serviceFormData.price) || 0,
-      originalPrice: parseFloat(serviceFormData.originalPrice) || 0,
-      rating: parseFloat(serviceFormData.rating) || 0,
-      reviews: serviceFormData.reviews.toString(),
-      inclusions: serviceFormData.inclusions
-        .split(",")
-        .map((item) => item.trim())
-        .filter((item) => item),
-      exclusions: serviceFormData.exclusions
-        .split(",")
-        .map((item) => item.trim())
-        .filter((item) => item),
+  if (!serviceFormData.title.trim()) {
+    alert("Please enter the service title.");
+    return;
+  }
+
+  if (!selectedService?.id || !selectedVendor?.vendorId) {
+    alert("Category or vendor is not selected.");
+    return;
+  }
+
+  try {
+    const createdService =
+      await addVendorServiceToFirestore(
+        selectedService.id,
+        selectedVendor.vendorId,
+        {
+          ...serviceFormData,
+          id: Date.now(),
+        },
+      );
+
+    const updateVendorLocally = (vendor) => {
+      if (
+        String(vendor.vendorId) !==
+        String(selectedVendor.vendorId)
+      ) {
+        return vendor;
+      }
+
+      return {
+        ...vendor,
+        services: [
+          ...(vendor.services || []),
+          createdService,
+        ],
+      };
     };
 
-    const updatedServices = services.map((service) => {
-      if (service.id === selectedService.id) {
-        const updatedData = service.data.map((vendor) => {
-          if (vendor.vendorId === selectedVendor.vendorId) {
-            return { ...vendor, services: [...vendor.services, newService] };
-          }
-          return vendor;
-        });
-        return { ...service, data: updatedData };
-      }
-      return service;
-    });
+    setServices((currentServices) =>
+      currentServices.map((category) => {
+        if (
+          String(category.id) !==
+          String(selectedService.id)
+        ) {
+          return category;
+        }
 
-    setServices(updatedServices);
-    await SaveSubmit(FDBservices, updatedServices);
-    const updatedSelectedService = updatedServices.find(
-      (s) => s.id === selectedService.id,
+        return {
+          ...category,
+          data: (category.data || []).map(
+            updateVendorLocally,
+          ),
+        };
+      }),
     );
-    setSelectedService(updatedSelectedService);
-    const updatedSelectedVendor = updatedSelectedService.data.find(
-      (v) => v.vendorId === selectedVendor.vendorId,
-    );
-    setSelectedVendor(updatedSelectedVendor);
+
+    setSelectedService((currentService) => ({
+      ...currentService,
+      data: (currentService.data || []).map(
+        updateVendorLocally,
+      ),
+    }));
+
+    setSelectedVendor((currentVendor) => ({
+      ...currentVendor,
+      services: [
+        ...(currentVendor.services || []),
+        createdService,
+      ],
+    }));
 
     setShowServiceForm(false);
+
     setServiceFormData({
       title: "",
       location: "",
       price: "",
+      discount: "",
       originalPrice: "",
       description: "",
       serviceImage: "",
@@ -701,7 +861,11 @@ const handleHypePriceUpdate = async ({ type, value, city, service, amount }) => 
       inclusions: "",
       exclusions: "",
     });
-  };
+  } catch (error) {
+    console.error("Error adding vendor service:", error);
+    alert(error.message || "Unable to add service.");
+  }
+};
 
   // Handles editing a service for a vendor.
   const handleEditVendorService = (service) => {
@@ -716,74 +880,101 @@ const handleHypePriceUpdate = async ({ type, value, city, service, amount }) => 
 
   // Handles updating a service for a vendor.
   const [isEdtSubmitting, setIsEdtSubmitting] = useState(false);
-  const handleUpdateVendorService = async (e) => {
-    e.preventDefault();
-    setIsEdtSubmitting(true);
+ const handleUpdateVendorService = async (e) => {
+  e.preventDefault();
 
-    const updatedServices = services.map((service) => {
-      if (service.id === selectedService.id) {
-        const updatedData = service.data.map((vendor) => {
-          if (vendor.vendorId === selectedVendor.vendorId) {
-            const updatedVendorServices = vendor.services.map((vService) => {
-              if (vService.id === editingServiceIdInVendor) {
-                const updated = {
-                  ...vService,
-                  ...serviceFormData,
-                  inclusions: serviceFormData.inclusions
-                    .split(",")
-                    .map((item) => item.trim())
-                    .filter(Boolean),
-                  exclusions: serviceFormData.exclusions
-                    .split(",")
-                    .map((item) => item.trim())
-                    .filter(Boolean),
-                };
+  if (isEdtSubmitting) return;
 
-                return updated;
-              }
+  if (
+    !selectedService?.id ||
+    !selectedVendor?.vendorId ||
+    !editingServiceIdInVendor
+  ) {
+    alert("Service information is incomplete.");
+    return;
+  }
 
-              return vService;
-            });
+  setIsEdtSubmitting(true);
 
-            console.log("Updated vendor services:", updatedVendorServices);
+  try {
+    const updatedService =
+      await updateVendorServiceInFirestore(
+        selectedService.id,
+        selectedVendor.vendorId,
+        editingServiceIdInVendor,
+        serviceFormData,
+      );
 
-            return {
-              ...vendor,
-              services: updatedVendorServices,
-            };
-          }
-
-          return vendor;
-        });
-
-        return {
-          ...service,
-          data: updatedData,
-        };
+    const updateVendorServicesLocally = (vendor) => {
+      if (
+        String(vendor.vendorId) !==
+        String(selectedVendor.vendorId)
+      ) {
+        return vendor;
       }
 
-      return service;
-    });
+      return {
+        ...vendor,
+        services: (vendor.services || []).map(
+          (vendorService) =>
+            String(vendorService.id) ===
+            String(editingServiceIdInVendor)
+              ? {
+                  ...vendorService,
+                  ...updatedService,
+                }
+              : vendorService,
+        ),
+      };
+    };
 
-    console.log("Final updatedServices:", updatedServices);
-    console.dir(updatedServices, { depth: null });
-    setServices(updatedServices);
-    await EditServiceDB(updatedServices);
-    const updatedSelectedService = updatedServices.find(
-      (s) => s.id === selectedService.id,
+    setServices((currentServices) =>
+      currentServices.map((category) => {
+        if (
+          String(category.id) !==
+          String(selectedService.id)
+        ) {
+          return category;
+        }
+
+        return {
+          ...category,
+          data: (category.data || []).map(
+            updateVendorServicesLocally,
+          ),
+        };
+      }),
     );
-    setSelectedService(updatedSelectedService);
-    const updatedSelectedVendor = updatedSelectedService.data.find(
-      (v) => v.vendorId === selectedVendor.vendorId,
-    );
-    setSelectedVendor(updatedSelectedVendor);
+
+    setSelectedService((currentService) => ({
+      ...currentService,
+      data: (currentService.data || []).map(
+        updateVendorServicesLocally,
+      ),
+    }));
+
+    setSelectedVendor((currentVendor) => ({
+      ...currentVendor,
+      services: (currentVendor.services || []).map(
+        (vendorService) =>
+          String(vendorService.id) ===
+          String(editingServiceIdInVendor)
+            ? {
+                ...vendorService,
+                ...updatedService,
+              }
+            : vendorService,
+      ),
+    }));
 
     setEditingServiceIdInVendor(null);
     setShowServiceForm(false);
+
     setServiceFormData({
       title: "",
       location: "",
       price: "",
+      discount: "",
       originalPrice: "",
       description: "",
       serviceImage: "",
@@ -793,68 +984,83 @@ const handleHypePriceUpdate = async ({ type, value, city, service, amount }) => 
       inclusions: "",
       exclusions: "",
     });
+  } catch (error) {
+    console.error("Error updating vendor service:", error);
+    alert(error.message || "Unable to update service.");
+  } finally {
     setIsEdtSubmitting(false);
-  };
+  }
+};
 
   // Handles deleting a service from a vendor.
-  const handleDeleteVendorService = async (serviceId) => {
-    try {
-      const docId = FDBservices[0]?.id; // Firestore document ID
-      if (!docId) {
-        console.error("Firestore doc not found");
-        return;
+ const handleDeleteVendorService = async (serviceId) => {
+  if (!selectedService?.id || !selectedVendor?.vendorId) {
+    return;
+  }
+
+  try {
+    await deleteVendorServiceFromFirestore(
+      selectedService.id,
+      selectedVendor.vendorId,
+      serviceId,
+    );
+
+    const removeServiceLocally = (vendor) => {
+      if (
+        String(vendor.vendorId) !==
+        String(selectedVendor.vendorId)
+      ) {
+        return vendor;
       }
 
-      const docRef = doc(firestore, "homeCleaningServiceDB", docId);
+      return {
+        ...vendor,
+        services: (vendor.services || []).filter(
+          (vendorService) =>
+            String(vendorService.id) !==
+            String(serviceId),
+        ),
+      };
+    };
 
-      // ✅ Fetch current document
-      const snapshot = await getDoc(docRef);
-      if (!snapshot.exists()) {
-        console.error("Document not found");
-        return;
-      }
-
-      const docData = snapshot.data();
-      const currentArray = docData.data || []; // Your main `data` array
-
-      // ✅ Update nested structure: remove service from selected vendor
-      const updatedArray = currentArray.map((service) => {
-        if (service.id === selectedService.id) {
-          const updatedVendors = service.data.map((vendor) => {
-            if (vendor.vendorId === selectedVendor.vendorId) {
-              // ✅ Remove the service by ID using splice (not filter)
-              const vendorServices = [...vendor.services];
-              const index = vendorServices.findIndex((s) => s.id === serviceId);
-              if (index !== -1) vendorServices.splice(index, 1);
-              return { ...vendor, services: vendorServices };
-            }
-            return vendor;
-          });
-          return { ...service, data: updatedVendors };
+    setServices((currentServices) =>
+      currentServices.map((category) => {
+        if (
+          String(category.id) !==
+          String(selectedService.id)
+        ) {
+          return category;
         }
-        return service;
-      });
 
-      // ✅ Update Firestore
-      await updateDoc(docRef, { data: updatedArray });
+        return {
+          ...category,
+          data: (category.data || []).map(
+            removeServiceLocally,
+          ),
+        };
+      }),
+    );
 
-      // ✅ Update local state
-      setServices(updatedArray);
+    setSelectedService((currentService) => ({
+      ...currentService,
+      data: (currentService.data || []).map(
+        removeServiceLocally,
+      ),
+    }));
 
-      const updatedSelectedService = updatedArray.find(
-        (s) => s.id === selectedService.id,
-      );
-      setSelectedService(updatedSelectedService);
-
-      const updatedSelectedVendor = updatedSelectedService.data.find(
-        (v) => v.vendorId === selectedVendor.vendorId,
-      );
-      setSelectedVendor(updatedSelectedVendor);
-    } catch (error) {
-      console.error("Error deleting vendor service:", error);
-    }
-  };
-
+    setSelectedVendor((currentVendor) => ({
+      ...currentVendor,
+      services: (currentVendor.services || []).filter(
+        (vendorService) =>
+          String(vendorService.id) !==
+          String(serviceId),
+      ),
+    }));
+  } catch (error) {
+    console.error("Error deleting vendor service:", error);
+    alert(error.message || "Unable to delete service.");
+  }
+};
   const handleShowServiceDetails = (service) => {
     setSelectedVendorService(service);
     setShowServiceDetailsPanel(true);
@@ -1305,7 +1511,7 @@ const handleHypePriceUpdate = async ({ type, value, city, service, amount }) => 
                   onClick={() => handleShowServiceDetails(service)}
                 >
                   <img
-                    src={service.serviceImage}
+                    src={service.serviceImage?.trim() || null}
                     alt={service.title}
                     className="w-full h-40 object-cover rounded-lg mb-4"
                   />
@@ -1619,7 +1825,7 @@ const handleHypePriceUpdate = async ({ type, value, city, service, amount }) => 
     {/* Hero Image */}
     <div className="w-full bg-zinc-100">
       <img
-        src={selectedVendorService.serviceImage}
+        src={selectedVendorService.serviceImage?.trim() || null}
         alt={selectedVendorService.title}
         className="w-full h-[260px] sm:h-[360px] lg:h-[430px] object-cover"
       />

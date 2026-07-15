@@ -25,7 +25,7 @@ const ProductSummaryItem = ({ item }) => {
         {/* LEFT IMAGE */}
         <div className="new-item-img-box">
           <img
-            src={item.serviceImage}
+            src={item.serviceImage?.trim() || null}
             className="new-item-img"
             alt={item.title}
             onError={(e) => {

@@ -41,17 +41,18 @@ const HomePage = () => {
     servicesRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+const getLinks = async () => {
+  const data2 = await fetchProdDataDESC();
 
-  const getLinks = async () => {
-  const data2= await fetchProdDataDESC();
+  services.length = 0;
 
-services.length = 0;
-  if(data2.length>0)services.push(...data2[0].data); 
+  if (Array.isArray(data2) && data2.length > 0) {
+    services.push(...data2);
+  }
 
-    const data = await fetchSocialLinks();
-     dispatch(setLinks(data));
-   
-  };
+  const data = await fetchSocialLinks();
+  dispatch(setLinks(data));
+};
   const ValidateUse = async () => {
   try {
     if (!user?.token) {
