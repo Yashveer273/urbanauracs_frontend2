@@ -260,7 +260,6 @@ const activeTab = pathToTab[location.pathname] || "auth";
   };
 
 const SERVICE_COLLECTION = "homeCleaningServiceDB";
-
 const fetchServices = async () => {
   try {
     const categorySnapshot = await getDocs(
@@ -273,14 +272,14 @@ const fetchServices = async () => {
       return;
     }
 
-    const newStructureCategories = [];
+    const categoryPromises = categorySnapshot.docs.map(
+      async (categoryDoc) => {
+        const categoryData = categoryDoc.data();
 
-    for (const categoryDoc of categorySnapshot.docs) {
-      const categoryData = categoryDoc.data();
+        if (!categoryData.ServiceName) {
+          return null;
+        }
 
-      // A document having ServiceName directly is considered
-      // a category from the new Firestore structure.
-      if (categoryData.ServiceName) {
         const vendorsSnapshot = await getDocs(
           collection(
             firestore,
@@ -290,56 +289,61 @@ const fetchServices = async () => {
           ),
         );
 
-        const vendors = [];
+        const vendorPromises = vendorsSnapshot.docs.map(
+          async (vendorDoc) => {
+            const vendorData = vendorDoc.data();
 
-        for (const vendorDoc of vendorsSnapshot.docs) {
-          const vendorData = vendorDoc.data();
+            const vendorServicesSnapshot = await getDocs(
+              collection(
+                firestore,
+                SERVICE_COLLECTION,
+                categoryDoc.id,
+                "vendors",
+                vendorDoc.id,
+                "services",
+              ),
+            );
 
-          const vendorServicesSnapshot = await getDocs(
-            collection(
-              firestore,
-              SERVICE_COLLECTION,
-              categoryDoc.id,
-              "vendors",
-              vendorDoc.id,
-              "services",
-            ),
-          );
+            const vendorServices =
+              vendorServicesSnapshot.docs.map((serviceDoc) => ({
+                id: serviceDoc.id,
+                ...serviceDoc.data(),
+              }));
 
-          const vendorServices = vendorServicesSnapshot.docs.map(
-            (serviceDoc) => ({
-              id: serviceDoc.id,
-              ...serviceDoc.data(),
-            }),
-          );
+            return {
+              vendorId: vendorDoc.id,
+              ...vendorData,
+              services: vendorServices,
+            };
+          },
+        );
 
-          vendors.push({
-            vendorId: vendorDoc.id,
-            ...vendorData,
-            services: vendorServices,
-          });
-        }
+        const vendors = await Promise.all(vendorPromises);
 
-        newStructureCategories.push({
+        return {
           id: categoryDoc.id,
           ServiceName: categoryData.ServiceName,
           data: vendors,
-        });
-      }
-    }
+        };
+      },
+    );
 
-    // New structure found
+    const categoryResults = await Promise.all(categoryPromises);
+
+    const newStructureCategories = categoryResults.filter(Boolean);
+
     if (newStructureCategories.length > 0) {
       setServices(newStructureCategories);
       setFDBServices(newStructureCategories);
       return;
     }
 
-    // Fall back to your current old structure
-    const oldDocuments = categorySnapshot.docs.map((documentSnapshot) => ({
-      id: documentSnapshot.id,
-      ...documentSnapshot.data(),
-    }));
+    const oldDocuments = categorySnapshot.docs.map(
+      (documentSnapshot) => ({
+        id: documentSnapshot.id,
+        ...documentSnapshot.data(),
+      }),
+    );
 
     const oldMainDocument = oldDocuments.find(
       (document) => Array.isArray(document.data),

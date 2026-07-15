@@ -9,8 +9,8 @@ import {
 import CityHypePopup from "./CityHypePopup";
 import ServiceHypePopup from "./ServiceHypePopup";
 import React, { useState } from "react";
+import { migrateServiceDataPure } from "./serviceFirestore";
 
-import { migrateBackupToNewServiceStructure, migrateServiceDataPure } from "./serviceFirestore";
 
 const ServiceManager = ({
   services,
@@ -33,61 +33,11 @@ const ServiceManager = ({
   handleDeleteVendor,
   onHypePriceUpdate,
 }) => {
-  const [isRestoringBackup, setIsRestoringBackup] = useState(false);
-  const [migrationProgress, setMigrationProgress] = useState("");
+
+ 
   // States for City Hype
 
-  const handleRestoreBackupToNewStructure = async () => {
-    if (isRestoringBackup) return;
-
-    const confirmed = window.confirm(
-      "This will read the old backup from updatedCleaningServiceDB and insert or update it in the new homeCleaningServiceDB structure. Existing records with the same IDs will be updated. Continue?",
-    );
-
-    if (!confirmed) return;
-
-    setIsRestoringBackup(true);
-    setMigrationProgress("Starting migration...");
-
-    try {
-      const result = await migrateBackupToNewServiceStructure({
-        onProgress: ({
-          currentCategory,
-          totalCategories,
-          categoryName,
-          migratedVendors,
-          migratedServices,
-        }) => {
-          setMigrationProgress(
-            `Processing ${currentCategory}/${totalCategories}: ${
-              categoryName || "Unnamed category"
-            } · Vendors: ${migratedVendors} · Services: ${migratedServices}`,
-          );
-        },
-      });
-
-      alert(
-        `Migration completed successfully.\n\nCategories: ${result.migratedCategories}\nVendors: ${result.migratedVendors}\nServices: ${result.migratedServices}`,
-      );
-
-      setMigrationProgress(
-        `Completed: ${result.migratedCategories} categories, ${result.migratedVendors} vendors and ${result.migratedServices} services.`,
-      );
-
-      // Refresh the dashboard using your new structure fetch function.
-      if (typeof window !== "undefined") {
-        window.location.reload();
-      }
-    } catch (error) {
-      console.error("Backup migration failed:", error);
-
-      setMigrationProgress("Migration failed.");
-
-      alert(error.message || "Unable to migrate the backup data.");
-    } finally {
-      setIsRestoringBackup(false);
-    }
-  };
+ 
   const [isCityHypeOpen, setIsCityHypeOpen] = useState(false);
   const [selectedCity, setSelectedCity] = useState("Select City");
 
@@ -223,9 +173,7 @@ const ServiceManager = ({
           )}
         </button> */}
 
-        {migrationProgress && (
-          <p className="max-w-sm text-xs text-slate-500">{migrationProgress}</p>
-        )}
+      
       </div>
 
       {/* ================= SERVICES LIST ================= */}
