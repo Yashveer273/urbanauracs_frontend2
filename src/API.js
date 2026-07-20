@@ -6,7 +6,7 @@ import {
   doc,
   getDoc,
   getDocs,
-  writeBatch,
+  
 } from "firebase/firestore";
 export const API_BASE_URL = "https://urbanaurabzcs.xyz";
 // export const API_BASE_URL = "http://localhost:8000";
@@ -389,7 +389,7 @@ export const handlePaymentLeft = async (data, action) => {
 export const sendToSingelPersonWhatsAppMessage = async (mobile, msg) => {
   try {
     const response = await axios.get(
-      "http://localhost:8000/sendToSingelPerson-whatsapp",
+      `${API_BASE_URL}/sendToSingelPerson-whatsapp`,
       {
         params: { mobile, msg },
       },

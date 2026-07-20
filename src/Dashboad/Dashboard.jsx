@@ -39,7 +39,10 @@ import { createServiceCategoryInFirestore,updateServiceCategoryInFirestore,
   deleteServiceCategoryFromFirestore,addVendorToFirestore,updateVendorInFirestore,deleteVendorFromFirestore
  ,addVendorServiceToFirestore,updateVendorServiceInFirestore,deleteVendorServiceFromFirestore,
  updateHypePriceInFirestore} from "./serviceFirestore";
-
+import {
+  checkDashAuthToken,
+  clearDashboardAuth,
+} from "../dashboardApi";
 const PlusIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -136,28 +139,165 @@ const activeTab = pathToTab[location.pathname] || "auth";
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [tagAccess, setTagAccess] = useState([]);
   
-  // ------------------------------------------------------------------
-  const checkAuth = () => {
-    const token = localStorage.getItem("urbanauraservicesdashauthToken");
-    const dashtagAccess = localStorage.getItem(
-      "urbanauraservicesdashtagAccess",
+
+  
+  const [checkingAuth, setCheckingAuth] =
+    useState(true);
+
+ 
+
+  /*
+  |--------------------------------------------------------------------------
+  | Check saved JWT with backend
+  |--------------------------------------------------------------------------
+  */
+
+  const checkAuth = async () => {
+    const token = localStorage.getItem(
+      "urbanauraservicesdashauthToken",
     );
 
-    if (token) {
-      setIsAuthenticated(true);
-      setTagAccess(dashtagAccess ? dashtagAccess.split(",") : []);
-
-      fetchServices();
-    } else {
+    /*
+     * No token means automatic logout.
+     */
+    if (!token) {
       setIsAuthenticated(false);
       setTagAccess([]);
+      setCheckingAuth(false);
+
+      return false;
+    }
+
+    try {
+      setCheckingAuth(true);
+
+      /*
+       * Backend checks:
+       * - JWT signature
+       * - JWT expiry
+       * - Account exists
+       * - Password has not changed
+       */
+      const response =
+        await checkDashAuthToken();
+
+      if (
+        response.data?.success !== true ||
+        response.data?.valid !== true
+      ) {
+        clearDashboardAuth();
+
+        setIsAuthenticated(false);
+        setTagAccess([]);
+
+        return false;
+      }
+
+      const latestTagAccess =
+        response.data?.user?.tagAccess || "";
+
+      /*
+       * Always update permission information
+       * from the backend response.
+       */
+      localStorage.setItem(
+        "urbanauraservicesdashtagAccess",
+        latestTagAccess,
+      );
+
+      setTagAccess(
+        String(latestTagAccess)
+          .split(",")
+          .map((tag) => tag.trim())
+          .filter(Boolean),
+      );
+
+      setIsAuthenticated(true);
+
+      return true;
+    } catch (error) {
+      console.error(
+        "Dashboard authentication failed:",
+        error,
+      );
+
+      /*
+       * The Axios interceptor already removes
+       * the token when backend returns:
+       *
+       * valid: false
+       *
+       * This is an additional safety cleanup.
+       */
+      clearDashboardAuth();
+
+      setIsAuthenticated(false);
+      setTagAccess([]);
+
+      return false;
+    } finally {
+      setCheckingAuth(false);
     }
   };
-  
+
+  /*
+  |--------------------------------------------------------------------------
+  | Verify token when Dashboard opens
+  |--------------------------------------------------------------------------
+  */
+
+  useEffect(() => {
+    const initializeDashboard =
+      async () => {
+        const authenticated =
+          await checkAuth();
+
+        if (authenticated) {
+          await fetchServices();
+        }
+      };
+
+    initializeDashboard();
+  }, []);
+
+  /*
+  |--------------------------------------------------------------------------
+  | Listen when any protected API removes token
+  |--------------------------------------------------------------------------
+  */
+
+  useEffect(() => {
+    const handleInvalidAuthentication =
+      () => {
+        setIsAuthenticated(false);
+        setTagAccess([]);
+        setCheckingAuth(false);
+      };
+
+    window.addEventListener(
+      "dashboard-auth-invalid",
+      handleInvalidAuthentication,
+    );
+
+    return () => {
+      window.removeEventListener(
+        "dashboard-auth-invalid",
+        handleInvalidAuthentication,
+      );
+    };
+  }, []);
+
+  /*
+  |--------------------------------------------------------------------------
+  | Frontend logout
+  |--------------------------------------------------------------------------
+  */
+
   const handleLogout = () => {
-    localStorage.removeItem("urbanauraservicesdashauthToken");
-    localStorage.removeItem("urbanauraservicesdashtagAccess");
-    window.location.reload();
+    clearDashboardAuth();
+
+    setIsAuthenticated(false);
+    setTagAccess([]);
   };
 
   const FIRESTORE_MAX_DOC_SIZE_BYTES = 1_048_576;
@@ -1289,6 +1429,7 @@ const handleAddServiceToVendor = async (e) => {
   return isAuthenticated != true ? (
     <DashboardLogin />
   ) : (
+    
     <div className="flex flex-col md:flex-row bg-gray-100 min-h-screen font-sans">
       {/* <ImageUploadPopup /> */}
      <DashboardNavigator handleLogout={handleLogout} />

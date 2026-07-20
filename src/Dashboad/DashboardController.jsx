@@ -1,208 +1,658 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { API_BASE_URL, fetchdashAuth } from '../API';
+import React, {
+  useEffect,
+  useState,
+} from "react";
+
+import {
+  fetchdashAuth,
+  createDashAuth,
+  updateDashAuth,
+  deleteDashAuth,
+  changeDashAuthPassword,
+} from "../dashboardApi";
+
+const ACCESS_TAGS = [
+  "Users",
+  "Sales",
+  "Services",
+  "Website Content",
+  "Ticket",
+  "Vendors Section",
+  "Coupon Manager",
+  "Notification",
+  "Xl File Manager",
+  "Banner",
+  "Chat Box",
+];
 
 const DashboardContrller = () => {
-  // --- State Variables ---
-  const [userId, setUserId] = useState('');
-  const [password, setPassword] = useState('');
-  const [ResponsiblePersonName, setResponsiblePersonName] = useState('');
-  const [selectedTags, setSelectedTags] = useState([]);
-  const [users, setUsers] = useState([]);
-  const [message, setMessage] = useState({ text: '', type: '' });
-  const [isEditing, setIsEditing] = useState(false);
+  /*
+  |--------------------------------------------------------------------------
+  | Account form state
+  |--------------------------------------------------------------------------
+  */
 
-  // --- Helper Functions ---
+  const [userId, setUserId] = useState("");
+  const [password, setPassword] =
+    useState("");
+
+  const [
+    ResponsiblePersonName,
+    setResponsiblePersonName,
+  ] = useState("");
+
+  const [selectedTags, setSelectedTags] =
+    useState([]);
+
+  const [users, setUsers] = useState([]);
+  const [isEditing, setIsEditing] =
+    useState(false);
+
+  const [isSaving, setIsSaving] =
+    useState(false);
+
+  const [isFetching, setIsFetching] =
+    useState(false);
+
+  /*
+  |--------------------------------------------------------------------------
+  | Admin password form state
+  |--------------------------------------------------------------------------
+  */
+
+  const [oldPassword, setOldPassword] =
+    useState("");
+
+  const [newPassword, setNewPassword] =
+    useState("");
+
+  const [
+    confirmPassword,
+    setConfirmPassword,
+  ] = useState("");
+
+  const [
+    changingPassword,
+    setChangingPassword,
+  ] = useState(false);
+
+  /*
+  |--------------------------------------------------------------------------
+  | Message state
+  |--------------------------------------------------------------------------
+  */
+
+  const [message, setMessage] = useState({
+    text: "",
+    type: "",
+  });
+
+  /*
+  |--------------------------------------------------------------------------
+  | Show message
+  |--------------------------------------------------------------------------
+  */
+
   const showMessage = (text, type) => {
-    setMessage({ text, type });
-    setTimeout(() => setMessage({ text: '', type: '' }), 5000);
+    setMessage({
+      text,
+      type,
+    });
+
+    window.setTimeout(() => {
+      setMessage({
+        text: "",
+        type: "",
+      });
+    }, 5000);
   };
 
+  /*
+  |--------------------------------------------------------------------------
+  | Message styling
+  |--------------------------------------------------------------------------
+  */
+
+  const getMessageClass = () => {
+    if (message.type === "success") {
+      return "bg-green-100 text-green-800 border-green-200";
+    }
+
+    if (message.type === "info") {
+      return "bg-blue-100 text-blue-800 border-blue-200";
+    }
+
+    return "bg-red-100 text-red-800 border-red-200";
+  };
+
+  /*
+  |--------------------------------------------------------------------------
+  | Reset create/update form
+  |--------------------------------------------------------------------------
+  */
+
   const resetForm = () => {
-    setUserId('');
-    setPassword('');
+    setUserId("");
+    setPassword("");
+    setResponsiblePersonName("");
     setSelectedTags([]);
     setIsEditing(false);
   };
 
-  // --- Fetch Users ---
+  /*
+  |--------------------------------------------------------------------------
+  | Fetch users
+  |--------------------------------------------------------------------------
+  */
+
+  const fetchUsers = async () => {
+    try {
+      setIsFetching(true);
+
+      const response =
+        await fetchdashAuth();
+
+      /*
+       * Updated backend returns:
+       *
+       * {
+       *   success: true,
+       *   users: [...]
+       * }
+       */
+      setUsers(
+        Array.isArray(response.data?.users)
+          ? response.data.users
+          : [],
+      );
+    } catch (error) {
+      console.error(
+        "Failed to fetch dashboard users:",
+        error,
+      );
+
+      showMessage(
+        error.response?.data?.message ||
+          "Failed to fetch dashboard users.",
+        "error",
+      );
+    } finally {
+      setIsFetching(false);
+    }
+  };
+
   useEffect(() => {
     fetchUsers();
   }, []);
 
-  const fetchUsers = async () => {
-    try {
-      const res = await fetchdashAuth();
-      setUsers(res.data);
-    } catch (error) {
-      console.error(error);
-      showMessage('Failed to fetch users.', 'error');
-    }
-  };
+  /*
+  |--------------------------------------------------------------------------
+  | Handle access tag
+  |--------------------------------------------------------------------------
+  */
 
-  // --- Event Handlers ---
-  const handleTagChange = (e) => {
-    const { value, checked } = e.target;
+  const handleTagChange = (event) => {
+    const { value, checked } = event.target;
+
     if (checked) {
-      setSelectedTags([...selectedTags, value]);
+      setSelectedTags((previousTags) => [
+        ...previousTags,
+        value,
+      ]);
     } else {
-      setSelectedTags(selectedTags.filter(tag => tag !== value));
+      setSelectedTags((previousTags) =>
+        previousTags.filter(
+          (tag) => tag !== value,
+        ),
+      );
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  /*
+  |--------------------------------------------------------------------------
+  | Create or update dashboard account
+  |--------------------------------------------------------------------------
+  */
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
 
     if (!userId.trim()) {
-      showMessage("User ID cannot be empty.", 'error');
+      showMessage(
+        "User ID cannot be empty.",
+        "error",
+      );
+      return;
+    }
+
+    if (
+      !ResponsiblePersonName.trim() &&
+      !isEditing
+    ) {
+      showMessage(
+        "Responsible person name is required.",
+        "error",
+      );
       return;
     }
 
     if (!password.trim() && !isEditing) {
-      showMessage("Password cannot be empty.", 'error');
+      showMessage(
+        "Password cannot be empty.",
+        "error",
+      );
       return;
     }
- if (!ResponsiblePersonName.trim() && !isEditing) {
-      showMessage("Password cannot be empty.", 'error');
+
+    if (
+      !isEditing &&
+      password.trim().length < 6
+    ) {
+      showMessage(
+        "Password must contain at least 6 characters.",
+        "error",
+      );
       return;
     }
+
     if (selectedTags.length === 0) {
-      showMessage("Please select at least one access tag.", 'error');
+      showMessage(
+        "Please select at least one access tag.",
+        "error",
+      );
       return;
     }
 
     try {
-      if (isEditing) {
-        await axios.put(`${API_BASE_URL}/api/update-dashAuth/${userId}`, {
-          tags: selectedTags.join(","),
-        });
-        showMessage(`Permissions for ${userId} updated successfully!`, 'success');
-      } else {
-        await axios.post(`${API_BASE_URL}/api/create-dashAuth`, {
-          id: userId,
-          pass: password,
-          tagAccess: selectedTags.join(","),
-          ResponsiblePersonName:ResponsiblePersonName
+      setIsSaving(true);
 
+      if (isEditing) {
+        await updateDashAuth(
+          userId,
+          selectedTags.join(","),
+        );
+
+        showMessage(
+          `Permissions for ${userId} updated successfully.`,
+          "success",
+        );
+      } else {
+        await createDashAuth({
+          id: userId.trim(),
+          pass: password,
+          tagAccess:
+            selectedTags.join(","),
+          ResponsiblePersonName:
+            ResponsiblePersonName.trim(),
         });
-        showMessage(`Permissions for ${userId} created successfully!`, 'success');
+
+        showMessage(
+          `Account ${userId} created successfully.`,
+          "success",
+        );
       }
 
-      fetchUsers();
       resetForm();
+      await fetchUsers();
     } catch (error) {
-      console.error("Error saving user:", error);
-      showMessage("Failed to save permissions. Check console for details.", 'error');
+      console.error(
+        "Error saving dashboard account:",
+        error,
+      );
+
+      showMessage(
+        error.response?.data?.message ||
+          "Failed to save dashboard account.",
+        "error",
+      );
+    } finally {
+      setIsSaving(false);
     }
   };
 
+  /*
+  |--------------------------------------------------------------------------
+  | Edit permissions
+  |--------------------------------------------------------------------------
+  */
+
   const handleEdit = (user) => {
-    setUserId(user.id);
-    setResponsiblePersonName(user.ResponsiblePersonName);
-    setSelectedTags(user.tagAccess.split(",")); // backend stores as string
+    setUserId(user.id || "");
+
+    setResponsiblePersonName(
+      user.ResponsiblePersonName || "",
+    );
+
+    setSelectedTags(
+      String(user.tagAccess || "")
+        .split(",")
+        .map((tag) => tag.trim())
+        .filter(Boolean),
+    );
+
+    setPassword("");
     setIsEditing(true);
-    showMessage(`Now editing permissions for user: ${user.id}`, 'info');
+
+    showMessage(
+      `Editing permissions for ${user.id}`,
+      "info",
+    );
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
   };
 
+  /*
+  |--------------------------------------------------------------------------
+  | Delete account
+  |--------------------------------------------------------------------------
+  */
+
   const handleDelete = async (id) => {
+    const confirmed = window.confirm(
+      `Are you sure you want to delete ${id}?`,
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
     try {
-      await axios.delete(`${API_BASE_URL}/api/delete-dashAuth/${id}`);
-      showMessage(`Permissions for ${id} deleted successfully!`, 'success');
-      fetchUsers();
+      await deleteDashAuth(id);
+
+      showMessage(
+        `Account ${id} deleted successfully.`,
+        "success",
+      );
+
+      await fetchUsers();
     } catch (error) {
-      console.error("Error deleting user:", error);
-      showMessage("Failed to delete permissions. Check console for details.", 'error');
+      console.error(
+        "Failed to delete dashboard account:",
+        error,
+      );
+
+      showMessage(
+        error.response?.data?.message ||
+          "Failed to delete dashboard account.",
+        "error",
+      );
+    }
+  };
+
+  /*
+  |--------------------------------------------------------------------------
+  | Change logged-in admin password
+  |--------------------------------------------------------------------------
+  */
+
+  const handleChangePassword = async (
+    event,
+  ) => {
+    event.preventDefault();
+
+    if (
+      !oldPassword.trim() ||
+      !newPassword.trim() ||
+      !confirmPassword.trim()
+    ) {
+      showMessage(
+        "Old password, new password and confirm password are required.",
+        "error",
+      );
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      showMessage(
+        "New password and confirm password do not match.",
+        "error",
+      );
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      showMessage(
+        "New password must contain at least 6 characters.",
+        "error",
+      );
+      return;
+    }
+
+    if (oldPassword === newPassword) {
+      showMessage(
+        "New password cannot be the same as the old password.",
+        "error",
+      );
+      return;
+    }
+
+    try {
+      setChangingPassword(true);
+
+      const response =
+        await changeDashAuthPassword({
+          oldPassword,
+          newPassword,
+          confirmPassword,
+        });
+
+      const replacementToken =
+        response.data?.token;
+
+      if (!replacementToken) {
+        throw new Error(
+          "Replacement token was not returned.",
+        );
+      }
+
+      /*
+       * Replace old JWT after password update.
+       */
+      localStorage.setItem(
+        "urbanauraservicesdashauthToken",
+        replacementToken,
+      );
+
+      if (response.data?.user?.tagAccess) {
+        localStorage.setItem(
+          "urbanauraservicesdashtagAccess",
+          response.data.user.tagAccess,
+        );
+      }
+
+      setOldPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+
+      showMessage(
+        "Admin password updated successfully.",
+        "success",
+      );
+    } catch (error) {
+      console.error(
+        "Failed to change password:",
+        error,
+      );
+
+      /*
+       * Old password incorrect returns 401,
+       * but the API interceptor does not remove
+       * the token unless valid:false is returned.
+       */
+      showMessage(
+        error.response?.data?.message ||
+          "Unable to update password.",
+        "error",
+      );
+    } finally {
+      setChangingPassword(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8 font-sans antialiased">
-      {/* Main Heading */}
-      <div className="text-center my-8">
-        <h1 className="text-4xl font-bold text-gray-800">Dashboard Access Controller</h1>
-        <p className="text-gray-500 mt-2">Manage user permissions in real-time.</p>
-      </div>
+    <div className="min-h-screen bg-gray-100 p-4 font-sans antialiased sm:p-8">
+      {/* Message */}
 
-      {/* Message Box */}
       {message.text && (
-        <div className={`
-          fixed top-4 left-1/2 -translate-x-1/2 px-6 py-3 rounded-lg shadow-lg z-50
-          ${message.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}
-        `}>
+        <div
+          className={`fixed left-1/2 top-4 z-50 w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 rounded-lg border px-6 py-3 text-center shadow-lg ${getMessageClass()}`}
+        >
           {message.text}
         </div>
       )}
 
-      {/* Add/Update User Form */}
-      <div className=" mx-auto bg-white rounded-xl shadow-lg p-8 mb-8">
-        <h2 className="text-2xl font-semibold mb-6 text-gray-700">{isEditing ? "Edit User Permissions" : "Add New User"}</h2>
+      {/* Heading */}
+
+      <div className="my-8 text-center">
+        <h1 className="text-3xl font-bold text-gray-800 sm:text-4xl">
+          Dashboard Access Controller
+        </h1>
+
+        <p className="mt-2 text-gray-500">
+          Manage dashboard accounts and
+          permissions.
+        </p>
+      </div>
+
+      {/* Create and update account */}
+
+      <div className="mx-auto mb-8 rounded-xl bg-white p-6 shadow-lg sm:p-8">
+        <h2 className="mb-6 text-2xl font-semibold text-gray-700">
+          {isEditing
+            ? "Edit User Permissions"
+            : "Add New User"}
+        </h2>
+
         <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label htmlFor="userIdInput" className="block text-gray-700 font-medium mb-2">User ID</label>
-            <input
-              type="text"
-              id="userIdInput"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-800 transition-colors"
-              placeholder="Enter user ID (username-uniqueNumber)"
-              value={userId}
-              onChange={(e) => setUserId(e.target.value)}
-              disabled={isEditing}
-              required
-            />
-          </div> 
-          <div className="mb-4">
-            <label htmlFor="ResponsiblePersonName" className="block text-gray-700 font-medium mb-2">Responsible Person Name</label>
-            <input
-              type="text"
-              id="ResponsiblePersonName"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-800 transition-colors"
-              placeholder="Enter Responsible Person Name"
-              value={ResponsiblePersonName}
-              onChange={(e) => setResponsiblePersonName(e.target.value)}
-              disabled={isEditing}
-              required
-            />
+          <div className="grid gap-4 md:grid-cols-2">
+            <div>
+              <label
+                htmlFor="userIdInput"
+                className="mb-2 block font-medium text-gray-700"
+              >
+                User ID
+              </label>
+
+              <input
+                type="text"
+                id="userIdInput"
+                className="w-full rounded-lg border border-gray-300 p-3 outline-none transition focus:ring-2 focus:ring-purple-800"
+                placeholder="Enter unique user ID"
+                value={userId}
+                onChange={(event) =>
+                  setUserId(
+                    event.target.value,
+                  )
+                }
+                disabled={isEditing}
+                required
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="responsiblePersonName"
+                className="mb-2 block font-medium text-gray-700"
+              >
+                Responsible Person Name
+              </label>
+
+              <input
+                type="text"
+                id="responsiblePersonName"
+                className="w-full rounded-lg border border-gray-300 p-3 outline-none transition focus:ring-2 focus:ring-purple-800"
+                placeholder="Enter responsible person name"
+                value={ResponsiblePersonName}
+                onChange={(event) =>
+                  setResponsiblePersonName(
+                    event.target.value,
+                  )
+                }
+                disabled={isEditing}
+                required={!isEditing}
+              />
+            </div>
           </div>
+
           {!isEditing && (
-            <div className="mb-4">
-              <label htmlFor="passwordInput" className="block text-gray-700 font-medium mb-2">Password</label>
+            <div className="mt-4">
+              <label
+                htmlFor="passwordInput"
+                className="mb-2 block font-medium text-gray-700"
+              >
+                Password
+              </label>
+
               <input
                 type="password"
                 id="passwordInput"
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-800 transition-colors"
+                className="w-full rounded-lg border border-gray-300 p-3 outline-none transition focus:ring-2 focus:ring-purple-800"
                 placeholder="Enter password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(event) =>
+                  setPassword(
+                    event.target.value,
+                  )
+                }
+                minLength={6}
+                autoComplete="new-password"
                 required
               />
             </div>
           )}
-          <div className="mb-6">
-            <label className="block text-gray-700 font-medium mb-2">Select Access Tags</label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-              {['Users', 'Sales', 'Services', 'Website Content', 'Ticket',"Vendors Section","Coupon Manager","Notification","Xl File Manager","Banner","Chat Box"].map(tag => (
-                <label key={tag} className="flex items-center space-x-2 text-gray-700">
+
+          <div className="mt-6">
+            <label className="mb-3 block font-medium text-gray-700">
+              Select Access Tags
+            </label>
+
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+              {ACCESS_TAGS.map((tag) => (
+                <label
+                  key={tag}
+                  className="flex items-center gap-2 rounded-lg border border-gray-200 p-3 text-gray-700"
+                >
                   <input
                     type="checkbox"
-                    name="tag"
                     value={tag}
-                    className="form-checkbox h-5 w-5 text-purple-800 rounded-md transition-colors"
-                    checked={selectedTags.includes(tag)}
-                    onChange={handleTagChange}
+                    checked={selectedTags.includes(
+                      tag,
+                    )}
+                    onChange={
+                      handleTagChange
+                    }
+                    className="h-5 w-5 rounded text-purple-800"
                   />
-                  <span>{tag}</span>
+
+                  <span className="text-sm">
+                    {tag}
+                  </span>
                 </label>
               ))}
             </div>
           </div>
-          <button type="submit" className="w-full bg-purple-800 hover:bg-purple-900 text-white font-bold py-3 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-purple-800">
-            {isEditing ? "Update Permissions" : "Save Permissions"}
+
+          <button
+            type="submit"
+            disabled={isSaving}
+            className="mt-6 w-full rounded-lg bg-purple-800 px-4 py-3 font-bold text-white transition hover:bg-purple-900 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {isSaving
+              ? "Saving..."
+              : isEditing
+                ? "Update Permissions"
+                : "Save User"}
           </button>
+
           {isEditing && (
             <button
               type="button"
               onClick={resetForm}
-              className="mt-4 w-full bg-gray-400 hover:bg-gray-500 text-white font-bold py-3 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-500"
+              disabled={isSaving}
+              className="mt-3 w-full rounded-lg bg-gray-400 px-4 py-3 font-bold text-white transition hover:bg-gray-500"
             >
               Cancel Edit
             </button>
@@ -210,35 +660,206 @@ const DashboardContrller = () => {
         </form>
       </div>
 
-      {/* User Access Table */}
-      <div className="max-w-3xl mx-auto bg-white rounded-xl shadow-lg p-8">
-        <h2 className="text-2xl font-semibold mb-6 text-gray-700">Current User Permissions</h2>
+      {/* Change logged-in admin password */}
+
+      <div className="mx-auto mb-8 rounded-xl bg-white p-6 shadow-lg sm:p-8">
+        <h2 className="text-2xl font-semibold text-gray-700">
+          Change Admin Password
+        </h2>
+
+        <p className="mb-6 mt-2 text-sm text-gray-500">
+          The current password is required.
+          After the password changes, the new
+          JWT will replace the old JWT.
+        </p>
+
+        <form
+          onSubmit={handleChangePassword}
+          className="grid gap-4 lg:grid-cols-3"
+        >
+          <div>
+            <label
+              htmlFor="oldPassword"
+              className="mb-2 block font-medium text-gray-700"
+            >
+              Old Password
+            </label>
+
+            <input
+              type="password"
+              id="oldPassword"
+              value={oldPassword}
+              onChange={(event) =>
+                setOldPassword(
+                  event.target.value,
+                )
+              }
+              placeholder="Enter old password"
+              className="w-full rounded-lg border border-gray-300 p-3 outline-none focus:ring-2 focus:ring-purple-800"
+              autoComplete="current-password"
+              required
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="newPassword"
+              className="mb-2 block font-medium text-gray-700"
+            >
+              New Password
+            </label>
+
+            <input
+              type="password"
+              id="newPassword"
+              value={newPassword}
+              onChange={(event) =>
+                setNewPassword(
+                  event.target.value,
+                )
+              }
+              placeholder="Enter new password"
+              className="w-full rounded-lg border border-gray-300 p-3 outline-none focus:ring-2 focus:ring-purple-800"
+              autoComplete="new-password"
+              minLength={6}
+              required
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="confirmPassword"
+              className="mb-2 block font-medium text-gray-700"
+            >
+              Confirm New Password
+            </label>
+
+            <input
+              type="password"
+              id="confirmPassword"
+              value={confirmPassword}
+              onChange={(event) =>
+                setConfirmPassword(
+                  event.target.value,
+                )
+              }
+              placeholder="Confirm new password"
+              className="w-full rounded-lg border border-gray-300 p-3 outline-none focus:ring-2 focus:ring-purple-800"
+              autoComplete="new-password"
+              minLength={6}
+              required
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={changingPassword}
+            className="rounded-lg bg-slate-900 px-5 py-3 font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60 lg:col-span-3"
+          >
+            {changingPassword
+              ? "Updating Password..."
+              : "Update Admin Password"}
+          </button>
+        </form>
+      </div>
+
+      {/* User table */}
+
+      <div className="mx-auto rounded-xl bg-white p-6 shadow-lg sm:p-8">
+        <div className="mb-6 flex items-center justify-between">
+          <h2 className="text-2xl font-semibold text-gray-700">
+            Current User Permissions
+          </h2>
+
+          <button
+            type="button"
+            onClick={fetchUsers}
+            disabled={isFetching}
+            className="rounded-lg bg-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-300 disabled:opacity-60"
+          >
+            {isFetching
+              ? "Refreshing..."
+              : "Refresh"}
+          </button>
+        </div>
+
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-200">
+            <thead className="bg-gray-100">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">User ID</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Responsible Person Name</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Access Tags</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase text-gray-500">
+                  User ID
+                </th>
+
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase text-gray-500">
+                  Responsible Person
+                </th>
+
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase text-gray-500">
+                  Access Tags
+                </th>
+
+                <th className="px-6 py-3 text-right text-xs font-medium uppercase text-gray-500">
+                  Actions
+                </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+
+            <tbody className="divide-y divide-gray-200 bg-white">
               {users.length > 0 ? (
-                users.map(user => (
-                  <tr key={user._id} className="hover:bg-purple-50 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{user.id}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{user.ResponsiblePersonName}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{user.tagAccess}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <button onClick={() => handleEdit(user)} className="text-purple-800 hover:text-purple-900 mr-4">Edit</button>
-                      <button onClick={() => handleDelete(user.id)} className="text-red-600 hover:text-red-900">Delete</button>
+                users.map((user) => (
+                  <tr
+                    key={user._id || user.id}
+                    className="transition hover:bg-purple-50"
+                  >
+                    <td className="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">
+                      {user.id}
+                    </td>
+
+                    <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-700">
+                      {user.ResponsiblePersonName ||
+                        "-"}
+                    </td>
+
+                    <td className="px-6 py-4 text-sm text-gray-500">
+                      {user.tagAccess}
+                    </td>
+
+                    <td className="whitespace-nowrap px-6 py-4 text-right text-sm font-medium">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          handleEdit(user)
+                        }
+                        className="mr-4 text-purple-800 hover:text-purple-950"
+                      >
+                        Edit
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() =>
+                          handleDelete(
+                            user.id,
+                          )
+                        }
+                        className="text-red-600 hover:text-red-900"
+                      >
+                        Delete
+                      </button>
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="3" className="px-6 py-4 text-center text-gray-500 italic">No users found.</td>
+                  <td
+                    colSpan={4}
+                    className="px-6 py-8 text-center text-gray-500"
+                  >
+                    {isFetching
+                      ? "Loading users..."
+                      : "No users found."}
+                  </td>
                 </tr>
               )}
             </tbody>
