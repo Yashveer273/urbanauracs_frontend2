@@ -124,7 +124,14 @@ export const fetchSocialLinks = async () => {
   }
 };
 export const fetchdashAuth = async () => {
-  const res = await axios.get(`${API_BASE_URL}/api/get-dashAuth`);
+  const token = localStorage.getItem("urbanauraservicesdashauthToken");
+
+  const res = await axios.get(`${API_BASE_URL}/api/get-dashAuth`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
   return res;
 };
 

@@ -154,7 +154,10 @@ const getSaleDate = (dateValue) => {
   const getResponsiblePersion = async () => {
     const res = await fetchdashAuth();
     if (res.data) {
-      setResponsiblePersons(res.data);
+      console.log(res.data)
+      setResponsiblePersons(res.data.
+users
+);
     }
   };
   // Filters & Graph}
