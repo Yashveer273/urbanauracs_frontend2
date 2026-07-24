@@ -48,16 +48,25 @@ export const fetchImages = async () => {
   }
 };
 
-export const updateStatusOrCommentDB = async (status, orderId) => {
+export const updateStatusOrCommentDB = async (
+  status,
+  orderId,
+  comment = "",
+) => {
   try {
-    const response = await axios.post(`${API_BASE_URL}/sales/updateStatus`, {
-      status,
-      orderId,
-    });
+    const response = await axios.post(
+      `${API_BASE_URL}/sales/updateStatus`,
+      {
+        status,
+        orderId,
+        comment,
+      },
+    );
+
     return response.data;
   } catch (error) {
     console.error(
-      "Error updating user:",
+      "Error updating sale status or comment:",
       error.response?.data || error.message,
     );
     throw error;

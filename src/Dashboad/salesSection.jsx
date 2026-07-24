@@ -59,6 +59,109 @@ export default function SalesSection() {
     responsibleVendor: "",
   });
 
+const [commentEditor, setCommentEditor] = useState({
+  open: false,
+  saleId: null,
+  comment: "",
+});
+
+const [savingComment, setSavingComment] = useState(false);
+const openCommentEditor = (sale) => {
+  setCommentEditor({
+    open: true,
+    saleId: sale.id,
+    comment: sale.comment || "",
+  });
+};
+
+const closeCommentEditor = () => {
+  if (savingComment) return;
+
+  setCommentEditor({
+    open: false,
+    saleId: null,
+    comment: "",
+  });
+};
+
+const saveSaleComment = async () => {
+  const saleId = commentEditor.saleId;
+  const comment = commentEditor.comment.trim();
+
+  if (!saleId) {
+    return;
+  }
+
+  if (!comment) {
+    alert("Please enter a comment");
+    return;
+  }
+
+  try {
+    setSavingComment(true);
+
+    const currentSale = salesData.find((sale) => sale.id === saleId);
+    const currentStatus = currentSale?.status || "Pending";
+
+    // Update Firestore
+    const saleRef = doc(firestore, "sales", saleId);
+
+    await setDoc(
+      saleRef,
+      {
+        comment,
+      },
+      {
+        merge: true,
+      },
+    );
+
+    // Update your backend database as well
+    await updateStatusOrCommentDB(currentStatus, saleId, comment);
+
+    // Update local table immediately
+    setSalesData((previousSales) =>
+      previousSales.map((sale) =>
+        sale.id === saleId
+          ? {
+              ...sale,
+              comment,
+            }
+          : sale,
+      ),
+    );
+
+    setFilteredData((previousSales) =>
+      previousSales.map((sale) =>
+        sale.id === saleId
+          ? {
+              ...sale,
+              comment,
+            }
+          : sale,
+      ),
+    );
+
+    setCommentEditor({
+      open: false,
+      saleId: null,
+      comment: "",
+    });
+
+    alert("Comment saved successfully");
+  } catch (error) {
+    console.error("Error saving comment:", error);
+    alert(
+      error?.response?.data?.message ||
+        error?.message ||
+        "Unable to save comment",
+    );
+  } finally {
+    setSavingComment(false);
+  }
+};
+
+
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 4;
 
@@ -616,7 +719,11 @@ const applyFilters = () => {
           ),
         );
       }
-      await updateStatusOrCommentDB(newStatus, saleId);
+     await updateStatusOrCommentDB(
+  newStatus,
+  saleId,
+  newComment,
+);
     } catch (e) {
       console.error("Error updating:", e);
     }
@@ -1133,27 +1240,39 @@ const applyFilters = () => {
                       )}
                     </td>
 
-                    <td className="py-4">
-                      {sale.comment && (
-                        <button
-                          className="text-green-600 cursor-pointer"
-                          onClick={() =>
-                            setViewComment({
-                              saleId: sale.id,
-                              productIndex: null,
-                            })
-                          }
-                        >
-                          {salesData
-                            .find((s) => s.id === sale.id)
-                            ?.comment.slice(0, 5) +
-                            (salesData.find((s) => s.id === sale.id)?.comment
-                              .length > 5
-                              ? "..."
-                              : "")}
-                        </button>
-                      )}
-                    </td>
+                   <td className="py-3 px-2 min-w-[180px]">
+  <div className="flex flex-col items-start gap-2">
+    {sale.comment ? (
+      <button
+        type="button"
+        onClick={() =>
+          setViewComment({
+            saleId: sale.id,
+            productIndex: null,
+          })
+        }
+        className="max-w-[160px] truncate text-left text-sm font-medium text-green-600 hover:text-green-700"
+        title={sale.comment}
+      >
+        {sale.comment.length > 25
+          ? `${sale.comment.slice(0, 25)}...`
+          : sale.comment}
+      </button>
+    ) : (
+      <span className="text-xs italic text-slate-400">
+        No comment added
+      </span>
+    )}
+
+    <button
+      type="button"
+      onClick={() => openCommentEditor(sale)}
+      className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700 transition hover:bg-blue-100"
+    >
+      {sale.comment ? "Edit Comment" : "Add Comment"}
+    </button>
+  </div>
+</td>
                     <td className="py-4">
                       <button
                         className="text-green-600 cursor-pointer"
@@ -1277,7 +1396,71 @@ const applyFilters = () => {
             </tbody>
           </table>
         </div>
+{commentEditor.open && (
+  <div className="fixed inset-0 z-[1200] flex items-center justify-center bg-slate-900/60 px-4 backdrop-blur-sm">
+    <div className="w-full max-w-lg overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
+      <div className="border-b border-slate-100 px-6 py-5">
+        <h3 className="text-lg font-semibold text-slate-900">
+          {salesData.find((sale) => sale.id === commentEditor.saleId)
+            ?.comment
+            ? "Edit Sales Comment"
+            : "Add Sales Comment"}
+        </h3>
 
+        <p className="mt-1 text-sm text-slate-500">
+          Add an update, customer response or follow-up note.
+        </p>
+      </div>
+
+      <div className="px-6 py-5">
+        <label className="mb-1.5 block text-sm font-medium text-slate-700">
+          Comment
+        </label>
+
+        <textarea
+          autoFocus
+          rows={6}
+          maxLength={1000}
+          placeholder="Enter comment here..."
+          value={commentEditor.comment}
+          onChange={(event) =>
+            setCommentEditor((previous) => ({
+              ...previous,
+              comment: event.target.value,
+            }))
+          }
+          className="w-full resize-none rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-blue-400 focus:bg-white focus:ring-4 focus:ring-blue-100"
+        />
+
+        <div className="mt-1 text-right text-xs text-slate-400">
+          {commentEditor.comment.length}/1000
+        </div>
+      </div>
+
+      <div className="flex items-center justify-end gap-3 border-t border-slate-100 bg-slate-50 px-6 py-4">
+        <button
+          type="button"
+          disabled={savingComment}
+          onClick={closeCommentEditor}
+          className="rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          Cancel
+        </button>
+
+        <button
+          type="button"
+          disabled={
+            savingComment || !commentEditor.comment.trim()
+          }
+          onClick={saveSaleComment}
+          className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-200 transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {savingComment ? "Saving..." : "Save Comment"}
+        </button>
+      </div>
+    </div>
+  </div>
+)}
         {/* Pagination */}
         {totalPages > 1 && (
           <div className="flex flex-wrap justify-center items-center gap-2 mt-6">
