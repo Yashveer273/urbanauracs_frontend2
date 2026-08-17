@@ -254,15 +254,15 @@ export default function Invoice() {
                 </span>
               </td>
               <td className="border  px-3 py-1 w-1/2">
-                <span className="font-medium">
-                  Dated:- {new Date().toLocaleDateString()}
-                </span>
+               <span className="font-medium">
+  Dated:- {new Date().toLocaleDateString('en-GB')}
+</span>
               </td>
             </tr>
             <tr className="h-10">
               <td className="border  px-3 py-1 w-1/2">
                 <span className="font-medium">
-                  Invoice Date:-{new Date().toLocaleDateString()}
+                  Invoice Date:-{new Date().toLocaleDateString('en-GB')}
                 </span>
               </td>
               <td className="border  px-3 py-1 w-1/2">
@@ -287,9 +287,9 @@ export default function Invoice() {
               {state.name}
             </div>
             <div>
-              <span className="font-medium">Address:-</span>{" "}
-              {`${state.user_location} | Pin Code:- ${state.pincode}`}
-            </div>
+  <span className="font-medium">Address:-</span>{" "}
+  {state?.product_info?.cart?.[0]?.bookingAddress || "N/A"}
+</div>
             <div>
               <span className="font-medium ">Phone:</span> {state.phone_number}{" "}
               |<span className="font-medium"> GSTIN (if applicable):</span>{" "}
