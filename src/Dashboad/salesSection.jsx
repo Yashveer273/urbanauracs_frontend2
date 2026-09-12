@@ -167,6 +167,7 @@ const saveSaleComment = async () => {
 
   const [editingRow, setEditingRow] = useState(null);
   const [rowForm, setRowForm] = useState({});
+  const [showBalanceEditor, setShowBalanceEditor] = useState(false);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedProductInfo, setSelectedProductInfo] = useState(null);
@@ -521,8 +522,16 @@ const applyFilters = () => {
       console.error("Error updating responsible person:", e);
     }
   };
+  const resetEditRowState = () => {
+    setEditingRow(null);
+    setShowBalanceEditor(false);
+    setRowForm({});
+    setOpen(false);
+  };
+
   const openEditRowCard = (sale) => {
     setEditingRow(sale.id);
+    setShowBalanceEditor(false);
 
     sale?.product_info?.cart?.reduce(
       (sum, item) =>
@@ -535,22 +544,27 @@ const applyFilters = () => {
       0,
     );
 
+    const cartTotal =
+      sale?.product_info?.cart?.reduce(
+        (sum, item) =>
+          sum +
+          Number(
+            item.item_price * item.quantity +
+              CalculateConvenienceFee(item.item_price * item.quantity)
+                .convenienceFee,
+          ),
+        0,
+      ) || 0;
+    const computedBalance = Math.max(
+      0,
+      cartTotal - Number(sale?.discount || 0) - Number(sale?.payedAmount || 0),
+    );
+
     setRowForm({
       orderId: sale.orderId,
       name: sale.name || "",
-      BalanceAmount:
-        sale?.product_info?.cart?.reduce(
-          (sum, item) =>
-            sum +
-            Number(
-              item.item_price * item.quantity +
-                CalculateConvenienceFee(item.item_price * item.quantity)
-                  .convenienceFee,
-            ),
-          0,
-        ) -
-        Number(sale?.discount || 0) -
-        Number(sale?.payedAmount || 0),
+      BalanceAmount: computedBalance,
+      left_amount: computedBalance,
       // email: sale.email || "",
       phone: sale.phone_number || "non",
       WhatsApp_Mobile_Number: sale.ConfurmWhatsAppMobileNumber || "",
@@ -565,20 +579,110 @@ const applyFilters = () => {
       // ,
     });
   };
+  const getCurrentCartTotal = (saleId = editingRow) => {
+    const currentSale = salesData.find((sale) => sale.id === saleId) || {};
+    return (
+      currentSale?.product_info?.cart?.reduce(
+        (sum, item) =>
+          sum +
+          Number(
+            item.item_price * item.quantity +
+              CalculateConvenienceFee(item.item_price * item.quantity)
+                .convenienceFee,
+          ),
+        0,
+      ) || 0
+    );
+  };
+
+  const sanitizeNonNegative = (value) => {
+    const numericValue = Number(value ?? 0);
+    return Number.isFinite(numericValue) ? Math.max(0, numericValue) : 0;
+  };
+
+  const getCalculatedBalance = () => {
+    const cartTotal = getCurrentCartTotal();
+    const discount = sanitizeNonNegative(rowForm.discount);
+    const paidAmount = sanitizeNonNegative(rowForm.payedAmount);
+    return cartTotal - discount - paidAmount;
+  };
+
+  const updateBalanceInFirebase = async () => {
+    try {
+      const discount = sanitizeNonNegative(rowForm.discount);
+      const paidAmount = sanitizeNonNegative(rowForm.payedAmount);
+      const computedBalance = Math.max(0, getCalculatedBalance());
+
+      const saleRef = doc(firestore, "sales", editingRow);
+      await updateDoc(saleRef, {
+        discount,
+        payedAmount: paidAmount,
+        left_amount: computedBalance,
+        BalanceAmount: computedBalance,
+      });
+
+      setSalesData((prev) =>
+        prev.map((s) =>
+          s.id === editingRow
+            ? {
+                ...s,
+                discount,
+                payedAmount: paidAmount,
+                left_amount: computedBalance,
+                BalanceAmount: computedBalance,
+              }
+            : s,
+        ),
+      );
+
+      setRowForm((prev) => ({
+        ...prev,
+        BalanceAmount: computedBalance,
+        left_amount: computedBalance,
+      }));
+
+      setShowBalanceEditor(false);
+      alert("Balance updated in Firebase successfully");
+    } catch (error) {
+      console.error("Error updating balance in Firebase:", error);
+      alert("Failed to update balance in Firebase");
+    }
+  };
+
   const saveEditedRow = async () => {
     try {
+      const currentSale = salesData.find((sale) => sale.id === editingRow) || {};
+      const cartTotal =
+        currentSale?.product_info?.cart?.reduce(
+          (sum, item) =>
+            sum +
+            Number(
+              item.item_price * item.quantity +
+                CalculateConvenienceFee(item.item_price * item.quantity)
+                  .convenienceFee,
+            ),
+          0,
+        ) || 0;
+
+      const discount = sanitizeNonNegative(rowForm.discount);
+      const paidAmount = sanitizeNonNegative(rowForm.payedAmount);
+      const computedBalance = Math.max(0, cartTotal - discount - paidAmount);
+
       let updateSalesData = {
         name: rowForm.name,
         phone_number: rowForm.phone,
         ConfurmWhatsAppMobileNumber: rowForm.WhatsApp_Mobile_Number,
-        discount: rowForm.discount,
+        discount,
+        payedAmount: paidAmount,
+        left_amount: computedBalance,
+        BalanceAmount: computedBalance,
         location_booking_time: rowForm.booking_Date,
         SelectedServiceTime: rowForm.booking_Time,
       };
-      const response = await updateSale(rowForm.orderId, updateSalesData);
-      if (response.status != 200) {
-        alert(response.data.message);
 
+      const response = await updateSale(rowForm.orderId, updateSalesData);
+      if (response && response.status && response.status !== 200) {
+        alert(response.data?.message || "Failed to update sale");
         return;
       }
 
@@ -588,8 +692,12 @@ const applyFilters = () => {
         name: rowForm.name,
         phone_number: rowForm.phone,
         ConfurmWhatsAppMobileNumber: rowForm.WhatsApp_Mobile_Number,
-        discount: rowForm.discount,
-        product_info: response.data.data.product_info ?? { cart: [] },
+        discount,
+        payedAmount: paidAmount,
+        left_amount: computedBalance,
+        BalanceAmount: computedBalance,
+        location_booking_time: rowForm.booking_Date,
+        SelectedServiceTime: rowForm.booking_Time,
       });
 
       setSalesData((prev) =>
@@ -598,10 +706,11 @@ const applyFilters = () => {
             ? {
                 ...s,
                 name: rowForm.name,
-
                 phone_number: rowForm.phone,
-                WhatsApp_Mobile_Number: rowForm.WhatsApp_Mobile_Number,
-                discount: rowForm.discount,
+                ConfurmWhatsAppMobileNumber: rowForm.WhatsApp_Mobile_Number,
+                discount,
+                payedAmount: paidAmount,
+                BalanceAmount: computedBalance,
                 location_booking_time: rowForm.booking_Date,
                 SelectedServiceTime: rowForm.booking_Time,
               }
@@ -1972,9 +2081,6 @@ const applyFilters = () => {
                   "name",
                   "phone",
                   "WhatsApp_Mobile_Number",
-                  "discount",
-                  "BalanceAmount",
-                  "payedAmount",
                   "booking_Date",
                   "booking_Time",
                 ].map((field) => (
@@ -2075,6 +2181,127 @@ const applyFilters = () => {
                     )}
                   </div>
                 ))}
+
+                {showBalanceEditor && (
+                  <>
+                    <div className="md:col-span-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3">
+                      <div className="mb-3 flex items-center justify-between gap-3">
+                        <span className="text-xs font-semibold uppercase tracking-[0.12em] text-emerald-700">
+                          Change Balance
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setShowBalanceEditor(false)}
+                          className="text-xs font-semibold text-emerald-700 hover:text-emerald-900"
+                        >
+                          Close
+                        </button>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                            Quantity
+                          </label>
+                          <input
+                            type="number"
+                            value={
+                              salesData.find((sale) => sale.id === editingRow)
+                                ?.product_info?.cart?.[0]?.quantity ?? 1
+                            }
+                            readOnly
+                            className="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-600"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                            Item Price
+                          </label>
+                          <input
+                            type="number"
+                            value={
+                              salesData.find((sale) => sale.id === editingRow)
+                                ?.product_info?.cart?.[0]?.item_price ?? 0
+                            }
+                            readOnly
+                            className="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-600"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                            Total Cart Amount
+                          </label>
+                          <input
+                            type="number"
+                            value={getCurrentCartTotal()}
+                            readOnly
+                            className="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-600"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                            Discount
+                          </label>
+                          <input
+                            type="number"
+                            value={rowForm.discount ?? 0}
+                            onChange={(e) =>
+                              setRowForm((prev) => ({
+                                ...prev,
+                                discount: sanitizeNonNegative(e.target.value),
+                              }))
+                            }
+                            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                            Paid Amount
+                          </label>
+                          <input
+                            type="number"
+                            value={rowForm.payedAmount ?? 0}
+                            onChange={(e) =>
+                              setRowForm((prev) => ({
+                                ...prev,
+                                payedAmount: sanitizeNonNegative(e.target.value),
+                              }))
+                            }
+                            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100"
+                          />
+                        </div>
+
+                        <div className="md:col-span-2">
+                          <label className="mb-1.5 block text-sm font-medium text-slate-700">
+                            Calculated Balance
+                          </label>
+                          <input
+                            type="number"
+                            value={getCalculatedBalance()}
+                            readOnly
+                            className="w-full rounded-xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-600"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                <div className="md:col-span-2 rounded-2xl border border-orange-100 bg-orange-50 px-4 py-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-xs font-semibold uppercase tracking-[0.12em] text-orange-700">
+                      Calculated Balance
+                    </span>
+                    <span className="text-lg font-bold text-orange-700">
+                      ₹{getCalculatedBalance()}
+                    </span>
+                  </div>
+                  
+                </div>
               </div>
             </div>
 
@@ -2082,7 +2309,7 @@ const applyFilters = () => {
             <div className="flex items-center justify-end gap-3 bg-slate-50 px-6 py-4 border-t border-slate-100">
               <button
                 type="button"
-                onClick={() => setEditingRow(null)}
+                onClick={resetEditRowState}
                 className="rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
               >
                 Cancel
@@ -2090,11 +2317,29 @@ const applyFilters = () => {
 
               <button
                 type="button"
-                onClick={saveEditedRow}
-                className="rounded-xl bg-gradient-to-r from-orange-500 to-rose-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-orange-200 transition hover:from-orange-600 hover:to-rose-600"
+                onClick={() => setShowBalanceEditor((prev) => !prev)}
+                className="rounded-xl border border-emerald-200 bg-emerald-50 px-5 py-2.5 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100"
               >
-                Save Changes
+                {showBalanceEditor ? "Hide Balance" : "Change Balance"}
               </button>
+
+              {showBalanceEditor ? (
+                <button
+                  type="button"
+                  onClick={updateBalanceInFirebase}
+                  className="rounded-xl border border-emerald-200 bg-emerald-50 px-5 py-2.5 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-100"
+                >
+                  Update Balance Only
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={saveEditedRow}
+                  className="rounded-xl bg-gradient-to-r from-orange-500 to-rose-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-orange-200 transition hover:from-orange-600 hover:to-rose-600"
+                >
+                  Save Changes
+                </button>
+              )}
             </div>
           </div>
         </div>
