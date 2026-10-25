@@ -63,7 +63,7 @@ const CityHypePopup = ({
 
     const finalAmount = parseFloat(amount);
 
-    if (!finalAmount {
+    if (!finalAmount) {
       alert("Please enter a valid amount");
       return;
     }
